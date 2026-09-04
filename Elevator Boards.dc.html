@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face { font-family: 'Aleck'; src: url('fonts/AleckSans-Rg.ttf'); font-weight: 400; }
+@font-face { font-family: 'Aleck'; src: url('fonts/AleckSans-Md.ttf'); font-weight: 500; }
+@font-face { font-family: 'Aleck'; src: url('fonts/AleckSans-Bd.ttf'); font-weight: 700; }
+body { margin: 0; background: #e9edf1; font-family: 'Aleck', Helvetica, Arial, sans-serif; }
+a { color: var(--link); } a:hover { color: var(--cta-hover); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+<section style="{{ tokens }};padding:40px;display:grid;gap:40px;color:var(--text-heading)">
+  <div style="display:grid;gap:6px;max-width:1440px">
+    <div style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">Elevator brief · boards E0 to E7 · the demo walk · 1440</div>
+    <h1 style="margin:0;font-size:26px;line-height:34px;font-weight:700">The name on the lockup is the layer you are standing on.</h1>
+    <p style="margin:0;color:var(--text-body);font-size:14px">NetBond boards are drawn from the brief's wireframes at wireframe-plus fidelity; AI-grade boards reuse the storefront's parts. Toggle the theme in Tweaks.</p>
+  </div>
+
+  <!-- E0 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E0</span><span style="font-size:14px;color:var(--text-body)">NetBond · Manage, Connections · lockup with chevron and subtitle. Nothing else moves.</span></div>
+    <div data-screen-label="E0 NetBond Manage" style="width:1440px;min-height:760px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+      <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:32px">
+        <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit" aria-haspopup="menu" aria-expanded="false"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>NetBond® Advanced</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Cloud on-ramp layer</span></button>
+        <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 14px;color:var(--text-heading)">Create</span><span style="display:flex;align-items:center;padding:0 14px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Manage</span><span style="display:flex;align-items:center;padding:0 14px;color:var(--text-heading)">Monitor</span><span style="display:flex;align-items:center;padding:0 14px;color:var(--text-heading)">Configure</span></nav>
+        <span style="margin-left:auto;display:flex;gap:16px;align-items:center;color:var(--text-body)"><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/search.svg') center / contain no-repeat"></span><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/question-circle.svg') center / contain no-repeat"></span><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/bell.svg') center / contain no-repeat"></span><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/person.svg') center / contain no-repeat"></span></span>
+      </header>
+      <div style="display:grid;grid-template-columns:200px 1fr;min-height:696px">
+        <aside style="padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);display:grid;gap:2px;align-content:start;font-size:13px">
+          <span style="height:36px;padding:0 10px;border-radius:8px;display:flex;align-items:center;background:var(--bg-accent);color:var(--link);font-weight:700">Connections</span><span style="height:36px;padding:0 10px;display:flex;align-items:center;font-weight:500">Pools</span><span style="height:36px;padding:0 10px;display:flex;align-items:center;font-weight:500">Insights</span><span style="height:36px;padding:0 10px;display:flex;align-items:center;font-weight:500">Marketplace</span>
+        </aside>
+        <div style="padding:32px;display:grid;gap:20px;align-content:start">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">Viewing as Meridian Logistics</div><h2 style="margin:4px 0 0;font-size:26px;line-height:34px;font-weight:700">Connections</h2></div><button style="height:40px;padding:0 16px;border:0;border-radius:8px;background:var(--cta);color:#fff;font-size:14px;font-weight:500">+ Create connection</button></div>
+          <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 120px;gap:16px;padding:12px 20px;border-bottom:1px solid var(--border-secondary);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-light)"><span>Connection</span><span>Provider · region</span><span>On-ramp</span><span>Bandwidth</span><span>Term</span><span>Status</span></div>
+            <sc-for list="{{ conns }}" as="c" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 120px;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border-secondary);font-size:14px;align-items:center"><span style="font-weight:700">{{ c.name }}</span><span style="color:var(--text-body)">{{ c.prov }}</span><span style="color:var(--text-body)">{{ c.ramp }}</span><span style="color:var(--text-body)">{{ c.bw }}</span><span style="color:var(--text-body)">{{ c.term }}</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-body)"><span style="width:8px;height:8px;border-radius:9999px;background:{{ c.dot }}"></span>{{ c.status }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E1 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E1</span><span style="font-size:14px;color:var(--text-body)">NetBond · elevator open over E0 · check on Cloud.</span></div>
+    <div data-screen-label="E1 Elevator open" style="width:1440px;min-height:520px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden;position:relative">
+      <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:32px">
+        <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;outline:2px solid var(--border-active);outline-offset:2px;border-radius:8px" aria-haspopup="menu" aria-expanded="true"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>NetBond® Advanced</span><span aria-hidden="true" style="font-size:12px;color:var(--text-heading);font-weight:400;display:inline-block;transform:rotate(180deg)">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Cloud on-ramp layer</span></button>
+        <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 14px">Create</span><span style="display:flex;align-items:center;padding:0 14px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Manage</span><span style="display:flex;align-items:center;padding:0 14px">Monitor</span><span style="display:flex;align-items:center;padding:0 14px">Configure</span></nav>
+      </header>
+      <div role="menu" aria-label="Switch network layer" style="position:absolute;top:72px;left:24px;width:320px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.08);overflow:hidden;animation:fadeIn .15s">
+        <div style="padding:12px 16px;font-size:12px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-light);border-bottom:1px solid var(--border-secondary)">AT&amp;T AI-grade network · layers</div>
+        <sc-for list="{{ layersNB }}" as="l" hint-placeholder-count="4">
+          <div role="menuitem" aria-current="{{ l.cur }}" style="display:grid;grid-template-columns:20px 1fr auto;gap:12px;align-items:center;height:48px;padding:0 16px;background:{{ l.bg }};opacity:{{ l.op }};cursor:{{ l.cursor }}" style-hover="background:{{ l.hover }}"><sc-if value="{{ l.cur }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="color:var(--link);font-weight:700;font-size:14px;text-align:center">✓</span></sc-if><sc-if value="{{ l.notCur }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width:18px;height:18px;background:url('{{ l.icon }}') center / contain no-repeat"></span></sc-if><span><span style="display:block;font-size:14px;line-height:18px;font-weight:500">{{ l.name }}</span><span style="display:block;font-size:12px;line-height:16px;color:var(--text-light)">{{ l.tag }}</span></span><span style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-light)">{{ l.kicker }}</span></div>
+        </sc-for>
+        <div style="border-top:1px solid var(--border-secondary);padding:8px 0"><div style="display:flex;justify-content:space-between;padding:8px 16px;font-size:14px;font-weight:500;color:var(--link)">Discover your estate<span>→</span></div><div style="display:flex;justify-content:space-between;padding:8px 16px;font-size:14px;font-weight:500;color:var(--link)">See the whole stack<span>→</span></div></div>
+      </div>
+      <div style="position:absolute;left:400px;top:120px;right:40px;font-size:13px;color:var(--text-light);display:grid;gap:6px;max-width:520px"><div>Menu: width 320, radius 16, 8px below the header, 150ms fade + 4px rise. Rows 48 high, 12/16 padding. Current row: cobalt 100 fill, check replaces the icon. Vision row dimmed to 40%, no hover, never links.</div><div>Icons: <code>cloud</code> is the brand's own. <code>apis</code>, <code>hub</code> and <code>cable</code> stand in for <code>ai</code>, <code>network</code> and <code>fiber</code>, which are not in the 26-icon brand set; cable is the nearest glyph to fiber.</div></div>
+    </div>
+  </div>
+
+  <!-- E2 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E2</span><span style="font-size:14px;color:var(--text-body)">AI-grade · Network services · Observe · lockup with subtitle; Flows &amp; paths rows name "NetBond · PE-IAD-02" as links.</span></div>
+    <div data-screen-label="E2 Observe" style="width:1440px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+      <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:32px">
+        <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit" aria-haspopup="menu" aria-expanded="false"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>AI-grade network</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Network services layer</span></button>
+        <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 14px">Discover</span><span aria-hidden="true" style="width:1px;height:24px;background:var(--border-secondary);align-self:center"></span><span style="display:flex;align-items:center;padding:0 14px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Network services</span><span style="display:flex;align-items:center;padding:0 14px">AI Fabric</span></nav>
+        <span style="margin-left:auto;display:flex;gap:16px;align-items:center;font-size:13px;font-weight:700;color:var(--link)"><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/search.svg') center / contain no-repeat"></span>✓3<span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/bell.svg') center / contain no-repeat"></span><span aria-hidden="true" style="width:20px;height:20px;background:url('{{ iconDir }}/person.svg') center / contain no-repeat"></span></span>
+      </header>
+      <div style="display:grid;grid-template-columns:200px 1fr">
+        <aside style="padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);display:grid;gap:2px;align-content:start;font-size:13px">
+          <div style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-light);padding:0 10px 8px">Network services</div>
+          <sc-for list="{{ railObserve }}" as="r" hint-placeholder-count="5"><span style="height:36px;padding:0 10px;border-radius:8px;display:flex;align-items:center;gap:10px;background:{{ r.bg }};color:{{ r.color }};font-weight:{{ r.weight }}"><span aria-hidden="true" style="width:18px;height:18px;background:url('{{ r.icon }}') center / contain no-repeat"></span>{{ r.label }}</span></sc-for>
+        </aside>
+        <div style="padding:32px;display:grid;gap:24px;align-content:start">
+          <div style="display:grid;gap:4px"><h2 style="margin:0;font-size:18px;line-height:26px;font-weight:700">13% of your traffic rides the AT&amp;T-controlled path, saving $3.3k/mo. 87% still crosses the public internet.</h2><p style="margin:0;font-size:14px;color:var(--text-body)"><strong>For FinOps &amp; SRE:</strong> know where the traffic, the cost and the bottlenecks are, and what to do about them.</p></div>
+          <div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0;font-size:26px;line-height:34px;font-weight:700">Network Observability</h3><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);font-weight:500"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>Live</span></div>
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px">
+            <sc-for list="{{ obTiles }}" as="k" hint-placeholder-count="6"><div style="padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px"><div style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">{{ k.l }}</div><div style="display:flex;align-items:baseline;gap:4px;margin-top:6px"><span style="font-size:30px;line-height:36px;font-weight:700">{{ k.v }}</span><span style="font-size:13px;color:var(--text-body)">{{ k.u }}</span></div></div></sc-for>
+          </div>
+          <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;padding:20px 24px;display:grid;gap:12px">
+            <div style="font-size:14px;color:var(--text-body)"><strong>120.2 of 134.8 Gbps</strong> still rides the public internet · <strong style="color:var(--link)">14.6 Gbps</strong> under AT&amp;T control</div>
+            <svg viewBox="0 0 900 220" width="100%" role="img" aria-label="Traffic Sankey" style="display:block">
+              <path d="M12,10 C220,10 220,20 440,20 L440,150 C220,150 220,120 12,120 Z" fill="{{ pubFill }}" opacity=".35"></path>
+              <path d="M12,124 C220,124 220,160 440,160 L440,206 C220,206 220,210 12,210 Z" fill="#3374cc" opacity=".55"></path>
+              <path d="M452,20 C660,20 660,10 888,10 L888,140 C660,140 660,150 452,150 Z" fill="{{ pubFill }}" opacity=".35"></path>
+              <path d="M452,160 C660,160 660,150 888,150 L888,206 C660,206 660,206 452,206 Z" fill="#3374cc" opacity=".55"></path>
+              <rect x="0" y="10" width="12" height="110" rx="1" fill="{{ nodeFill }}"></rect><rect x="0" y="124" width="12" height="86" rx="1" fill="{{ nodeFill }}"></rect>
+              <rect x="440" y="20" width="12" height="130" rx="1" fill="{{ pubFill }}"></rect><rect x="440" y="160" width="12" height="46" rx="1" fill="#0057b8"></rect>
+              <rect x="888" y="10" width="12" height="130" rx="1" fill="{{ nodeFill }}"></rect><rect x="888" y="150" width="12" height="56" rx="1" fill="{{ nodeFill }}"></rect>
+              <text x="20" y="66" style="fill:var(--text-heading);font-size:11px;font-weight:500">5 offices · rd-helion · untagged</text><text x="20" y="170" style="fill:var(--text-heading);font-size:11px;font-weight:500">classified-helion · finance-invoices</text>
+              <text x="460" y="88" style="fill:var(--text-heading);font-size:11px;font-weight:500">Public internet</text><text x="460" y="186" style="fill:var(--link);font-size:11px;font-weight:700;text-decoration:underline">AT&amp;T fabric · NetBond · PE-IAD-02</text>
+              <text x="880" y="76" text-anchor="end" style="fill:var(--text-heading);font-size:11px;font-weight:500">AI endpoints · object storage · internet</text><text x="880" y="182" text-anchor="end" style="fill:var(--text-heading);font-size:11px;font-weight:500">AI endpoints · SaaS</text>
+            </svg>
+          </div>
+          <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-secondary)"><span style="font-size:16px;font-weight:700">Flows &amp; paths</span><span style="font-size:12px;color:var(--text-light)">13% under AT&amp;T control · North-south 16% · East-west 0% · 0 steered</span></div>
+            <sc-for list="{{ flowRows }}" as="f" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(0,2.4fr) 1fr .6fr 1.2fr 1fr .6fr 90px;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border-secondary);font-size:13px;align-items:center"><span><span style="display:block;font-weight:700">{{ f.name }}</span><span style="display:block;font-size:11px;color:var(--text-light)">{{ f.pathPre }}<sc-if value="{{ f.hasLink }}" hint-placeholder-val="{{ false }}"><a href="#e9" style="color:var(--link);font-weight:500;text-decoration:none">{{ f.pathLink }}</a></sc-if></span></span><span style="color:var(--text-body)">{{ f.kind }}</span><span>{{ f.gbps }}</span><span style="color:var(--text-body)">{{ f.lat }}</span><span><span style="height:22px;padding:0 10px;border-radius:9999px;background:{{ f.ctlBg }};color:{{ f.ctlColor }};font-size:11px;line-height:22px;font-weight:500">{{ f.ctl }}</span></span><span style="color:var(--text-body)">{{ f.div }}</span><span style="text-align:right"><span style="height:28px;padding:0 14px;border-radius:9999px;border:1px solid {{ f.btnBorder }};background:{{ f.btnBg }};color:{{ f.btnColor }};font-size:12px;line-height:26px;font-weight:500;display:inline-block">{{ f.btn }}</span></span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E3 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E3</span><span style="font-size:14px;color:var(--text-body)">AI-grade · Network services · Connect · NetBond connections as on-ramp chips (links); one NetBond Adv chip planned (dashed, 60%); Cloud stratum link to NetBond. <strong>The picture here is a static stand-in:</strong> in the shell this is the storefront's live fabric hero (comets, strata, hover card, region drill, steer and simulate reactions) with the chips added to it.</span></div>
+    <div data-screen-label="E3 Connect hero" style="width:1440px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+      <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:32px">
+        <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;color:inherit;font:inherit"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>AI-grade network</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Network services layer</span></button>
+        <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 14px">Discover</span><span aria-hidden="true" style="width:1px;height:24px;background:var(--border-secondary);align-self:center"></span><span style="display:flex;align-items:center;padding:0 14px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Network services</span><span style="display:flex;align-items:center;padding:0 14px">AI Fabric</span></nav>
+      </header>
+      <div style="display:grid;grid-template-columns:200px 1fr">
+        <aside style="padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);display:grid;gap:2px;align-content:start;font-size:13px">
+          <div style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-light);padding:0 10px 8px">Network services</div>
+          <sc-for list="{{ railConnect }}" as="r" hint-placeholder-count="5"><span style="height:36px;padding:0 10px;border-radius:8px;display:flex;align-items:center;gap:10px;background:{{ r.bg }};color:{{ r.color }};font-weight:{{ r.weight }}"><span aria-hidden="true" style="width:18px;height:18px;background:url('{{ r.icon }}') center / contain no-repeat"></span>{{ r.label }}</span></sc-for>
+        </aside>
+        <div style="padding:32px;display:grid;gap:24px;align-content:start">
+          <div style="display:grid;gap:4px"><h2 style="margin:0;font-size:18px;line-height:26px;font-weight:700">8 of your 9 cloud regions still ride the public internet. 1 is on the AT&amp;T fabric, and 1 more is on its way.</h2><p style="margin:0;font-size:14px;color:var(--text-body)"><strong>For Cloud &amp; Platform Architect:</strong> every NetBond connection is an on-ramp here. Click a chip to open it in NetBond Advanced.</p></div>
+          <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;padding:16px 24px">
+            <svg viewBox="0 0 1100 340" width="100%" role="img" aria-label="Fabric picture" style="display:block;font-family:inherit">
+              <text x="0" y="14" style="fill:var(--text-disabled);font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Your sites</text>
+              <text x="430" y="14" style="fill:var(--text-disabled);font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">AT&amp;T fabric</text>
+              <text x="760" y="14" style="fill:var(--text-disabled);font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Clouds</text>
+              <sc-for list="{{ heroSites }}" as="s" hint-placeholder-count="3"><rect x="0" y="{{ s.y }}" width="180" height="32" rx="8" style="fill:var(--bg-base);stroke:var(--border-primary)"></rect><text x="14" y="{{ s.ty }}" style="fill:var(--text-heading);font-size:13px;font-weight:500">{{ s.name }}</text><path d="{{ s.d }}" fill="none" stroke="#3374cc" stroke-width="2"></path></sc-for>
+              <rect x="430" y="28" width="220" height="300" rx="16" fill="{{ bandFill }}" style="stroke:var(--band-stroke)"></rect>
+              <sc-for list="{{ strata }}" as="st" hint-placeholder-count="4"><line x1="430" y1="{{ st.y }}" x2="650" y2="{{ st.y }}" style="stroke:var(--band-stroke)"></line><text x="446" y="{{ st.ty }}" style="fill:var(--text-heading);font-size:13px;font-weight:700">{{ st.label }}</text><text x="446" y="{{ st.ty2 }}" style="fill:{{ st.subColor }};font-size:11px;font-weight:{{ st.subWeight }};text-decoration:{{ st.deco }}">{{ st.sub }}</text></sc-for>
+              <sc-for list="{{ heroRegions }}" as="r" hint-placeholder-count="4">
+                <path d="{{ r.d }}" fill="none" stroke="{{ r.stroke }}" stroke-width="{{ r.w }}" stroke-dasharray="{{ r.dash }}" opacity="{{ r.op }}"></path>
+                <rect x="760" y="{{ r.y }}" width="200" height="32" rx="8" style="fill:var(--bg-base);stroke:var(--border-primary)" stroke-dasharray="{{ r.boxDash }}"></rect><text x="774" y="{{ r.ty }}" style="fill:var(--text-heading);font-size:13px;font-weight:500">{{ r.name }}</text><circle cx="946" cy="{{ r.cy }}" r="4" fill="{{ r.dot }}"></circle>
+                <foreignObject x="{{ r.chipX }}" y="{{ r.chipY }}" width="200" height="40"><div style="display:inline-grid;gap:0;padding:3px 10px;border-radius:9999px;background:{{ r.chipBg }};border:1px solid {{ r.chipBorder }};opacity:{{ r.chipOp }};font-size:11px;line-height:14px;color:{{ r.chipColor }};font-weight:500;cursor:{{ r.cursor }};text-decoration:{{ r.chipDeco }}"><span>{{ r.chip }}</span><sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-weight:400;color:var(--text-light)">{{ r.chipSub }}</span></sc-if></div></foreignObject>
+              </sc-for>
+              <text x="760" y="334" style="fill:var(--text-light);font-size:11px">◯ seeded, inert · <tspan style="fill:var(--link);font-weight:500">NetBond chip = link to the connection</tspan> · dashed = planned, 60%</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E4 + E7 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E4 · E7</span><span style="font-size:14px;color:var(--text-body)">AI-grade · Discover, advisor · two-band head start; finding card with the ladder (E4, left) and the same card Ordered (E7, right).</span></div>
+    <div data-screen-label="E4 E7 Discover advisor" style="width:1440px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+      <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:32px">
+        <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;color:inherit;font:inherit"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>AI-grade network</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">All layers</span></button>
+        <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 14px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Discover</span><span aria-hidden="true" style="width:1px;height:24px;background:var(--border-secondary);align-self:center"></span><span style="display:flex;align-items:center;padding:0 14px">Network services</span><span style="display:flex;align-items:center;padding:0 14px">AI Fabric</span></nav>
+      </header>
+      <div style="padding:32px;display:grid;gap:24px">
+        <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:20px">
+          <div style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">Before you tell us anything</div>
+          <div style="display:grid;gap:10px"><div style="font-size:14px;font-weight:500;color:var(--text-body)">What AT&amp;T has</div><div style="display:grid;grid-template-columns:repeat(4,200px);gap:16px"><sc-for list="{{ hasTiles }}" as="t" hint-placeholder-count="4"><a href="#e5" style="display:grid;gap:4px;padding:16px;border:1px solid var(--border-secondary);border-radius:12px;text-decoration:none;color:inherit;background:var(--bg-base)" style-hover="border-color:var(--border-active)"><span style="font-size:26px;line-height:34px;font-weight:700">{{ t.n }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ t.l }}</span></a></sc-for></div></div>
+          <div style="display:grid;gap:10px"><div style="font-size:14px;font-weight:500;color:var(--text-body)">What AT&amp;T sees of you</div><div style="display:grid;grid-template-columns:repeat(3,200px);gap:16px"><sc-for list="{{ seesTiles }}" as="t" hint-placeholder-count="3"><a href="#e4" style="display:grid;gap:4px;padding:16px;border:1px solid var(--border-secondary);border-radius:12px;text-decoration:none;color:inherit;background:var(--bg-base)" style-hover="border-color:var(--border-active)"><span style="font-size:26px;line-height:34px;font-weight:700">{{ t.n }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ t.l }}</span></a></sc-for></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+          <article id="e4" style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px">
+            <div style="display:flex;justify-content:space-between;gap:12px"><span style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">For FinOps &amp; SRE</span><span style="font-size:12px;color:var(--text-light)">Observability</span></div>
+            <div style="display:grid;gap:6px"><h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700">Save $50,400/mo by attaching 8 unattached regions</h3><p style="margin:0;color:var(--text-body)">8 regions across 6 clouds sit off the fabric today; attaching the 8 that the arbitrage table prices keeps $50,400/mo off hyperscaler egress.</p><span style="font-size:13px;font-weight:500;color:var(--link)">Why we recommend this</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+              <sc-for list="{{ ladder }}" as="t" hint-placeholder-count="3"><a href="{{ t.href }}" style="display:grid;gap:8px;align-content:space-between;padding:16px;border-radius:12px;border:1px solid {{ t.border }};background:{{ t.bg }};text-decoration:none;min-height:150px"><span style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:{{ t.kicker }}">{{ t.tier }}</span><span style="font-weight:700;font-size:15px;color:{{ t.color }}">{{ t.name }}</span><span style="font-size:12px;color:{{ t.sub }}">{{ t.desc }}</span><span style="font-size:12px;font-weight:500;color:{{ t.cta }}">Choose this →</span></a></sc-for>
+            </div>
+          </article>
+          <article id="e7" style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">For FinOps &amp; SRE</span><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 10px;border-radius:9999px;background:{{ orderedBg }};color:{{ orderedColor }};font-size:12px;font-weight:500"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>Ordered</span></span><span style="font-size:12px;color:var(--text-light)">Observability</span></div>
+            <div style="display:grid;gap:6px"><h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700">Save $50,400/mo by attaching 8 unattached regions</h3><p style="margin:0;color:var(--text-body)">8 regions across 6 clouds sit off the fabric today; attaching the 8 that the arbitrage table prices keeps $50,400/mo off hyperscaler egress.</p><span style="font-size:13px;font-weight:500;color:var(--link)">Why we recommend this</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;background:var(--bg-wash);font-size:14px;color:var(--text-heading)"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>NetBond attach · ordered today</div>
+            <div style="font-size:12px;color:var(--text-light)">E7 · next visit after submit. The ladder collapses to one line; the hero draws the on-ramp as planned; Observe moves when the connection goes Active.</div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E5 + E6 -->
+  <div style="display:grid;gap:12px">
+    <div style="display:flex;gap:12px;align-items:baseline"><span style="font-size:12px;font-weight:700;color:var(--link);padding:2px 8px;border-radius:6px;background:var(--bg-accent)">E5 · E6</span><span style="font-size:14px;color:var(--text-body)">NetBond · Create · advisor banner above the stepper; step 1 pre-selected (E5) and Review with the banner persisting (E6).</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div id="e5" data-screen-label="E5 NetBond Create step 1" style="width:708px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+        <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:24px">
+          <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;color:inherit;font:inherit"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>NetBond® Advanced</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Cloud on-ramp layer</span></button>
+          <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 12px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Create</span><span style="display:flex;align-items:center;padding:0 12px">Manage</span><span style="display:flex;align-items:center;padding:0 12px">Monitor</span><span style="display:flex;align-items:center;padding:0 12px">Configure</span></nav>
+        </header>
+        <div style="padding:24px;display:grid;gap:20px">
+          <div style="padding:16px 24px;border-radius:16px;background:var(--bg-accent);display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:start"><div style="font-size:12px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--cta-hover)">Recommended by your advisor</div><a href="#e4" style="font-size:14px;font-weight:500;color:var(--link);text-decoration:none;grid-row:span 3">Why →</a><div style="font-size:16px;line-height:22px;font-weight:700">Save $50,400/mo by attaching 8 unattached regions</div><div style="font-size:14px;color:var(--text-body)">Site to Cloud · AWS · Geo-diverse · Ashburn · 10 Gbps, ready to review.</div></div>
+          <ol style="list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:0;font-size:12px"><sc-for list="{{ nbSteps1 }}" as="st" hint-placeholder-count="5"><li style="display:flex;align-items:center;flex:{{ st.flex }};min-width:0;gap:8px;white-space:nowrap"><span style="width:20px;height:20px;border-radius:9999px;border:2px solid {{ st.ring }};background:{{ st.fill }};display:flex;align-items:center;justify-content:center;color:{{ st.markColor }};font-size:10px;font-weight:700">{{ st.n }}</span><span style="color:{{ st.color }};font-weight:{{ st.weight }}">{{ st.label }}</span><sc-if value="{{ st.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex:1;height:1px;background:var(--border-secondary);margin:0 8px"></span></sc-if></li></sc-for></ol>
+          <div style="display:grid;gap:8px"><h2 style="margin:0;font-size:22px;line-height:30px;font-weight:700">Connection type</h2><p style="margin:0;font-size:14px;color:var(--text-body)">Pre-filled from the finding. Change anything; the banner stays.</p></div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ nbTypes }}" as="t" hint-placeholder-count="4"><div style="padding:16px;border-radius:12px;border:1px solid {{ t.border }};background:{{ t.bg }};display:grid;gap:6px"><span style="display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px">{{ t.name }}<span style="width:18px;height:18px;border-radius:9999px;border:2px solid {{ t.ring }};background:{{ t.check }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">✓</span></span><span style="font-size:12px;color:var(--text-body)">{{ t.desc }}</span></div></sc-for>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><span style="height:40px;padding:0 16px;border:1px solid var(--border-secondary);border-radius:8px;line-height:38px;font-size:14px;font-weight:500">Cancel</span><span style="height:40px;padding:0 20px;border-radius:8px;background:var(--cta);color:#fff;line-height:40px;font-size:14px;font-weight:500">Next: Choose Provider →</span></div>
+        </div>
+      </div>
+      <div id="e6" data-screen-label="E6 NetBond Create review" style="width:708px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+        <header style="display:flex;align-items:center;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary);gap:24px">
+          <button style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;background:transparent;text-align:left;color:inherit;font:inherit"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em"><span style="color:#009fdb">AT&amp;T</span><span>NetBond® Advanced</span><span aria-hidden="true" style="font-size:12px;color:var(--text-light);font-weight:400">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">Cloud on-ramp layer</span></button>
+          <nav style="display:flex;gap:4px;height:64px;align-items:stretch;font-size:14px;font-weight:500"><span style="display:flex;align-items:center;padding:0 12px;color:var(--link);border-bottom:2px solid var(--cta);font-weight:700">Create</span><span style="display:flex;align-items:center;padding:0 12px">Manage</span><span style="display:flex;align-items:center;padding:0 12px">Monitor</span><span style="display:flex;align-items:center;padding:0 12px">Configure</span></nav>
+        </header>
+        <div style="padding:24px;display:grid;gap:20px">
+          <div style="padding:16px 24px;border-radius:16px;background:var(--bg-accent);display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:start"><div style="font-size:12px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--cta-hover)">Recommended by your advisor</div><a href="#e4" style="font-size:14px;font-weight:500;color:var(--link);text-decoration:none;grid-row:span 3">Why →</a><div style="font-size:16px;line-height:22px;font-weight:700">Save $50,400/mo by attaching 8 unattached regions</div><div style="font-size:14px;color:var(--text-body)">Site to Cloud · AWS · Geo-diverse · Ashburn · 10 Gbps, ready to review.</div></div>
+          <ol style="list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:0;font-size:12px"><sc-for list="{{ nbSteps5 }}" as="st" hint-placeholder-count="5"><li style="display:flex;align-items:center;flex:{{ st.flex }};min-width:0;gap:8px;white-space:nowrap"><span style="width:20px;height:20px;border-radius:9999px;border:2px solid {{ st.ring }};background:{{ st.fill }};display:flex;align-items:center;justify-content:center;color:{{ st.markColor }};font-size:10px;font-weight:700">{{ st.n }}</span><span style="color:{{ st.color }};font-weight:{{ st.weight }}">{{ st.label }}</span><sc-if value="{{ st.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex:1;height:1px;background:var(--border-secondary);margin:0 8px"></span></sc-if></li></sc-for></ol>
+          <div style="display:grid;gap:8px"><h2 style="margin:0;font-size:22px;line-height:30px;font-weight:700">Review</h2><p style="margin:0;font-size:14px;color:var(--text-body)">Order summary as today. Submit creates the connection and the AI-grade app reads it back.</p></div>
+          <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;overflow:hidden">
+            <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:160px 1fr;gap:16px;padding:12px 16px;border-bottom:1px solid var(--border-secondary);font-size:14px"><span style="color:var(--text-light)">{{ r.k }}</span><span style="font-weight:500">{{ r.v }}</span></div></sc-for>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:16px;padding:14px 16px;font-size:16px"><span style="color:var(--text-light)">Monthly</span><span style="font-weight:700">$4,800/mo · 36-month · save 50% vs on-demand</span></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><span style="height:40px;padding:0 16px;border:1px solid var(--border-secondary);border-radius:8px;line-height:38px;font-size:14px;font-weight:500">Back</span><span style="height:40px;padding:0 20px;border-radius:8px;background:var(--cta);color:#fff;line-height:40px;font-size:14px;font-weight:500">Submit order</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;light&quot;, &quot;dark&quot;], &quot;default&quot;: &quot;light&quot;, &quot;tsType&quot;: &quot;'light' | 'dark'&quot;, &quot;section&quot;: &quot;Boards&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const T = dark
+      ? { '--bg-wash': '#111821', '--bg-base': '#1a2431', '--bg-accent': '#16304f', '--bg-neutral': '#243041', '--border-secondary': '#2f3d4d', '--border-primary': '#3d4d5f', '--border-active': '#66c8f0', '--text-heading': '#f2f6fa', '--text-body': '#c5cfd9', '--text-light': '#8a97a6', '--text-disabled': '#6b7885', '--link': '#66c8f0', '--cta': '#0057b8', '--cta-hover': '#3374cc', '--success': '#4fbf74', '--warning': '#f0a030', '--band': '#0e2a4d', '--band-stroke': '#2f4a70' }
+      : { '--bg-wash': '#f7f9fb', '--bg-base': '#ffffff', '--bg-accent': '#e6f0fa', '--bg-neutral': '#e9edf1', '--border-secondary': '#d8dee5', '--border-primary': '#b8c2cc', '--border-active': '#0057b8', '--text-heading': '#1a2431', '--text-body': '#3d4d5c', '--text-light': '#5d6f80', '--text-disabled': '#7d8b99', '--link': '#0057b8', '--cta': '#0057b8', '--cta-hover': '#00388f', '--success': '#1e7a3c', '--warning': '#c77700', '--band': '#e6f0fa', '--band-stroke': '#b8d0ec' };
+    const tokens = Object.entries(T).map(([k, v]) => k + ':' + v).join(';') + ';background:' + (dark ? '#0b1118' : '#e9edf1');
+    const iconDir = dark ? 'brand/icons-dark' : 'brand/icons-light';
+    const iconLink = dark ? 'brand/icons-linkdark' : 'brand/icons-link';
+    const rail = (cur) => [['Home', 'home'], ['Connect', 'cable'], ['Govern', 'check-shield'], ['Observe', 'high-meter'], ['Cost', 'bill']].map(([label, ic]) => ({ key: label, label, icon: (label === cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: label === cur ? 'var(--bg-accent)' : 'transparent', color: label === cur ? 'var(--link)' : 'var(--text-heading)', weight: label === cur ? 700 : 500 }));
+    const conns = [
+      { name: 'nb-iad-prod-01', prov: 'AWS · us-east-1', ramp: 'NetBond · PE-IAD-02', bw: '10 Gbps', term: '36-month', status: 'Active', dot: 'var(--success)' },
+      { name: 'nb-iad-data-02', prov: 'AWS · us-east-1', ramp: 'NetBond · PE-IAD-02', bw: '5 Gbps', term: '36-month', status: 'Active', dot: 'var(--success)' },
+      { name: 'nb-dfw-hub', prov: 'Azure · centralus', ramp: 'ExpressRoute · DFW1', bw: '2 Gbps', term: '12-month', status: 'Active', dot: 'var(--success)' },
+      { name: 'nbadv-pdx-lastmile', prov: 'AWS · us-west-2', ramp: 'NetBond Adv · Last Mile', bw: '10 Gbps', term: '36-month', status: 'Provisioning', dot: 'var(--warning)' },
+      { name: 'nb-ord-legacy', prov: 'GCP · us-central1', ramp: 'NetBond · PE-ORD-01', bw: '1 Gbps', term: 'On-demand', status: 'Inactive', dot: 'var(--text-disabled)' },
+    ].map(c => ({ ...c, key: c.name }));
+    const layers = (cur) => [
+      { key: 'ai', name: 'AI Fabric', tag: 'The token layer', icon: iconDir + '/apis.svg', kicker: '' },
+      { key: 'cloud', name: 'Cloud · NetBond Advanced', tag: 'The on-ramp layer, with control', icon: iconDir + '/cloud.svg', kicker: '' },
+      { key: 'net', name: 'Network services', tag: 'The services layer', icon: iconDir + '/hub.svg', kicker: '' },
+      { key: 'transport', name: 'Transport and access', tag: 'The physical layer', icon: iconDir + '/cable.svg', kicker: 'Vision', vision: true },
+    ].map(l => ({ ...l, cur: l.key === cur, notCur: l.key !== cur, bg: l.key === cur ? 'var(--bg-accent)' : 'transparent', hover: l.vision || l.key === cur ? (l.key === cur ? 'var(--bg-accent)' : 'transparent') : 'var(--bg-neutral)', op: l.vision ? 0.4 : 1, cursor: l.vision ? 'default' : 'pointer' }));
+    const obTiles = [['Throughput', '90.7', 'Gbps'], ['P95 Latency', '187', 'ms'], ['Packet Loss', '0.19', '%'], ['Egress Spend', '$44.9k', '/mo'], ['On the AT&T fabric', '13', '%'], ['Savings', '$3.3k', '/mo']].map(([l, v, u]) => ({ key: l, l, v, u }));
+    const flowRows = [
+      { name: 'Untagged → public internet', pathPre: 'Hyperscaler-native · public internet', kind: 'App', gbps: '14.1', lat: '49ms · $0.09/GB', ctl: 'Public', div: 'No', btn: 'Steer', primary: true },
+      { name: 'classified-helion → public internet', pathPre: 'AT&T mid-mile · ', pathLink: 'NetBond · PE-IAD-02', hasLink: true, kind: 'App', gbps: '3.9', lat: '3ms · $0.02/GB', ctl: 'AT&T-controlled', div: 'No', btn: 'Failover' },
+      { name: 'classified-helion → AI endpoints', pathPre: 'AT&T mid-mile · ', pathLink: 'NetBond · PE-IAD-02', hasLink: true, kind: 'App', gbps: '3.3', lat: '3ms · $0.02/GB', ctl: 'AT&T-controlled', div: 'No', btn: 'Failover' },
+      { name: 'AWS us-east-1 ↔ Azure West US 2', pathPre: 'Public internet · hyperscaler-native peering', kind: 'Cloud-to-cloud', gbps: '6.3', lat: '88ms · $0.09/GB', ctl: 'Public', div: 'Yes', btn: 'Steer', primary: true },
+    ].map((f, i) => ({ ...f, key: 'f' + i, ctlBg: f.ctl === 'Public' ? 'var(--bg-wash)' : (dark ? 'rgba(79,191,116,.12)' : '#eef8f0'), ctlColor: f.ctl === 'Public' ? 'var(--text-body)' : (dark ? '#8fe0a8' : '#1e7a3c'), btnBg: f.primary ? 'var(--cta)' : 'transparent', btnColor: f.primary ? '#fff' : 'var(--text-heading)', btnBorder: f.primary ? 'var(--cta)' : 'var(--border-secondary)' }));
+    const siteYs = [60, 150, 240];
+    const heroSites = ['Dallas HQ', 'Austin', 'Chicago'].map((name, i) => ({ key: name, name, y: siteYs[i], ty: siteYs[i] + 21, d: `M180,${siteYs[i] + 16} C305,${siteYs[i] + 16} 305,178 430,178` }));
+    const strata = [['AI Fabric', 'The token layer', false], ['Cloud', 'Cloud attach lives in NetBond Advanced ↗', true], ['Network services', 'The services layer', false], ['Transport and access', 'Vision', false]].map(([label, sub, link], i) => ({ key: label, label, sub, y: 28 + i * 75, ty: 28 + i * 75 + 30, ty2: 28 + i * 75 + 48, subColor: link ? 'var(--link)' : 'var(--text-light)', subWeight: link ? 500 : 400, deco: link ? 'underline' : 'none' }));
+    const regs = [
+      { name: 'us-east-1 · AWS', y: 44, chip: 'NetBond · PE-IAD-02', link: true },
+      { name: 'us-west-2 · AWS', y: 118, chip: 'NetBond Adv · planned', chipSub: 'Max resiliency · 4 paths', planned: true, link: true },
+      { name: 'westus2 · Azure', y: 192, chip: 'ExpressRoute · CH1', seeded: true },
+      { name: 'us-central1 · GCP', y: 266, chip: 'public internet', pub: true },
+    ];
+    const heroRegions = regs.map(r => ({ key: r.name, name: r.name, y: r.y, ty: r.y + 21, cy: r.y + 16, d: `M650,${r.pub ? 300 : 178 + (r.y - 150) * 0.3} C705,${r.pub ? 300 : 178 + (r.y - 150) * 0.3} 705,${r.y + 16} 760,${r.y + 16}`, stroke: r.pub ? 'var(--text-disabled)' : '#3374cc', w: r.pub ? 1.5 : 2, dash: r.planned || r.pub ? '6 6' : 'none', op: r.planned ? 0.6 : 1, boxDash: r.planned ? '4 4' : 'none', dot: r.pub ? 'var(--warning)' : 'var(--success)', chipX: 668, chipY: r.y - 8, chipBg: r.link ? 'var(--bg-accent)' : 'var(--bg-base)', chipBorder: r.link ? 'var(--cta)' : 'var(--border-secondary)', chipColor: r.link ? 'var(--link)' : 'var(--text-body)', chipOp: r.planned ? 0.6 : 1, cursor: r.link ? 'pointer' : 'default', chipDeco: 'none', hasSub: !!r.chipSub, chipSub: r.chipSub || '', chip: r.chip }));
+    const hasTiles = [['14', 'Metros with AT&T on-ramps'], ['11', 'Cloud and colo providers reachable'], ['2', 'Last Mile metros live today'], ['10', 'Connection types orderable now']].map(([n, l]) => ({ key: l, n, l }));
+    const seesTiles = [['312', 'Sites'], ['41%', 'Already on-net'], ['2', 'Clouds visible']].map(([n, l]) => ({ key: l, n, l }));
+    const ladder = [['Start here', 'Steer on the AT&T fabric', 'Start steering eligible traffic onto the fabric today, no new attach required.', '#e2', false], ['Recommended', 'NetBond attach', 'Attach the unattached region to the fabric and stop paying the public transit rate on it.', '#e5', true], ['Full control', 'NetBond Adv', 'Dual-attach every region on the fabric with the redundancy the estate is missing today.', '#e5', false]].map(([tier, name, desc, href, feat]) => ({ key: tier, tier, name, desc, href, border: feat ? 'var(--cta)' : 'var(--border-secondary)', bg: feat ? 'var(--cta)' : 'var(--bg-base)', kicker: feat ? 'rgba(255,255,255,.8)' : 'var(--text-disabled)', color: feat ? '#fff' : 'var(--text-heading)', sub: feat ? 'rgba(255,255,255,.85)' : 'var(--text-body)', cta: feat ? '#fff' : 'var(--link)' }));
+    const nbSteps = (cur) => ['Connection Type', 'Choose Provider', 'Connection Profile', 'Terms', 'Review'].map((label, i) => ({ key: label, label, n: i < cur ? '✓' : String(i + 1), fill: i === cur ? 'var(--cta)' : i < cur ? 'var(--success)' : 'transparent', ring: i === cur ? 'var(--cta)' : i < cur ? 'var(--success)' : 'var(--border-primary)', markColor: i <= cur ? '#fff' : 'var(--text-light)', color: i === cur ? 'var(--link)' : 'var(--text-heading)', weight: i === cur ? 700 : 500, notLast: i < 4, flex: i < 4 ? '1 1 0' : '0 0 auto' }));
+    const nbTypes = [['Site to Cloud', 'Your site into a cloud region over NetBond.', true], ['Cloud to Cloud', 'Two regions joined on the AT&T network.', false], ['Last Mile (LMCC)', 'Two metros, two paths, managed failover.', false], ['Hub to Cloud', 'A Connection Hub reaching many clouds.', false]].map(([name, desc, on]) => ({ key: name, name, desc, border: on ? 'var(--cta)' : 'var(--border-secondary)', bg: on ? 'var(--bg-accent)' : 'var(--bg-base)', ring: on ? 'var(--cta)' : 'var(--border-primary)', check: on ? 'var(--cta)' : 'transparent' }));
+    const reviewRows = [['Connection type', 'Site to Cloud'], ['Provider · region', 'AWS · us-east-1 (N. Virginia)'], ['Profile', 'Geo-diverse · Ashburn + New York · 10 Gbps'], ['Term', '36-month'], ['Policy shipped', 'Private path required for tag PCI'], ['Telemetry', 'Path, throughput, P95 latency, loss, egress, flow logs from day one']].map(([k, v]) => ({ key: k, k, v }));
+    return { tokens, iconDir, conns, layersNB: layers('cloud'), railObserve: rail('Observe'), railConnect: rail('Connect'), obTiles, flowRows, pubFill: dark ? '#5d6f80' : '#8a949c', nodeFill: dark ? '#c5cfd9' : '#1a2431', bandFill: 'var(--band)', heroSites, strata, heroRegions, hasTiles, seesTiles, ladder, orderedBg: dark ? 'rgba(79,191,116,.12)' : '#eef8f0', orderedColor: dark ? '#8fe0a8' : '#1e7a3c', nbSteps1: nbSteps(0), nbSteps5: nbSteps(4), reviewRows };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+# AT&T Icons Package
+
+This package contains 751 AT&T-branded SVG icons.
+
+## Contents
+
+- `svg/` - Individual SVG files for each icon
+- `icons-data.json` - JSON data file containing all icon metadata and paths
+
+## Categories
+
+- 1: 1 icons
+- 10: 1 icons
+- 2: 1 icons
+- 3: 1 icons
+- 360-view: 1 icons
+- 3d: 1 icons
+- 4: 1 icons
+- 4 Star Ranking: 1 icons
+- 4k: 1 icons
+- 5: 1 icons
+- 5 Star Ranking: 1 icons
+- 5g: 1 icons
+- 5G+: 1 icons
+- 6: 1 icons
+- 7: 1 icons
+- 8: 1 icons
+- 9: 1 icons
+- Add-line: 1 icons
+- Address-book: 1 icons
+- Ai: 1 icons
+- Airplane-aviation: 1 icons
+- Airplay: 1 icons
+- Anti-bacterial: 5 icons
+- Apps: 1 icons
+- Archive: 2 icons
+- Arrow-down: 1 icons
+- Arrow-down-circle: 2 icons
+- Arrow-down-circle-filled: 1 icons
+- Arrow-left: 1 icons
+- Arrow-left-circle: 1 icons
+- Arrow-left-circle-filled: 1 icons
+- Arrow-right: 1 icons
+- Arrow-right-circle: 2 icons
+- Arrow-right-circle-filled: 1 icons
+- Arrows-horizontal: 1 icons
+- Arrows-vertical-1: 1 icons
+- Arrows-vertical-2: 1 icons
+- Arrows-vertical-3: 1 icons
+- Art: 1 icons
+- ATT UID: 1 icons
+- Audio-language: 1 icons
+- Audio-waves: 1 icons
+- Auto-security: 1 icons
+- Autopay: 1 icons
+- Back-to-top: 1 icons
+- Bank: 1 icons
+- Baseball: 1 icons
+- Basketball: 1 icons
+- Battery-charging: 1 icons
+- Battery-empty: 1 icons
+- Battery-full: 1 icons
+- Battery-low: 1 icons
+- Bell: 1 icons
+- Bell-off: 1 icons
+- Bill: 1 icons
+- Bluetooth: 1 icons
+- Book: 1 icons
+- Bookmark: 1 icons
+- Box: 1 icons
+- Briefcase: 1 icons
+- Browse by date: 1 icons
+- Bullseye: 1 icons
+- Calendar-1: 1 icons
+- Calendar-2: 1 icons
+- Call-blocker: 1 icons
+- Call-pull: 1 icons
+- Caller ID announce: 1 icons
+- Caller-id: 1 icons
+- Camera: 1 icons
+- Camera-off: 1 icons
+- Camera-reverse-view: 1 icons
+- Car: 1 icons
+- Caret-down: 1 icons
+- Caret-left: 1 icons
+- Caret-right: 1 icons
+- Caret-up: 1 icons
+- Case sensitive: 1 icons
+- Casting: 1 icons
+- Casting-to-TV: 1 icons
+- Cat: 1 icons
+- Check: 1 icons
+- Check-circle: 1 icons
+- Check-circle-filled: 1 icons
+- Check-shield: 1 icons
+- Chevron-down: 1 icons
+- Chevron-down-circle: 1 icons
+- Chevron-down-circle-filled: 1 icons
+- Chevron-left: 1 icons
+- Chevron-left-circle: 1 icons
+- Chevron-left-circle-filled: 1 icons
+- Chevron-right: 1 icons
+- Chevron-right-circle: 1 icons
+- Chevron-right-circle-filled: 1 icons
+- Chevron-up: 1 icons
+- Chevron-up-circle: 1 icons
+- Chevron-up-circle-filled: 1 icons
+- Chromecast: 1 icons
+- Clipboard: 1 icons
+- Clock: 1 icons
+- Clock-alarm: 1 icons
+- Close: 1 icons
+- Close-circle: 2 icons
+- Close-circle-filled: 1 icons
+- Closed-caption: 1 icons
+- Cloud: 1 icons
+- Cloud transfer: 1 icons
+- Cloud-download: 1 icons
+- Cloud-upload: 1 icons
+- Cloudy: 1 icons
+- Coffee-cup: 1 icons
+- Collections: 1 icons
+- Comedy: 1 icons
+- Compass-circle: 1 icons
+- Connected home: 1 icons
+- Connected-car: 1 icons
+- Contrast: 2 icons
+- Cooking: 1 icons
+- Copy: 1 icons
+- Credit-card: 1 icons
+- Credit-card-2: 1 icons
+- Cruise ship: 1 icons
+- Cursor: 1 icons
+- Desk phone: 1 icons
+- Devices: 1 icons
+- Devices 2: 1 icons
+- Diamond: 1 icons
+- Display: 1 icons
+- Doc: 1 icons
+- Documentary: 1 icons
+- Door: 1 icons
+- Download: 2 icons
+- Drama: 1 icons
+- DVR: 1 icons
+- e-sim: 1 icons
+- Earbuds: 1 icons
+- Eightline-operation: 1 icons
+- Emergency-off: 1 icons
+- Emergency-on: 1 icons
+- English-Spanish: 1 icons
+- Ethernet: 1 icons
+- Excel: 1 icons
+- Exclamation-circle: 1 icons
+- exclamation-circle-filled: 1 icons
+- Exclamation-triangle: 1 icons
+- Exclamation-triangle-filled: 1 icons
+- Exit-full-screen: 2 icons
+- Export: 2 icons
+- External-speaker: 1 icons
+- Eye: 1 icons
+- Eye-off: 1 icons
+- Face ID: 1 icons
+- Fast-delivery: 1 icons
+- Feather: 1 icons
+- FF: 1 icons
+- FF-circle: 1 icons
+- FF-circle-filled: 1 icons
+- FF-ellipse: 1 icons
+- Fiber: 1 icons
+- File: 1 icons
+- Filter: 2 icons
+- Financial-security: 2 icons
+- Finger ID: 1 icons
+- First-aid: 5 icons
+- Folder: 1 icons
+- Fork-knife: 1 icons
+- Four-way-control: 2 icons
+- Fourline-operation: 1 icons
+- Full-cart: 1 icons
+- Full-screen: 2 icons
+- Gallery: 1 icons
+- Game-controller: 1 icons
+- Gaming-bundles: 1 icons
+- Gear: 2 icons
+- Gift: 1 icons
+- Global-security: 1 icons
+- Globe: 1 icons
+- Golf: 1 icons
+- Government: 1 icons
+- Grid: 2 icons
+- Hand truck: 1 icons
+- Handshake: 1 icons
+- Happy Face: 1 icons
+- HD: 1 icons
+- Headphones: 1 icons
+- Headset: 1 icons
+- Hearing: 1 icons
+- Heart: 1 icons
+- Heart-filled: 1 icons
+- Heart-rate: 5 icons
+- High-meter: 1 icons
+- History: 1 icons
+- Home: 1 icons
+- Home-phone: 1 icons
+- Home-security: 1 icons
+- Hospital: 1 icons
+- Hotspot: 1 icons
+- Icons: 3 icons
+- ID badge: 1 icons
+- Import: 2 icons
+- Inbox: 1 icons
+- Info-transfer: 1 icons
+- information-circle: 1 icons
+- information-circle-filled: 1 icons
+- Install: 1 icons
+- Internet: 1 icons
+- Jump-to-live: 1 icons
+- Keyboard: 1 icons
+- Keypad: 1 icons
+- Kids: 1 icons
+- Laptop: 1 icons
+- Letters-ABC: 1 icons
+- Lights-on: 1 icons
+- List: 1 icons
+- Live: 1 icons
+- Lock: 1 icons
+- Lock-off: 1 icons
+- Logitch: 1 icons
+- Luggage: 1 icons
+- Mail: 1 icons
+- Malicious actor: 1 icons
+- Map: 1 icons
+- Maximize-1: 1 icons
+- Maximize-2: 1 icons
+- Menu: 1 icons
+- Merge: 1 icons
+- Message-1: 1 icons
+- Message-2: 1 icons
+- Message-3: 1 icons
+- Message-4: 1 icons
+- Microphone: 1 icons
+- Microphone-off: 1 icons
+- Mid meter: 1 icons
+- Minimize-1: 1 icons
+- Minimize-2: 1 icons
+- Minus: 1 icons
+- Minus-circle: 2 icons
+- Minus-circle-filled: 1 icons
+- Mobile Tower: 1 icons
+- Mobile-security: 1 icons
+- Moon: 1 icons
+- More: 1 icons
+- More-circle: 1 icons
+- More-circle-filled: 1 icons
+- More-ellipse: 1 icons
+- More-ellipse-filled: 1 icons
+- More-ways-to-watch: 1 icons
+- Move-to-inbox: 1 icons
+- Move-to-up: 1 icons
+- Movies: 1 icons
+- Multi-screen: 1 icons
+- Music refresh: 1 icons
+- National-security: 1 icons
+- New: 1 icons
+- No-video: 1 icons
+- Not-available: 1 icons
+- Note: 1 icons
+- Numbers-123: 1 icons
+- Offer: 1 icons
+- Offers-2: 1 icons
+- Open-new: 1 icons
+- Padlock: 1 icons
+- Padlock-open: 1 icons
+- Pause: 3 icons
+- payments: 24 icons
+- PDF: 1 icons
+- Pencil: 1 icons
+- Person: 1 icons
+- Person-check: 1 icons
+- Person-circle: 1 icons
+- Person-group: 1 icons
+- Person-minus: 1 icons
+- Person-plus: 1 icons
+- Person-stars: 1 icons
+- Personal-delivery: 1 icons
+- Personal-security: 1 icons
+- Personalize: 1 icons
+- Phone: 1 icons
+- Phone plans: 1 icons
+- Phone update: 1 icons
+- phone-arrow-incoming: 1 icons
+- Phone-arrow-outgoing: 1 icons
+- Phone-case: 1 icons
+- Phone-connected: 1 icons
+- Phone-off: 1 icons
+- Phone-shield: 1 icons
+- Photo: 1 icons
+- Photo-gallery: 1 icons
+- PICTOGRAM: 263 icons
+- Piggy-bank: 1 icons
+- Pin: 1 icons
+- Pinpoint: 1 icons
+- Pinpoint-area: 1 icons
+- Play: 4 icons
+- Plug: 1 icons
+- plug-off: 1 icons
+- Plus: 1 icons
+- Plus-circle: 3 icons
+- Pop-out-player: 1 icons
+- Power: 2 icons
+- Power-off: 2 icons
+- Powerpoint: 1 icons
+- Preferences: 1 icons
+- Printer: 1 icons
+- QR-code: 1 icons
+- Quantum computing: 1 icons
+- Question-circle: 1 icons
+- Question-circle-filled: 1 icons
+- Quick-sync: 1 icons
+- Receiver: 1 icons
+- Receiver-wireless: 1 icons
+- Record-circle: 1 icons
+- Record-circle-filled: 1 icons
+- Record-ellipse: 1 icons
+- Record-series: 1 icons
+- Remote-generic: 1 icons
+- Repeat: 1 icons
+- Residential-gateway: 1 icons
+- Restart: 2 icons
+- Restart-circle: 1 icons
+- Restricted: 1 icons
+- Retail store: 1 icons
+- Reward-card: 1 icons
+- Rewind: 4 icons
+- Router: 1 icons
+- Sad Face: 1 icons
+- Satellite: 1 icons
+- Satellite-dish: 1 icons
+- Save: 1 icons
+- School: 1 icons
+- Screen-resolution: 1 icons
+- SD: 1 icons
+- Search: 1 icons
+- Share-1: 1 icons
+- Share-2: 1 icons
+- Shopping-bag: 1 icons
+- Shopping-cart: 1 icons
+- Shuffle: 1 icons
+- Sim-card: 1 icons
+- Skip-back: 3 icons
+- Skip-forward: 3 icons
+- Slow: 3 icons
+- Smart-call-blocker: 1 icons
+- Smartphone: 1 icons
+- Smartphone trade in: 1 icons
+- Smartwatch: 1 icons
+- Soccer: 1 icons
+- Speaker: 2 icons
+- Speaker-off: 2 icons
+- Sports: 1 icons
+- Star: 1 icons
+- Star-Circle: 1 icons
+- Star-filled: 1 icons
+- Star-half: 1 icons
+- Star-half-filled: 1 icons
+- Step-back: 1 icons
+- Step-back-15: 1 icons
+- Step-forward: 1 icons
+- Step-forward-15: 1 icons
+- Stop: 1 icons
+- Stop-filled: 1 icons
+- Sun: 1 icons
+- Sword: 1 icons
+- Sync: 1 icons
+- Tablet: 1 icons
+- Tag: 1 icons
+- Telepresence: 1 icons
+- Thermostat: 1 icons
+- Thumbs Down: 1 icons
+- Thumbs Up: 1 icons
+- Ticket: 1 icons
+- Timer: 1 icons
+- Total home: 1 icons
+- Touch: 1 icons
+- Trash: 1 icons
+- Tree: 1 icons
+- Trending-down: 1 icons
+- Trending-up: 1 icons
+- Trophy: 1 icons
+- Truck: 1 icons
+- TV: 1 icons
+- TV-satellite: 1 icons
+- Unarchive: 1 icons
+- Unauthenticated-user: 1 icons
+- United-states: 1 icons
+- Unlimited: 1 icons
+- Upload: 1 icons
+- Usage: 1 icons
+- Van: 1 icons
+- Verified: 1 icons
+- Veterans: 1 icons
+- Video-camera: 1 icons
+- Video-camera-off: 1 icons
+- Video-gallery: 1 icons
+- Virtual-call: 1 icons
+- Voice command: 1 icons
+- Voicemail: 1 icons
+- Volume-1: 1 icons
+- Volume-1-filled: 1 icons
+- Volume-2: 1 icons
+- Volume-2-filled: 1 icons
+- Volume-3: 1 icons
+- Volume-3-filled: 1 icons
+- VR Headset: 1 icons
+- VR Headset Remote: 1 icons
+- Watch-on-device: 1 icons
+- Website: 1 icons
+- Wheelchair: 1 icons
+- Wifi: 1 icons
+- Wifi-off: 1 icons
+- Wireless charger: 1 icons
+- Wireless speaker: 1 icons
+- Wireless-network: 1 icons
+- Wrench: 1 icons
+- Zoom-in: 1 icons
+- Zoom-out: 1 icons
+
+## Usage
+
+### Direct SVG
+Copy any SVG file from the `svg/` folder and use directly in your HTML/JSX.
+
+### React Component
+Import from the JSON data to create dynamic React components.
+
+## Colors
+Icons use `currentColor` by default. Apply color via CSS or inline styles.
+
+Generated on: 2026-03-23T12:32:56.641Z

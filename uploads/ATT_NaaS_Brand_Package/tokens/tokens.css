@@ -1,0 +1,446 @@
+:root {
+  /* Force light mode - ignore system preference */
+  color-scheme: light;
+
+  /* Focus ring */
+  --focus-ring: rgba(0, 87, 184, 0.15);
+
+  /* Font Family */
+  --font-family-base: 'ATT Aleck Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-heading: 'ATT Aleck Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* AT&T Flywheel Design System - Brand Colors (matched to Figma SDCI.fig) */
+  --color-att-blue: #009fdb; /* AT&T brand blue */
+  --color-functional-blue: #0074b3; /* Form focus, info states */
+  --color-cobalt-100: #e6f0fa; /* Ghost button backgrounds */
+  --color-cobalt-400: #3374cc; /* Mid cobalt */
+  --color-cobalt-600: #0057b8; /* PRIMARY interactive - buttons, links, active nav */
+  --color-cobalt-700: #00388f; /* Pressed/dark states */
+  --color-cobalt-800: #00235a; /* Darkest cobalt */
+
+  /* Brand blue ramp */
+  --color-brand-blue-50: #e6f6fd;
+  --color-brand-blue-100: #ccedfa;
+  --color-brand-blue-200: #99daf5;
+  --color-brand-blue-300: #66c8f0;
+  --color-brand-blue-400: #33b5eb;
+  --color-brand-blue-500: #009fdb; /* AT&T Blue */
+  --color-brand-blue-600: #0074b3; /* Functional Blue */
+  --color-brand-blue-700: #0057b8; /* Primary interactive (Figma default) */
+  --color-brand-blue-800: #00388f;
+  --color-brand-blue-900: #00235a;
+
+  /* Accent colors from Figma */
+  --color-purple: #af29bb; /* Visual Designer, secondary flows */
+  --color-green-accent: #2d7e24; /* API Configuration, success actions */
+  --color-info-blue: #0084ff; /* Info highlights */
+
+  /* AT&T Flywheel Design System - Gray Scale */
+  --color-gray-50: rgb(248 250 251); /* Lightest backgrounds */
+  --color-gray-100: rgb(248 250 251); /* Lightest backgrounds */
+  --color-gray-200: rgb(243 244 246); /* Subtle backgrounds */
+  --color-gray-300: rgb(220 223 227); /* Borders, dividers */
+  --color-gray-400: rgb(189 194 199); /* Disabled states */
+  --color-gray-500: rgb(135 140 148); /* Muted elements */
+  --color-gray-600: rgb(104 110 116); /* Secondary text */
+  --color-gray-700: rgb(69 75 82); /* Body text */
+  --color-gray-800: rgb(29 35 41); /* Dark text */
+  --color-gray-900: rgb(19 23 27); /* Headings */
+
+  /* AT&T Flywheel Design System - Semantic Colors (Figma-matched) */
+  --color-success: #2d7e24;
+  --color-success-light: #4aaf42;
+  --color-success-bg: rgb(98 208 45 / 0.15); /* 15% opacity green from Figma */
+  --color-warning: #ea712f;
+  --color-warning-light: #ff8f4d;
+  --color-warning-bg: rgb(249 124 0 / 0.15);
+  --color-error: #c70032;
+  --color-error-light: #ff5c73;
+  --color-info: #0074b3;
+  --color-info-bg: rgb(0 132 255 / 0.15);
+
+  /* AT&T Blue ramp */
+  --color-att-blue-000: #00abeb;
+  --color-att-blue-100: #66c8f0;
+  --color-att-blue-200: #99daf5;
+
+  /* Complementary Colors */
+  --color-complementary-green: #2d7e24;
+  --color-complementary-orange: #ea712f;
+  --color-complementary-purple: #af29bb;
+  --color-complementary-teal: #00a3a6;
+
+  /* Semantic Color Shades */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-500: #2d7e24;
+  --color-success-600: #2d7e24;
+  --color-success-700: #225f1b;
+
+  --color-warning-50: #fff7ed;
+  --color-warning-100: #ffedd5;
+  --color-warning-500: #ea712f;
+  --color-warning-600: #ea712f;
+  --color-warning-700: #bb5a26;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-500: #c70032;
+  --color-error-600: #c70032;
+  --color-error-700: #9f0028;
+
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-500: #0074b3;
+  --color-info-600: #0074b3;
+  --color-info-700: #005786;
+
+  /* Typography - Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Typography - Figma Scale (ATT Aleck Sans) */
+  /* Headings: -3% letter-spacing, bold 700 or medium 500 */
+  --font-h1: 700 3.5rem/4rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 56px/64px */
+  --font-h2: 700 3rem/3.5rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 48px/56px */
+  --font-h3: 700 2.5rem/3rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 40px/48px */
+  --font-h4: 700 2rem/2.5rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 32px/40px */
+  --font-h5: 700 1.5rem/2rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 24px/32px - BASE section heading */
+  --font-h6: 700 1rem/1.5rem 'ATT Aleck Sans', system-ui, sans-serif;      /* 16px/24px - subheadline */
+  --heading-letter-spacing: -0.03em; /* -3% */
+
+  /* Body: -3% letter-spacing, medium 500 */
+  --font-body-base: 500 0.875rem/1.25rem 'ATT Aleck Sans', system-ui, sans-serif;   /* 14px/20px */
+  --font-body-base-b: 700 0.875rem/1.25rem 'ATT Aleck Sans', system-ui, sans-serif; /* 14px/20px bold */
+  --font-body-s: 500 0.75rem/1rem 'ATT Aleck Sans', system-ui, sans-serif;          /* 12px/16px */
+  --font-body-xs: 500 0.625rem/1rem 'ATT Aleck Sans', system-ui, sans-serif;        /* 10px/16px */
+  --body-letter-spacing: -0.03em; /* -3% */
+
+  /* Tags: +4% letter-spacing, medium 500 */
+  --font-tag-s: 500 0.75rem/1rem 'ATT Aleck Sans', system-ui, sans-serif;           /* 12px/16px */
+  --font-tag-xs: 500 0.625rem/1rem 'ATT Aleck Sans', system-ui, sans-serif;         /* 10px/16px */
+  --tag-letter-spacing: 0.04em; /* +4% */
+
+  /* Generic size tokens (for Tailwind compatibility) */
+  --font-size-xs: 0.625rem;   /* 10px - bodyXS, tagXS */
+  --font-size-sm: 0.75rem;    /* 12px - bodyS, tagS */
+  --font-size-base: 0.875rem; /* 14px - bodyBase (DEFAULT) */
+  --font-size-lg: 1rem;       /* 16px - h6 */
+  --font-size-xl: 1.5rem;     /* 24px - h5 */
+  --font-size-2xl: 2rem;      /* 32px - h4 */
+  --font-size-3xl: 2.5rem;    /* 40px - h3 */
+  --font-size-4xl: 3rem;      /* 48px - h2 */
+  --font-size-5xl: 3.5rem;    /* 56px - h1 */
+
+  --line-height-none: 1;
+  --line-height-tight: 1.143;  /* 64/56, 56/48 */
+  --line-height-snug: 1.333;   /* 32/24, 20/14 approx */
+  --line-height-normal: 1.429; /* 20/14 */
+  --line-height-relaxed: 1.5;  /* 24/16 */
+  --line-height-loose: 2;
+
+  /* Spacing */
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-0-5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1-5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-2-5: 0.625rem;
+  --spacing-3: 0.75rem;
+  --spacing-3-5: 0.875rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-32: 8rem;
+  --spacing-40: 10rem;
+  --spacing-48: 12rem;
+  --spacing-64: 16rem;
+
+  /* Border Radius */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Z-index */
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-auto: auto;
+
+  /* Transitions */
+  --transition-all: all;
+  --transition-colors: background-color, border-color, color, fill, stroke;
+  --transition-opacity: opacity;
+  --transition-shadow: box-shadow;
+  --transition-transform: transform;
+
+  --transition-duration-75: 75ms;
+  --transition-duration-100: 100ms;
+  --transition-duration-150: 150ms;
+  --transition-duration-200: 200ms;
+  --transition-duration-300: 300ms;
+  --transition-duration-500: 500ms;
+  --transition-duration-700: 700ms;
+  --transition-duration-1000: 1000ms;
+
+  /* Easing */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* AT&T Flywheel Design System - Semantic Tokens (Light Mode) */
+:root {
+  /* Text Colors - Figma-matched */
+  --fw-text-heading: var(--color-gray-800);  /* #1d2329 - primary heading color in Figma */
+  --fw-text-body: var(--color-gray-700);     /* #454b52 */
+  --fw-text-bodyLight: var(--color-gray-600); /* #686e74 */
+  --fw-text-link: var(--color-cobalt-600);   /* #0057b8 - links match primary blue */
+  --fw-text-linkHover: var(--color-cobalt-700); /* #00388f */
+  --fw-text-linkPrimary: white;
+  --fw-text-disabled: var(--color-gray-500); /* #878c94 */
+  --fw-text-error: var(--color-error);
+  --fw-text-success: var(--color-success);
+  --fw-text-warning: var(--color-warning);
+  --fw-text-info: var(--color-functional-blue);
+
+  /* Background Colors - Figma-matched */
+  --fw-bg-base: #ffffff;
+  --fw-bg-wash: var(--color-gray-100);       /* #f8fafb - page background */
+  --fw-bg-neutral: var(--color-gray-200);    /* #f3f4f6 */
+  --fw-bg-accent: var(--color-att-blue-000);
+  --fw-bg-primary: var(--color-cobalt-600);  /* #0057b8 - PRIMARY button bg */
+  --fw-bg-ctaPrimary: var(--color-cobalt-600); /* #0057b8 */
+  --fw-bg-ctaPrimaryHover: var(--color-cobalt-700); /* #00388f */
+  --fw-bg-disabled: var(--color-gray-300);
+
+  /* Border Colors - Figma-matched */
+  --fw-border-primary: var(--color-gray-600);  /* #686e74 */
+  --fw-border-secondary: var(--color-gray-300); /* #dcdfe3 - most common border in Figma */
+  --fw-border-active: var(--color-cobalt-600); /* #0057b8 */
+  --fw-border-focus: var(--color-gray-800);
+  --fw-border-error: var(--color-error);
+
+  /* Shorthand aliases for forms */
+  --fw-border: var(--fw-border-primary);
+  --fw-active: var(--fw-border-active);
+  --focus-ring: rgba(0, 87, 184, 0.15);
+
+  /* Complementary colors */
+  --fw-purple-light: #f3e8ff;
+  --fw-purple: var(--color-complementary-purple);
+}
+
+/* Dark mode removed - always use light mode */
+
+/* Component-specific tokens */
+:root {
+  /* AT&T Flywheel Button Tokens - Figma-matched */
+  --button-primary-bg: var(--color-cobalt-600);  /* #0057b8 */
+  --button-primary-text: white;
+  --button-primary-hover: var(--color-cobalt-700); /* #00388f */
+  --button-primary-active: var(--color-cobalt-800);
+  --button-primary-focus-ring: var(--color-functional-blue);
+
+  --button-secondary-bg: white;
+  --button-secondary-text: var(--color-cobalt-600); /* #0057b8 */
+  --button-secondary-border: var(--color-cobalt-600); /* #0057b8 - Figma: outline buttons use cobalt border */
+  --button-secondary-hover: var(--color-cobalt-100); /* #e6f0fa */
+
+  --button-outline-bg: white;
+  --button-outline-text: var(--color-cobalt-600); /* #0057b8 - Figma: outline text is cobalt, NOT gray */
+  --button-outline-border: var(--color-cobalt-600); /* #0057b8 - Figma: outline border is cobalt, NOT gray */
+  --button-outline-hover: var(--color-cobalt-100); /* #e6f0fa */
+
+  /* AT&T Flywheel Form Tokens */
+  --input-border: var(--color-gray-300);
+  --input-focus-border: var(--color-functional-blue);
+  --input-focus-ring: var(--color-functional-blue);
+  --input-placeholder: var(--color-gray-400);
+  --input-text: var(--color-gray-700);
+  --input-disabled-bg: var(--color-gray-300);
+  --input-disabled-text: var(--color-gray-500);
+
+  /* AT&T Flywheel Navigation Tokens */
+  --nav-bg: white;
+  --nav-border: var(--color-gray-300);
+  --nav-text: var(--color-gray-600);
+  --nav-text-hover: var(--color-gray-700);
+  --nav-text-active: var(--color-cobalt-600); /* #0057b8 */
+  --nav-indicator: var(--color-cobalt-600);
+
+  /* Card */
+  --card-bg: white;
+  --card-border: var(--color-gray-300); /* #dcdfe3 - Figma: card stroke is gray-300 */
+  --card-shadow: var(--shadow-sm);
+  --card-hover-shadow: var(--shadow-md);
+  --card-header-bg: var(--color-gray-50);
+  --card-header-text: var(--color-gray-900);
+
+  /* Table */
+  --table-header-bg: var(--color-gray-50);
+  --table-header-text: var(--color-gray-800); /* #1d2329 - Figma: dark text, NOT muted gray */
+  --table-border: var(--color-gray-200);
+  --table-row-hover: var(--color-gray-50);
+  --table-row-selected: var(--color-brand-blue-50);
+
+  /* Status */
+  --status-active-bg: var(--color-success-100);
+  --status-active-text: var(--color-success-700);
+  --status-inactive-bg: var(--color-gray-100);
+  --status-inactive-text: var(--color-gray-800);
+  --status-warning-bg: var(--color-warning-100);
+  --status-warning-text: var(--color-warning-700);
+  --status-error-bg: var(--color-error-100);
+  --status-error-text: var(--color-error-700);
+}
+
+/* ── JS-driven visualization colors ──────────────────────────────────────
+   SVG fill/stroke and Recharts props take literal values from three TS
+   palettes (viz kit VIZ_HEX, features/_shared FW/SERIES/COMPARE, and the
+   network-designer nodeColors). Those constants now emit `var(--…, #light)`
+   so the same component renders both themes with zero JS branching. Light
+   values are byte-identical to the old literals — light mode cannot move.
+   Dark values are the palette agreed with the Figma-boards session
+   (tasks/dark-mode-and-fabric-animation-plan.md). */
+:root {
+  /* viz kit (VIZ_HEX) */
+  --viz-cobalt: #0057b8;
+  --viz-cobalt-soft: #7aa6d6;
+  --viz-green: #2d7e24;
+  --viz-slate: #94a3b8;
+  --viz-slate-ink: #475569;
+  --viz-slate-muted: #64748b;
+  --viz-ink: #1d2329;
+  --viz-ink-soft: #475569;
+  --viz-wash: #f8fafb;
+  --viz-line: #dcdfe3;
+  --viz-band: #eef4fb;
+  --viz-band-stroke: #c7ddf5;
+  --viz-sky-cursor: #009FDB;
+  --viz-ember: #b3541e; /* ungoverned/attention split — layer-home hero */
+  --viz-tooltip-bg: #ffffff; /* chart tooltip surface (ECharts) */
+  --viz-halo: #ffffff; /* text halo over ribbons — must match the card surface */
+
+  /* _shared chart palette (FW / SERIES / COMPARE) */
+  --chart-cobalt: #0057b8;
+  --chart-cobalt300: #3374cc;
+  --chart-cobalt-wash: #e6f0fa;
+  --chart-ink: #1d2329;
+  --chart-body: #454b52;
+  --chart-muted: #686e74;
+  --chart-line: #dcdfe3;
+  --chart-grid: #f3f4f6;
+  --chart-wash: #f8fafb;
+  --chart-success: #2d7e24;
+  --chart-success-wash: #e9f5e7;
+  --chart-warn: #475569;
+  --chart-warn-wash: #f8fafc;
+  --chart-danger: #b42318;
+  --chart-series-1: #0057b8;
+  --chart-series-2: #009e8e;
+  --chart-series-3: #7b61ff;
+  --chart-series-4: #c2426b;
+  --chart-series-5: #2aa0d8;
+  --chart-series-6: #3f8f3a;
+  --chart-series-7: #8a5bd6;
+  --chart-series-8: #5b6b7b;
+  --chart-series-9: #0e7490;
+  --chart-compare-controlled-wash: rgba(0, 87, 184, 0.10);
+  --chart-compare-public-wash: rgba(104, 110, 116, 0.10);
+
+  /* network-designer node tint backgrounds */
+  --nd-bg-default: #ffffff;
+  --nd-bg-fuchsia: #fdf4ff;
+  --nd-bg-amber: #fffbeb;
+  --nd-bg-cyan: #ecfeff;
+  --nd-bg-gray: #f9fafb;
+  --nd-bg-purple: #f5f3ff;
+  --nd-bg-blue: #eff6ff;
+  --nd-bg-teal: #f0fdfa;
+  --nd-dot-unconfigured: #d1d5db;
+  --nd-dot-inactive: #9ca3af;
+}
+
+html.dark {
+  --viz-cobalt: #3d8de0;
+  --viz-cobalt-soft: #5d87b8;
+  --viz-green: #4aaf42;
+  --viz-slate: #64748b;
+  --viz-slate-ink: #a8b5c4;
+  --viz-slate-muted: #7b8898;
+  --viz-ink: #f2f6fa;
+  --viz-ink-soft: #a8b5c4;
+  --viz-wash: #1a2431; /* text-halo color — must match the card surface (fw-base dark) */
+  --viz-line: #2f3d4d;
+  --viz-band: #14304e;
+  --viz-band-stroke: #2a5480;
+  --viz-ember: #e0793f;
+  --viz-tooltip-bg: #2e3d4e; /* overlay surface (matches dark.css tooltips) */
+  --viz-halo: #1a2431;
+  --viz-cobalt-lit: #58a6f0; /* dark-only: edges the fabric visibly carries */
+
+  --chart-cobalt: #3d8de0;
+  --chart-cobalt300: #6ea3e8;
+  --chart-cobalt-wash: #16324e;
+  --chart-ink: #f2f6fa;
+  --chart-body: #c5cfd9;
+  --chart-muted: #97a3b0;
+  --chart-line: #2f3d4d;
+  --chart-grid: #222e3c;
+  --chart-wash: #111821;
+  --chart-success: #6ecf63;
+  --chart-success-wash: #16351c;
+  --chart-warn: #a8b5c4;
+  --chart-warn-wash: #222e3c;
+  --chart-danger: #ff7a8f;
+  --chart-series-1: #58a6f0;
+  --chart-series-2: #2fc4b2;
+  --chart-series-3: #9d8bff;
+  --chart-series-4: #e06a8e;
+  --chart-series-5: #4fc0f0;
+  --chart-series-6: #5cb856;
+  --chart-series-7: #a97fe8;
+  --chart-series-8: #8b9bab;
+  --chart-series-9: #2fa8c8;
+  --chart-compare-controlled-wash: rgba(61, 141, 224, 0.16);
+  --chart-compare-public-wash: rgba(151, 163, 176, 0.12);
+
+  --nd-bg-default: #1a2431;
+  --nd-bg-fuchsia: #38173c;
+  --nd-bg-amber: #382a12;
+  --nd-bg-cyan: #123338;
+  --nd-bg-gray: #222e3c;
+  --nd-bg-purple: #281c48;
+  --nd-bg-blue: #162e46;
+  --nd-bg-teal: #12332e;
+  --nd-dot-unconfigured: #4e5e6f;
+  --nd-dot-inactive: #67737f;
+}
+
+/* Reduced-motion handling lives in src/index.css — the single authoritative
+   block. The variable-zeroing that used to sit here was folded into it. */

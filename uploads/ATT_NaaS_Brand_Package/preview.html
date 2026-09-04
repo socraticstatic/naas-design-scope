@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AT&T NaaS Brand Package preview</title>
+<style>
+  @font-face { font-family: 'ATT Aleck Sans'; src: url('fonts/ATTAleckSans_Regular.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'ATT Aleck Sans'; src: url('fonts/ATTAleckSans_Medium.woff2') format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'ATT Aleck Sans'; src: url('fonts/ATTAleckSans_Bold.woff2') format('woff2'); font-weight: 700; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'ATT Aleck Sans', Helvetica, Arial, sans-serif; letter-spacing: -0.03em; }
+  .half { padding: 32px 40px; }
+  .light { background: #ffffff; color: #13171b; }
+  .dark { background: #111821; color: #f2f6fa; }
+  h1 { font-size: 26px; line-height: 34px; margin: 0 0 4px; font-weight: 700; }
+  h2 { font-size: 18px; line-height: 26px; margin: 24px 0 12px; font-weight: 700; }
+  .kicker { font-size: 12px; line-height: 18px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; color: #686e74; margin: 0 0 8px; }
+  .dark .kicker { color: #97a3b0; }
+  .row { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 12px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; }
+  .cell img { width: 32px; height: 32px; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sw { width: 96px; height: 56px; border-radius: 8px; display: flex; align-items: flex-end; padding: 6px; font-size: 11px; }
+  .card { border-radius: 16px; padding: 16px; border: 1px solid #dcdfe3; background: #fff; display: inline-flex; align-items: center; gap: 12px; }
+  .dark .card { background: #1a2431; border-color: #2f3d4d; }
+  .btn { display: inline-block; border-radius: 9999px; height: 36px; padding: 0 16px; line-height: 36px; font-weight: 500; font-size: 14px; }
+  .btn.primary { background: #0057b8; color: #fff; }
+  .dark .btn.primary { background: #0057b8; }
+  .btn.outline { border: 1px solid #0057b8; color: #0057b8; }
+  .dark .btn.outline { border-color: #66c8f0; color: #66c8f0; }
+</style>
+</head>
+<body>
+<section class="half light">
+  <p class="kicker">Light</p>
+  <h1>AT&T AI-grade network</h1>
+  <h2>Logo</h2>
+  <div class="row">
+    <img src="logo/att-lockup-light.svg" height="56" alt="lockup">
+    <img src="logo/att-wordmark-light.svg" height="40" alt="wordmark">
+    <img src="logo/att-globe.svg" height="56" alt="globe">
+    <div class="card"><img src="logo/att-globe.svg" height="40"><span style="font-weight:700;color:#009fdb">AT&T</span><span style="font-weight:700">AI-grade network</span></div>
+  </div>
+  <h2>Icons (icons/light, #13171b)</h2>
+  <div class="grid" id="light-icons"></div>
+  <h2>Palette</h2>
+  <div class="swatches">
+    <div class="sw" style="background:#009fdb;color:#fff">AT&T blue</div>
+    <div class="sw" style="background:#0057b8;color:#fff">Cobalt 600</div>
+    <div class="sw" style="background:#00388f;color:#fff">Cobalt 700</div>
+    <div class="sw" style="background:#e6f0fa;color:#13171b">Cobalt 100</div>
+    <div class="sw" style="background:#f8fafb;color:#13171b;border:1px solid #dcdfe3">Wash</div>
+    <div class="sw" style="background:#13171b;color:#fff">Gray 900</div>
+    <span class="btn primary">Choose this</span><span class="btn outline">Why we recommend this</span>
+  </div>
+</section>
+<section class="half dark">
+  <p class="kicker">Dark</p>
+  <h1>AT&T AI-grade network</h1>
+  <h2>Logo</h2>
+  <div class="row">
+    <img src="logo/att-lockup-dark.svg" height="56" alt="lockup">
+    <img src="logo/att-wordmark-dark.svg" height="40" alt="wordmark">
+    <img src="logo/att-globe.svg" height="56" alt="globe">
+    <div class="card"><img src="logo/att-globe.svg" height="40"><span style="font-weight:700;color:#009fdb">AT&T</span><span style="font-weight:700">AI-grade network</span></div>
+  </div>
+  <h2>Icons (icons/dark, #ffffff)</h2>
+  <div class="grid" id="dark-icons"></div>
+  <h2>Palette</h2>
+  <div class="swatches">
+    <div class="sw" style="background:#111821;color:#f2f6fa;border:1px solid #2f3d4d">Wash</div>
+    <div class="sw" style="background:#1a2431;color:#f2f6fa;border:1px solid #2f3d4d">Base (cards)</div>
+    <div class="sw" style="background:#222e3c;color:#f2f6fa">Neutral</div>
+    <div class="sw" style="background:#66c8f0;color:#111821">Link (Blue 100)</div>
+    <div class="sw" style="background:#0057b8;color:#fff">Cobalt 600</div>
+    <div class="sw" style="background:#16324e;color:#f2f6fa">Ghost</div>
+    <span class="btn primary">Choose this</span><span class="btn outline">Why we recommend this</span>
+  </div>
+</section>
+<script>
+  const names = ['router','cloud','gear','check-shield','bell','ethernet','firewall','apps','apis','person-group','bill','checklist','high-meter','search','home','download','person','lock','grid','cable','smart-meter','shopping-bag','pie-chart','question-circle','plus','hub'];
+  for (const mode of ['light','dark']) {
+    const g = document.getElementById(mode + '-icons');
+    for (const n of names) {
+      const c = document.createElement('div'); c.className = 'cell';
+      c.innerHTML = `<img src="icons/${mode}/att-${n}.svg" alt="${n}"><span>${n}</span>`;
+      g.appendChild(c);
+    }
+  }
+</script>
+</body>
+</html>
