@@ -43,6 +43,9 @@ a{color:#0057b8}a:hover{color:#00388f}
 .fx-row .bar span{display:block;height:16px;border-radius:2px;min-width:0}
 .fx-row .val{text-align:right;font-size:14px;line-height:20px;letter-spacing:-.4px;color:var(--text-heading);white-space:nowrap}
 .fx-row .val small{display:block;font-size:11px;line-height:14px;color:var(--text-light);font-weight:400}
+.fx-row.door{cursor:pointer;border-radius:8px}
+.fx-row.door:hover{background:var(--bg-wash)}
+.fx-row .val .door-l{display:block;font-size:11px;line-height:14px;font-weight:500}
 .fx-row.total{border-bottom:0;min-height:36px}
 .fx-row.total .lbl b,.fx-row.total .val{font-weight:700}
 .fx-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;line-height:16px;color:var(--text-light)}
@@ -439,7 +442,7 @@ a{color:#0057b8}a:hover{color:#00388f}
 <section data-screen-label="S1 Discover" style="animation:fadeIn .3s;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)">
   <div style="display:flex;align-items:center;gap:16px;min-height:40px;flex-wrap:wrap">
     <h1 style="margin:0;font-size:26px;line-height:34px;font-weight:700;color:var(--text-heading)">Discover</h1>
-    <sc-if value="{{ scanDone }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ invStats }}" as="k" hint-placeholder-count="5"><span style="display:inline-flex;align-items:baseline;gap:5px;height:28px;padding:0 10px;border-radius:9999px;background:var(--bg-base);border:1px solid var(--border-secondary);font-size:12px;color:var(--text-light);white-space:nowrap"><strong style="font-size:13px;color:var(--text-heading)">{{ k.v }}</strong>{{ k.l }}</span></sc-for></div></sc-if>
+    <sc-if value="{{ scanDone }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ invStats }}" as="k" hint-placeholder-count="5"><span style="display:inline-flex;align-items:baseline;gap:5px;height:28px;padding:0 10px;border-radius:9999px;background:var(--bg-base);border:1px solid var(--border-secondary);font-size:12px;color:var(--text-light);white-space:nowrap"><strong style="font-size:13px;color:var(--text-heading)">{{ k.v }}</strong>{{ k.l }}</span></sc-for><sc-if value="{{ newStrip.hasNew }}" hint-placeholder-val="{{ false }}"><button class="fx-badge new" onClick="{{ newStrip.toggle }}" aria-pressed="{{ newOnly }}" style="height:28px;padding:0 10px;font-size:12px;cursor:pointer">{{ newStrip.pill }}</button></sc-if></div></sc-if>
     <sc-if value="{{ scanning }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px;color:var(--text-light)">Scanning…</span></sc-if>
     <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button onClick="{{ goFront }}" style="height:32px;padding:0 12px;border:1px solid var(--cta);border-radius:9999px;background:transparent;color:var(--link);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-accent)">+ Add cloud</button>
@@ -1130,6 +1133,12 @@ a{color:#0057b8}a:hover{color:#00388f}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:12px">
       <sc-for list="{{ obTrends }}" as="k" hint-placeholder-count="6"><div style="padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px"><div style="font-size:11px;line-height:16px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);min-height:32px">{{ k.l }}</div><div style="display:flex;align-items:baseline;gap:4px;margin-top:6px"><span style="font-size:30px;line-height:36px;font-weight:700;color:var(--text-heading)">{{ k.v }}</span><sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:var(--text-body)">{{ k.u }}</span></sc-if></div><div style="display:grid;gap:2px;font-size:12px;line-height:16px"><span style="font-weight:700;color:{{ k.deltaTone }};white-space:nowrap">{{ k.arrow }} {{ k.delta }}</span><span style="color:var(--text-light);white-space:nowrap">{{ k.vs }}</span></div></div></sc-for>
     </div>
+    <sc-if value="{{ obStrip.has }}" hint-placeholder-val="{{ true }}">
+    <div class="fx-alert" role="status" aria-label="Act on it">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div style="display:grid;gap:2px;min-width:0"><div class="fx-alert-title">{{ obStrip.title }}</div><div class="fx-alert-text">{{ obStrip.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ obStrip.go }}">{{ obStrip.cta }}</button>
+    </div>
+    </sc-if>
     <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;overflow:hidden">
       <div role="tablist" style="display:flex;flex-wrap:wrap;gap:20px;padding:0 20px;border-bottom:1px solid var(--border-secondary)"><sc-for list="{{ obTabs }}" as="t" hint-placeholder-count="7"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.go }}" style="height:40px;padding:0 2px;border:0;border-bottom:2px solid {{ t.ub }};margin-bottom:-1px;background:transparent;color:{{ t.uc }};font-size:13px;font-weight:{{ t.uw }};cursor:pointer;white-space:nowrap">{{ t.label }}</button></sc-for></div>
       <div style="padding:20px 24px;display:grid;gap:12px">
@@ -1151,7 +1160,7 @@ a{color:#0057b8}a:hover{color:#00388f}
     <div class="fx-card" aria-label="Utilization by connection">
       <div class="fx-card-head"><div><h3 class="fx-card-title">Utilization by connection</h3><div class="fx-card-sub">{{ utilLine }}</div></div><button class="fx-btn" onClick="{{ goCapacity }}">Add capacity</button></div>
       <div class="fx-rows">
-        <sc-for list="{{ utilRows }}" as="u" hint-placeholder-count="3"><div class="fx-row"><span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span><span class="bar"><span style="width:{{ u.w }};background:{{ u.fill }}"></span></span><span class="val">{{ u.pctF }}<small>{{ u.v }} of {{ u.cap }} Gbps</small></span></div></sc-for>
+        <sc-for list="{{ utilRows }}" as="u" hint-placeholder-count="3"><div class="fx-row door" role="button" tabindex="0" onClick="{{ u.go }}" aria-label="{{ u.label }} {{ u.pctF }} · {{ u.doorLabel }}"><span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span><span class="bar"><span style="width:{{ u.w }};background:{{ u.fill }}"></span></span><span class="val">{{ u.pctF }}<small>{{ u.v }} of {{ u.cap }} Gbps</small><span class="door-l" style="color:{{ u.doorColor }}">{{ u.doorLabel }}</span></span></div></sc-for>
       </div>
       <div class="fx-legend"><span><i style="background:#009fdb"></i>In use</span><span><i style="background:#ff8500"></i>Over 80% · add a port before it saturates</span><span><i style="background:var(--bg-neutral)"></i>Headroom</span></div>
     </div>
@@ -1208,6 +1217,12 @@ a{color:#0057b8}a:hover{color:#00388f}
   <!-- Cost -->
   <sc-if value="{{ tCost }}" hint-placeholder-val="{{ false }}">
   <div style="display:grid;gap:32px">
+    <sc-if value="{{ costStrip.has }}" hint-placeholder-val="{{ true }}">
+    <div class="fx-alert" role="status" aria-label="Act on it">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div style="display:grid;gap:2px;min-width:0"><div class="fx-alert-title">{{ costStrip.title }}</div><div class="fx-alert-text">{{ costStrip.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ costStrip.go }}">{{ costStrip.cta }}</button>
+    </div>
+    </sc-if>
     <sc-if value="{{ hasArbitrage }}" hint-placeholder-val="{{ true }}">
     <div style="display:grid;gap:12px">
       <div style="display:flex;align-items:baseline;gap:12px"><h3 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">Arbitrage</h3><span style="font-size:13px;color:var(--text-body)"><strong style="color:var(--success)">{{ arbTotal }}/mo</strong> · {{ arbTotalYr }}/yr if every public region moves</span></div>
@@ -1255,16 +1270,17 @@ a{color:#0057b8}a:hover{color:#00388f}
         <div class="fx-card-head"><div><h3 class="fx-card-title">AT&amp;T charges</h3><div class="fx-card-sub">{{ attNote }}</div></div><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
         <div class="fx-rows">
           <sc-for list="{{ attCharges }}" as="ch" hint-placeholder-count="3"><div class="fx-row"><span class="lbl"><b>{{ ch.label }}</b><small>{{ ch.sub }}</small></span><span class="bar"><span style="width:{{ ch.w }};background:#009fdb"></span></span><span class="val">{{ ch.vF }}<small>per month</small></span></div></sc-for>
-          <div class="fx-row total"><span class="lbl"><b>Total to AT&amp;T</b></span><span class="bar"></span><span class="val">{{ attTotalF }}<small>per month</small></span></div>
+          <div class="fx-row total" style="min-height:32px"><span class="lbl"><b>Total to AT&amp;T</b></span><span class="bar"></span><span class="val">{{ attTotalF }}<small>per month</small></span></div>
+          <div class="fx-row total" style="min-height:32px;border-top:1px solid var(--border-secondary)"><span class="lbl"><b>{{ attNetLabel }}</b><small>egress savings minus these charges</small></span><span class="bar"></span><span class="val" style="color:{{ attNetColor }}">{{ attNetF }}<small>per month</small></span></div>
         </div>
         <div class="fx-legend"><span><i style="background:#009fdb"></i>Monthly charge at catalog price</span></div>
       </div>
       </sc-if>
       <sc-if value="{{ hasBySite }}" hint-placeholder-val="{{ true }}">
       <div class="fx-card" aria-label="Egress by site class">
-        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by site class</h3><div class="fx-card-sub">{{ bySiteNote }}</div></div><button class="fx-btn" onClick="{{ goSites }}">Drill sites</button></div>
+        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by site class · per month</h3><div class="fx-card-sub">{{ bySiteNote }}</div></div><button class="fx-btn" onClick="{{ goSites }}">Drill sites</button></div>
         <div class="fx-rows">
-          <sc-for list="{{ bySite }}" as="bs" hint-placeholder-count="4"><div class="fx-row"><span class="lbl"><b>{{ bs.label }}</b><small>{{ bs.sub }}</small></span><span class="bar"><span style="width:{{ bs.wFab }};background:var(--cta)"></span><span style="width:{{ bs.wPub }};background:#8a949c"></span></span><span class="val">{{ bs.todayF }}<small>per month</small></span></div></sc-for>
+          <sc-for list="{{ bySite }}" as="bs" hint-placeholder-count="4"><div class="fx-row door" role="button" tabindex="0" onClick="{{ bs.go }}" aria-label="Drill {{ bs.label }} in Explore 360"><span class="lbl"><b>{{ bs.label }}</b><small>{{ bs.sub }}</small></span><span class="bar"><span style="width:{{ bs.wFab }};background:var(--cta)"></span><span style="width:{{ bs.wPub }};background:#8a949c"></span></span><span class="val">{{ bs.todayF }}<span class="door-l" style="color:var(--link)">{{ bs.doorLabel }}</span></span></div></sc-for>
           <div class="fx-row total"><span class="lbl"><b>All sites</b></span><span class="bar"></span><span class="val">{{ bySiteTotalF }}<small>per month</small></span></div>
         </div>
         <div class="fx-legend"><span><i style="background:var(--cta)"></i>On the AT&amp;T fabric</span><span><i style="background:#8a949c"></i>Public first mile</span></div>

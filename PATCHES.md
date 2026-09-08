@@ -86,3 +86,16 @@ Badge pill). Styles are the `.fx-card / .fx-row / .fx-alert / .fx-badge /
 Also fixed here: a stray `</div>` at the end of the Explore 360 section
 (left by patch 7) closed `<main>` at parse time, so every later screen
 (Observe, Cost, Compose, Marketplace) rendered outside the content column.
+
+## 9. Enhance pass (2026-09-08, evening)
+- Every new row is a door: utilization rows open Andi scoped to the region,
+  or Compose prefilled for a region over 80% ("Add a port →"); site-class
+  rows on Cost open Explore 360 with that class expanded (`composeFor` and
+  the `go('s1', { siteOpen })` door in `naas-app.js`).
+- Act-on-it strips (Figma Alert) under the Observe KPIs (hot ports, blind
+  regions, one CTA) and above the Cost arbitrage (public first mile, the
+  largest attach on the table).
+- AT&T charges ends on "Net saving after charges" (egress savings minus
+  catalog charges).
+- Discover heading carries a "n new · window" pill that toggles the
+  new-only view.
