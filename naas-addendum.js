@@ -73,7 +73,9 @@ function circuitsFor(est, r, i, k, isAzure) {
 
 export function inventoryStats(est, clouds) {
   const vpcs = clouds.flatMap(c => c.regions.flatMap(r => r.vpcs));
-  return { sites: est.sitesCount || est.sites.length, clouds: clouds.length, regions: est.regions, workloads: est.workloads, attached: vpcs.filter(v => v.priv).length, exposed: vpcs.filter(v => v.tags.includes('internet-facing')).length };
+  const regions = clouds.reduce((a, c) => a + c.regions.length, 0);
+  const workloads = clouds.reduce((a, c) => a + c.wl, 0);
+  return { sites: est.sitesCount || est.sites.length, clouds: clouds.length, regions, workloads, attached: vpcs.filter(v => v.priv).length, exposed: vpcs.filter(v => v.tags.includes('internet-facing')).length };
 }
 
 // ---------- Observe ----------
@@ -118,13 +120,13 @@ export function observe(est, steered, inv) {
   const anomaly = est.regionsList.find(r => r.rel === 'warn');
   const kpis = [
     { key: 'thr', l: 'Throughput', v: total.toFixed(1), u: 'Gbps', e: '' },
-    { key: 'p95', l: 'P95 Latency', v: String(p95), u: 'ms', e: `across ${flows.length} flows` },
+    { key: 'p95', l: 'P95 Latency', v: String(p95), u: 'ms', e: '' },
     { key: 'loss', l: 'Packet Loss', v: loss.toFixed(2), u: '%', e: '' },
     { key: 'egr', l: 'Egress Spend', v: short(egressMo), u: '', e: '/mo' },
     { key: 'fab', l: 'On the AT&T fabric', v: String(covPct), u: '%', e: '' },
     { key: 'sav', l: 'Savings', v: short(savingsMo), u: '', e: '/mo' },
   ];
-  const verdict = total ? `${covPct}% of your traffic rides the AT&T-controlled path, saving ${short(savingsMo)}/mo. ${100 - covPct}% still crosses the public internet.` : 'No telemetry yet. It starts with the first attach.';
+  const verdict = total ? `${covPct}% of traffic on the AT&T fabric, saving ${short(savingsMo)}/mo. ${blind.length} ${blind.length === 1 ? 'region is' : 'regions are'} blind.` : 'No telemetry yet.';
   const coverage = `${covPct}% of traffic and ${Math.min(pathsCovered, est.regionsList.length)} of ${est.regionsList.length} paths are covered. ${blind.length} ${blind.length === 1 ? 'region is' : 'regions are'} blind.`;
   const subVerdict = { pub: pub.toFixed(1), total: total.toFixed(1), fab: fab.toFixed(1) };
   const briefing = total ? [
@@ -133,9 +135,11 @@ export function observe(est, steered, inv) {
     `Egress is running ${short(egressMo)}/mo with ${short(pubRate)} still on public rates; private-path savings hold at ${short(savingsMo)}/mo.`,
     anomaly ? `One anomaly in the window: a transit-congestion spike on ${anomaly.region}. It remains exposed to that event class until attached.` : 'No anomalies in the window.',
   ].join(' ') : '';
+  const denyN = est.regionsList.filter(r => r.priv).length * 7;
   const records = [
-    { key: 'pub', time: `${pubFlows.length * 10} records`, src: `${new Set(pubFlows.map(f => f.from)).size} distinct`, dst: `${new Set(pubFlows.map(f => f.to)).size} distinct`, proto: '3 distinct', bytes: (pub * 0.24).toFixed(1) + ' GB', path: 'public', action: 'allow' },
-    { key: 'prv', time: `${flows.filter(f => f.controlled).length * 10} records`, src: `${new Set(flows.filter(f => f.controlled).map(f => f.from)).size} distinct`, dst: `${new Set(flows.filter(f => f.controlled).map(f => f.to)).size} distinct`, proto: '3 distinct', bytes: (fab * 0.4).toFixed(1) + ' GB', path: 'private', action: 'allow' },
+    ...(denyN ? [{ key: 'deny', time: `${denyN} records`, src: 'tag PCI · 11 distinct', dst: 'public internet', proto: 'tcp/443', bytes: '0 GB', path: 'vSRX · inline', action: 'deny', deny: true }] : []),
+    { key: 'pub', time: `${pubFlows.length * 10} records`, src: `${[...new Set(pubFlows.map(f => 'tag ' + f.from))].slice(0, 2).join(', ')}`, dst: `${new Set(pubFlows.map(f => f.to)).size} distinct`, proto: '3 distinct', bytes: (pub * 0.24).toFixed(1) + ' GB', path: 'public', action: 'allow' },
+    { key: 'prv', time: `${flows.filter(f => f.controlled).length * 10} records`, src: `${[...new Set(flows.filter(f => f.controlled).map(f => 'tag ' + f.from))].slice(0, 2).join(', ')}`, dst: `${new Set(flows.filter(f => f.controlled).map(f => f.to)).size} distinct`, proto: '3 distinct', bytes: (fab * 0.4).toFixed(1) + ' GB', path: 'private', action: 'allow' },
   ].filter(r => !r.time.startsWith('0 '));
   const northSouth = pct(flows.filter(f => f.kind === 'App' && f.controlled).reduce((a, f) => a + f.gbps, 0), total || 1);
   const eastWest = pct(flows.filter(f => f.kind !== 'App' && f.controlled).reduce((a, f) => a + f.gbps, 0), flows.filter(f => f.kind !== 'App').reduce((a, f) => a + f.gbps, 0) || 1);
@@ -194,14 +198,15 @@ export function observeFindings(est, ob) {
 // ---------- Station track ----------
 export const STOPS = ['discover', 'connect', 'govern', 'observe', 'cost'];
 export const STOP_LABEL = { discover: 'Discover', connect: 'Connect', govern: 'Govern', observe: 'Observe', cost: 'Cost' };
-export function stopCta(stop, est, ob) {
+export function stopCta(stop, est, ob, onTable) {
   const pubWl = est.regionsList.filter(r => !r.priv).reduce((a, r) => a + r.wl, 0);
   return {
-    discover: { label: pubWl ? `Attach the ${pubWl} workloads still on the public internet` : 'Open Connect', next: 'connect' },
-    connect: { label: 'Author the policy that keeps it private', next: 'govern' },
-    govern: { label: 'Watch the policy run', next: 'observe' },
-    observe: { label: 'See the savings', next: 'cost' },
-    cost: { label: ob && ob.savingsMo ? `Compose the order that saves ${short(ob.savingsMo)}/mo` : 'Compose an order', next: 'compose' },
+    discover: { label: pubWl ? `Attach ${pubWl.toLocaleString('en-US')}` : 'Connect', next: 'connect' },
+    connect: { label: 'Govern', next: 'govern' },
+    govern: { label: 'Observe', next: 'observe' },
+    observe: { label: onTable ? `Cost · ${short(onTable)}/mo` : 'Cost', next: 'cost' },
+    cost: { label: onTable ? `Compose · ${short(onTable)}/mo` : 'Compose', next: 'compose' },
+    observe_: null,
   }[stop];
 }
 

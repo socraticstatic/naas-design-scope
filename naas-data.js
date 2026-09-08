@@ -230,6 +230,7 @@ export const CATALOG = [
   P('ase', 'transport', 'private', 'ASE (Switched Ethernet)', 'AT&T', 'Switched Ethernet into the fabric.', 1300, ['First mile', 'Private'], null, { popular: 63 }),
   P('mobility', 'transport', 'internet', 'Mobility and wireless first mile', 'AT&T', '5G and FirstNet first mile for sites without fiber.', 120, ['First mile', 'Wireless'], null, { popular: 61 }),
   P('inet-fm', 'transport', 'internet', 'Internet first mile', 'AT&T', 'Any internet circuit into the fabric over IPSec.', 0, ['First mile'], null, { popular: 65 }),
+  P('oracle-fc', 'cloud', 'private', 'Oracle FastConnect via NetBond', 'AT&T', 'Private on-ramp to Oracle Cloud regions over NetBond.', 1800, ['On-ramp', 'Oracle'], null, { popular: 45 }),
 ];
 
 export const VISION = [
