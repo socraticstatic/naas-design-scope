@@ -28,6 +28,45 @@ a{color:#0057b8}a:hover{color:#00388f}
 .fx-search{display:inline-flex;align-items:center;gap:8px;height:36px;width:272px;max-width:100%;padding:8px 12px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);box-shadow:0 1px 1px rgba(0,0,0,.1)}
 .fx-search input{border:0;background:transparent;font:inherit;font-size:14px;color:var(--text-heading);min-width:0;flex:1;outline:none}
 .fx-btn{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);box-shadow:0 1px 1px rgba(0,0,0,.1);color:var(--text-heading);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+/* Figma AI Fabric UI cards (table-horizontal-bar-chart 114:1719, Alert 114:2625, Badge). */
+.fx-card{padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px;min-width:0;align-content:start}
+.fx-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.fx-card-title{margin:0;font-size:16px;line-height:24px;font-weight:500;color:var(--text-heading)}
+.fx-card-sub{font-size:12px;line-height:16px;color:var(--text-light);margin-top:2px}
+.fx-rows{display:grid}
+.fx-row{display:grid;grid-template-columns:minmax(150px,40%) minmax(0,1fr) 84px;align-items:center;min-height:40px;border-bottom:1px solid var(--border-secondary)}
+.fx-row>*{padding:0 8px;min-width:0}
+.fx-row .lbl{display:grid;gap:1px;padding:6px 8px}
+.fx-row .lbl b{font-size:14px;line-height:18px;letter-spacing:-.4px;font-weight:500;color:var(--text-heading);text-wrap:balance}
+.fx-row .lbl small{font-size:11px;line-height:14px;color:var(--text-light)}
+.fx-row .bar{display:flex;align-items:center;gap:1px;height:16px}
+.fx-row .bar span{display:block;height:16px;border-radius:2px;min-width:0}
+.fx-row .val{text-align:right;font-size:14px;line-height:20px;letter-spacing:-.4px;color:var(--text-heading);white-space:nowrap}
+.fx-row .val small{display:block;font-size:11px;line-height:14px;color:var(--text-light);font-weight:400}
+.fx-row.total{border-bottom:0;min-height:36px}
+.fx-row.total .lbl b,.fx-row.total .val{font-weight:700}
+.fx-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;line-height:16px;color:var(--text-light)}
+.fx-legend span{display:inline-flex;align-items:center;gap:8px}
+.fx-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;flex:none}
+.fx-badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);font-size:11px;line-height:16px;font-weight:500;color:var(--text-body);white-space:nowrap;vertical-align:middle}
+.fx-badge.att{border-color:#009fdb;color:#0074b3;background:rgba(0,159,219,.08)}
+.fx-badge.new{border-color:#91dc00;color:#3d6b00;background:rgba(145,220,0,.14)}
+[data-theme="dark"] .fx-badge.att{color:#5ec8f0}[data-theme="dark"] .fx-badge.new{color:#b6ec4c}
+.fx-alert{display:flex;align-items:center;gap:16px;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px}
+.fx-alert-body{flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:20px;letter-spacing:-.4px}
+.fx-alert-icon{width:16px;height:16px;margin-top:2px;flex:none;background:url('brand/lights-on.svg') center / contain no-repeat}
+[data-theme="dark"] .fx-alert-icon{filter:invert(1)}
+.fx-alert-title{font-weight:500;color:var(--text-heading)}
+.fx-alert-text{color:var(--text-light);text-wrap:pretty}
+.fx-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.fx-chip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:9999px;border:1px solid var(--border-secondary);background:var(--bg-wash);color:var(--text-body);font-size:11px;line-height:18px;font-weight:500;white-space:nowrap}
+.fx-chip.auto{background:transparent;border-style:dashed;color:var(--text-light)}
+.fx-chip.user{background:var(--bg-accent);border-color:transparent;color:var(--link);padding-right:2px}
+.fx-chip.add{background:transparent;border-style:dashed;color:var(--link);cursor:pointer}
+.fx-chip.add:hover{background:var(--bg-accent);border-color:var(--link)}
+.fx-chip-x{width:16px;height:16px;border:0;border-radius:9999px;background:transparent;color:inherit;font-size:13px;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.fx-chip-x:hover{background:rgba(0,0,0,.08)}
+.fx-label-input{height:24px;padding:0 8px;border:1px solid var(--border-active);border-radius:6px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:12px;min-width:150px;outline:none}
 .fx-btn:hover{border-color:var(--border-active)}
 .fx-spacer{margin-left:auto}
 @keyframes bandBreathe{0%{opacity:.7}50%{opacity:1}100%{opacity:.92}}
@@ -429,6 +468,11 @@ a{color:#0057b8}a:hover{color:#00388f}
   <sc-if value="{{ notEmpty }}" hint-placeholder-val="{{ true }}">
   <div style="display:grid;gap:16px;animation:fadeIn .3s">
     <sc-if value="{{ anyFacetOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeFacets }}" style="position:fixed;inset:0;z-index:10"></div></sc-if>
+    <div class="fx-alert" role="status" aria-label="Discovered in the window">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div style="display:grid;gap:2px;min-width:0"><div class="fx-alert-title">{{ newStrip.title }}</div><div class="fx-alert-text">{{ newStrip.text }}</div></div></div>
+      <label class="fx-filter"><span class="fx-label">Since</span><select class="fx-select" value="{{ rangeValue }}" onChange="{{ setRange }}" aria-label="Discovery window"><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option></select></label>
+      <sc-if value="{{ newStrip.hasNew }}" hint-placeholder-val="{{ true }}"><button class="fx-btn" onClick="{{ newStrip.toggle }}">{{ newStrip.cta }}</button></sc-if>
+    </div>
     <div aria-label="Estate scope" class="fx-filters" style="position:relative;z-index:15">
       <sc-for list="{{ facets }}" as="f" hint-placeholder-count="5">
         <div class="fx-filter">
@@ -508,11 +552,17 @@ a{color:#0057b8}a:hover{color:#00388f}
                           <button onClick="{{ vp.toggle }}" aria-expanded="{{ vp.open }}" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--text-heading);white-space:normal;text-wrap:pretty">
                             <span aria-hidden="true" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text-light);transform:{{ vp.caret }};transition:transform .15s;font-size:14px">›</span>
                             <span style="height:28px;padding:0 8px;border-radius:6px;background:var(--bg-base);border:1px solid var(--border-secondary);font-size:11px;line-height:26px;font-weight:700;color:var(--text-body);flex:none">{{ vp.label }}</span>
-                            <span style="display:grid;gap:4px;flex:1;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:700">{{ vp.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ vp.purpose }} · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">{{ vp.cidr }}</code></span><span style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ vp.tags }}" as="tg" hint-placeholder-count="0"><span style="height:20px;padding:0 8px;border-radius:9999px;background:{{ tg.bg }};border:1px solid {{ tg.border }};color:{{ tg.color }};font-size:11px;line-height:18px;font-weight:500;white-space:nowrap">{{ tg.label }}</span></sc-for></span></span>
+                            <span style="display:grid;gap:4px;flex:1;min-width:0"><span style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><span style="font-size:14px;line-height:20px;font-weight:700">{{ vp.name }}</span><span class="{{ vp.mgmtClass }}">{{ vp.mgmt }}</span><sc-if value="{{ vp.isNew }}" hint-placeholder-val="{{ false }}"><span class="fx-badge new">New · {{ vp.sinceLabel }}</span></sc-if></span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ vp.purpose }} · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">{{ vp.cidr }}</code></span><span style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ vp.tags }}" as="tg" hint-placeholder-count="0"><span style="height:20px;padding:0 8px;border-radius:9999px;background:{{ tg.bg }};border:1px solid {{ tg.border }};color:{{ tg.color }};font-size:11px;line-height:18px;font-weight:500;white-space:nowrap">{{ tg.label }}</span></sc-for></span></span>
                           </button>
                           <button onClick="{{ vp.ctl }}" style="height:26px;padding:0 10px;border:0;border-radius:9999px;background:transparent;color:var(--link);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap">Control →</button>
                           <span style="display:flex;gap:8px"><sc-for list="{{ vp.stats }}" as="stt" hint-placeholder-count="2"><span style="display:grid;gap:2px;min-width:64px;padding:6px 10px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;border-radius:8px;text-align:center"><span style="font-size:14px;line-height:18px;font-weight:700;color:var(--text-heading)">{{ stt.v }}</span><span style="font-size:10px;line-height:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-light)">{{ stt.l }}</span></span></sc-for></span>
                           <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:9999px;background:{{ vp.badge.bg }};border:1px solid {{ vp.badge.border }};color:{{ vp.badge.color }};font-size:12px;font-weight:500;white-space:nowrap"><span aria-hidden="true" style="width:7px;height:7px;border-radius:9999px;background:currentColor"></span>{{ vp.badge.label }}</span>
+                        </div>
+                        <div class="fx-chips" style="padding:0 16px 12px 52px">
+                          <sc-for list="{{ vp.autos }}" as="al" hint-placeholder-count="0"><span class="fx-chip auto">{{ al.label }}</span></sc-for>
+                          <sc-for list="{{ vp.labels }}" as="ul" hint-placeholder-count="0"><span class="fx-chip user">{{ ul.label }}<button class="fx-chip-x" onClick="{{ ul.remove }}" aria-label="Remove label {{ ul.label }}">×</button></span></sc-for>
+                          <sc-if value="{{ vp.labelOpen }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:4px;align-items:center"><input class="fx-label-input" value="{{ vp.labelDraft }}" onChange="{{ vp.setLabelDraft }}" onKeyDown="{{ vp.labelKey }}" placeholder="Label, e.g. finance-invoices" aria-label="New label for {{ vp.name }}"></input><button class="fx-btn" style="height:24px;padding:0 8px;font-size:11px" onClick="{{ vp.commitLabel }}">Add</button><button class="fx-chip-x" onClick="{{ vp.cancelLabel }}" aria-label="Cancel">×</button></span></sc-if>
+                          <sc-if value="{{ vp.labelClosed }}" hint-placeholder-val="{{ true }}"><button class="fx-chip add" onClick="{{ vp.startLabel }}">+ Label</button></sc-if>
                         </div>
                         <sc-if value="{{ vp.open }}" hint-placeholder-val="{{ false }}">
                         <div style="margin:0 12px 12px 12px;padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:20px;animation:fadeIn .2s">
@@ -652,7 +702,7 @@ a{color:#0057b8}a:hover{color:#00388f}
                   <sc-for list="{{ mt.sites }}" as="st" hint-placeholder-count="0">
                     <div style="display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:8px 12px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:10px">
                       <span aria-hidden="true" title="{{ st.dotLabel }}" style="width:8px;height:8px;border-radius:9999px;background:{{ st.dot }}"></span>
-                      <span style="display:grid;gap:1px;min-width:0"><span style="font-size:13px;line-height:18px;font-weight:700;color:var(--text-heading);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0">{{ st.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.sub }}</span></span>
+                      <span style="display:grid;gap:1px;min-width:0"><span style="font-size:13px;line-height:18px;font-weight:700;color:var(--text-heading);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0">{{ st.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.sub }}</span><span class="fx-chips" style="margin-top:4px"><sc-if value="{{ st.isNew }}" hint-placeholder-val="{{ false }}"><span class="fx-badge new" style="height:20px">New · {{ st.sinceLabel }}</span></sc-if><sc-for list="{{ st.autos }}" as="al" hint-placeholder-count="0"><span class="fx-chip auto">{{ al.label }}</span></sc-for><sc-for list="{{ st.labels }}" as="ul" hint-placeholder-count="0"><span class="fx-chip user">{{ ul.label }}<button class="fx-chip-x" onClick="{{ ul.remove }}" aria-label="Remove label {{ ul.label }}">×</button></span></sc-for><sc-if value="{{ st.labelOpen }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:4px;align-items:center"><input class="fx-label-input" value="{{ st.labelDraft }}" onChange="{{ st.setLabelDraft }}" onKeyDown="{{ st.labelKey }}" placeholder="Label, e.g. drive-through" aria-label="New label for {{ st.name }}"></input><button class="fx-btn" style="height:24px;padding:0 8px;font-size:11px" onClick="{{ st.commitLabel }}">Add</button><button class="fx-chip-x" onClick="{{ st.cancelLabel }}" aria-label="Cancel">×</button></span></sc-if><sc-if value="{{ st.labelClosed }}" hint-placeholder-val="{{ true }}"><button class="fx-chip add" onClick="{{ st.startLabel }}">+ Label</button></sc-if></span></span>
                       <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;background:{{ st.pill.bg }};border:1px solid {{ st.pill.border }};color:{{ st.pill.color }};font-size:11px;font-weight:600">{{ st.pill.label }}</span>
                       <span style="display:flex;gap:6px"><button onClick="{{ st.ctl }}" style="height:24px;padding:0 8px;border:0;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Control →</button><button onClick="{{ st.askAndi }}" style="height:24px;padding:0 8px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);color:var(--text-heading);font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">Ask Andi</button></span>
                     </div>
@@ -665,7 +715,7 @@ a{color:#0057b8}a:hover{color:#00388f}
             <sc-for list="{{ sl.named }}" as="st" hint-placeholder-count="0">
               <div style="display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 16px;background:var(--bg-wash);border:1px solid var(--border-secondary);border-radius:12px">
                 <span aria-hidden="true" title="{{ st.dotLabel }}" style="width:8px;height:8px;border-radius:9999px;background:{{ st.dot }}"></span>
-                <span style="display:grid;gap:1px;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading)">{{ st.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.sub }}</span></span>
+                <span style="display:grid;gap:1px;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading)">{{ st.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ st.sub }}</span><span class="fx-chips" style="margin-top:4px"><sc-if value="{{ st.isNew }}" hint-placeholder-val="{{ false }}"><span class="fx-badge new" style="height:20px">New · {{ st.sinceLabel }}</span></sc-if><sc-for list="{{ st.autos }}" as="al" hint-placeholder-count="0"><span class="fx-chip auto">{{ al.label }}</span></sc-for><sc-for list="{{ st.labels }}" as="ul" hint-placeholder-count="0"><span class="fx-chip user">{{ ul.label }}<button class="fx-chip-x" onClick="{{ ul.remove }}" aria-label="Remove label {{ ul.label }}">×</button></span></sc-for><sc-if value="{{ st.labelOpen }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:4px;align-items:center"><input class="fx-label-input" value="{{ st.labelDraft }}" onChange="{{ st.setLabelDraft }}" onKeyDown="{{ st.labelKey }}" placeholder="Label, e.g. drive-through" aria-label="New label for {{ st.name }}"></input><button class="fx-btn" style="height:24px;padding:0 8px;font-size:11px" onClick="{{ st.commitLabel }}">Add</button><button class="fx-chip-x" onClick="{{ st.cancelLabel }}" aria-label="Cancel">×</button></span></sc-if><sc-if value="{{ st.labelClosed }}" hint-placeholder-val="{{ true }}"><button class="fx-chip add" onClick="{{ st.startLabel }}">+ Label</button></sc-if></span></span>
                 <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:9999px;background:{{ st.pill.bg }};border:1px solid {{ st.pill.border }};color:{{ st.pill.color }};font-size:11px;font-weight:600">{{ st.pill.label }}</span>
                 <span style="display:flex;gap:6px"><button onClick="{{ st.ctl }}" style="height:26px;padding:0 10px;border:0;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Control →</button><button onClick="{{ st.askAndi }}" style="height:26px;padding:0 10px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);color:var(--text-heading);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap">Ask Andi →</button></span>
               </div>
@@ -674,7 +724,6 @@ a{color:#0057b8}a:hover{color:#00388f}
           </sc-if>
         </div>
       </sc-for>
-    </div>
     </div>
     <div style="display:flex;justify-content:flex-end"><button onClick="{{ goFloor }}" style="height:36px;padding:0 16px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--cta-hover)">Home</button></div>
   </div>
@@ -880,11 +929,17 @@ a{color:#0057b8}a:hover{color:#00388f}
                           <button onClick="{{ vp.toggle }}" aria-expanded="{{ vp.open }}" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--text-heading);white-space:normal;text-wrap:pretty">
                             <span aria-hidden="true" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text-light);transform:{{ vp.caret }};transition:transform .15s;font-size:14px">›</span>
                             <span style="height:28px;padding:0 8px;border-radius:6px;background:var(--bg-base);border:1px solid var(--border-secondary);font-size:11px;line-height:26px;font-weight:700;color:var(--text-body);flex:none">{{ vp.label }}</span>
-                            <span style="display:grid;gap:4px;flex:1;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:700">{{ vp.name }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ vp.purpose }} · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">{{ vp.cidr }}</code></span><span style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ vp.tags }}" as="tg" hint-placeholder-count="0"><span style="height:20px;padding:0 8px;border-radius:9999px;background:{{ tg.bg }};border:1px solid {{ tg.border }};color:{{ tg.color }};font-size:11px;line-height:18px;font-weight:500;white-space:nowrap">{{ tg.label }}</span></sc-for></span></span>
+                            <span style="display:grid;gap:4px;flex:1;min-width:0"><span style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><span style="font-size:14px;line-height:20px;font-weight:700">{{ vp.name }}</span><span class="{{ vp.mgmtClass }}">{{ vp.mgmt }}</span><sc-if value="{{ vp.isNew }}" hint-placeholder-val="{{ false }}"><span class="fx-badge new">New · {{ vp.sinceLabel }}</span></sc-if></span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ vp.purpose }} · <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">{{ vp.cidr }}</code></span><span style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ vp.tags }}" as="tg" hint-placeholder-count="0"><span style="height:20px;padding:0 8px;border-radius:9999px;background:{{ tg.bg }};border:1px solid {{ tg.border }};color:{{ tg.color }};font-size:11px;line-height:18px;font-weight:500;white-space:nowrap">{{ tg.label }}</span></sc-for></span></span>
                           </button>
                           <button onClick="{{ vp.ctl }}" style="height:26px;padding:0 10px;border:0;border-radius:9999px;background:transparent;color:var(--link);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap">Control →</button>
                           <span style="display:flex;gap:8px"><sc-for list="{{ vp.stats }}" as="stt" hint-placeholder-count="2"><span style="display:grid;gap:2px;min-width:64px;padding:6px 10px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;border-radius:8px;text-align:center"><span style="font-size:14px;line-height:18px;font-weight:700;color:var(--text-heading)">{{ stt.v }}</span><span style="font-size:10px;line-height:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-light)">{{ stt.l }}</span></span></sc-for></span>
                           <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:9999px;background:{{ vp.badge.bg }};border:1px solid {{ vp.badge.border }};color:{{ vp.badge.color }};font-size:12px;font-weight:500;white-space:nowrap"><span aria-hidden="true" style="width:7px;height:7px;border-radius:9999px;background:currentColor"></span>{{ vp.badge.label }}</span>
+                        </div>
+                        <div class="fx-chips" style="padding:0 16px 12px 52px">
+                          <sc-for list="{{ vp.autos }}" as="al" hint-placeholder-count="0"><span class="fx-chip auto">{{ al.label }}</span></sc-for>
+                          <sc-for list="{{ vp.labels }}" as="ul" hint-placeholder-count="0"><span class="fx-chip user">{{ ul.label }}<button class="fx-chip-x" onClick="{{ ul.remove }}" aria-label="Remove label {{ ul.label }}">×</button></span></sc-for>
+                          <sc-if value="{{ vp.labelOpen }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:4px;align-items:center"><input class="fx-label-input" value="{{ vp.labelDraft }}" onChange="{{ vp.setLabelDraft }}" onKeyDown="{{ vp.labelKey }}" placeholder="Label, e.g. finance-invoices" aria-label="New label for {{ vp.name }}"></input><button class="fx-btn" style="height:24px;padding:0 8px;font-size:11px" onClick="{{ vp.commitLabel }}">Add</button><button class="fx-chip-x" onClick="{{ vp.cancelLabel }}" aria-label="Cancel">×</button></span></sc-if>
+                          <sc-if value="{{ vp.labelClosed }}" hint-placeholder-val="{{ true }}"><button class="fx-chip add" onClick="{{ vp.startLabel }}">+ Label</button></sc-if>
                         </div>
                         <sc-if value="{{ vp.open }}" hint-placeholder-val="{{ false }}">
                         <div style="margin:0 12px 12px 12px;padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:20px;animation:fadeIn .2s">
@@ -1072,8 +1127,8 @@ a{color:#0057b8}a:hover{color:#00388f}
     <sc-if value="{{ hasKpis }}" hint-placeholder-val="{{ true }}">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label></div>
     <div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">{{ obScopeLabel }}</h3><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);font-weight:500"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>Live</span></div>
-    <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px">
-      <sc-for list="{{ obTrends }}" as="k" hint-placeholder-count="6"><div style="padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px"><div style="font-size:11px;line-height:16px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);min-height:32px">{{ k.l }}</div><div style="display:flex;align-items:baseline;gap:4px;margin-top:6px"><span style="font-size:30px;line-height:36px;font-weight:700;color:var(--text-heading)">{{ k.v }}</span><sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:var(--text-body)">{{ k.u }}</span></sc-if></div><div style="display:flex;align-items:baseline;gap:6px;font-size:12px"><span style="font-weight:700;color:{{ k.deltaTone }}">{{ k.arrow }} {{ k.delta }}</span><span style="color:var(--text-light)">{{ k.vs }}</span></div></div></sc-for>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:12px">
+      <sc-for list="{{ obTrends }}" as="k" hint-placeholder-count="6"><div style="padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px"><div style="font-size:11px;line-height:16px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);min-height:32px">{{ k.l }}</div><div style="display:flex;align-items:baseline;gap:4px;margin-top:6px"><span style="font-size:30px;line-height:36px;font-weight:700;color:var(--text-heading)">{{ k.v }}</span><sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:var(--text-body)">{{ k.u }}</span></sc-if></div><div style="display:grid;gap:2px;font-size:12px;line-height:16px"><span style="font-weight:700;color:{{ k.deltaTone }};white-space:nowrap">{{ k.arrow }} {{ k.delta }}</span><span style="color:var(--text-light);white-space:nowrap">{{ k.vs }}</span></div></div></sc-for>
     </div>
     <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;overflow:hidden">
       <div role="tablist" style="display:flex;flex-wrap:wrap;gap:20px;padding:0 20px;border-bottom:1px solid var(--border-secondary)"><sc-for list="{{ obTabs }}" as="t" hint-placeholder-count="7"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.go }}" style="height:40px;padding:0 2px;border:0;border-bottom:2px solid {{ t.ub }};margin-bottom:-1px;background:transparent;color:{{ t.uc }};font-size:13px;font-weight:{{ t.uw }};cursor:pointer;white-space:nowrap">{{ t.label }}</button></sc-for></div>
@@ -1092,6 +1147,15 @@ a{color:#0057b8}a:hover{color:#00388f}
         </sc-if>
       </div>
     </div>
+    <sc-if value="{{ hasUtil }}" hint-placeholder-val="{{ true }}">
+    <div class="fx-card" aria-label="Utilization by connection">
+      <div class="fx-card-head"><div><h3 class="fx-card-title">Utilization by connection</h3><div class="fx-card-sub">{{ utilLine }}</div></div><button class="fx-btn" onClick="{{ goCapacity }}">Add capacity</button></div>
+      <div class="fx-rows">
+        <sc-for list="{{ utilRows }}" as="u" hint-placeholder-count="3"><div class="fx-row"><span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span><span class="bar"><span style="width:{{ u.w }};background:{{ u.fill }}"></span></span><span class="val">{{ u.pctF }}<small>{{ u.v }} of {{ u.cap }} Gbps</small></span></div></sc-for>
+      </div>
+      <div class="fx-legend"><span><i style="background:#009fdb"></i>In use</span><span><i style="background:#ff8500"></i>Over 80% · add a port before it saturates</span><span><i style="background:var(--bg-neutral)"></i>Headroom</span></div>
+    </div>
+    </sc-if>
     <sc-if value="{{ hasAnomalies }}" hint-placeholder-val="{{ true }}">
     <div style="display:grid;gap:12px">
       <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Anomalies</h3>
@@ -1184,6 +1248,28 @@ a{color:#0057b8}a:hover{color:#00388f}
         <div style="background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;overflow:hidden"><div style="padding:12px 16px;border-bottom:1px solid var(--border-secondary);font-weight:700;color:var(--text-heading);font-size:14px">Committed vs metered on-ramps</div><sc-for list="{{ commitments }}" as="cm" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border-secondary);font-size:12px"><div><div style="font-weight:700;color:var(--text-heading)">{{ cm.region }}</div><div style="color:var(--text-light)">{{ cm.gbF }} GB/mo · metered {{ cm.metered }} · committed {{ cm.committed }}</div></div><div style="font-weight:700;color:{{ cm.tone }};text-align:right;white-space:nowrap">{{ cm.short }}</div></div></sc-for></div>
         </sc-if>
       </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start">
+      <sc-if value="{{ hasAttCharges }}" hint-placeholder-val="{{ true }}">
+      <div class="fx-card" aria-label="AT&amp;T charges">
+        <div class="fx-card-head"><div><h3 class="fx-card-title">AT&amp;T charges</h3><div class="fx-card-sub">{{ attNote }}</div></div><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
+        <div class="fx-rows">
+          <sc-for list="{{ attCharges }}" as="ch" hint-placeholder-count="3"><div class="fx-row"><span class="lbl"><b>{{ ch.label }}</b><small>{{ ch.sub }}</small></span><span class="bar"><span style="width:{{ ch.w }};background:#009fdb"></span></span><span class="val">{{ ch.vF }}<small>per month</small></span></div></sc-for>
+          <div class="fx-row total"><span class="lbl"><b>Total to AT&amp;T</b></span><span class="bar"></span><span class="val">{{ attTotalF }}<small>per month</small></span></div>
+        </div>
+        <div class="fx-legend"><span><i style="background:#009fdb"></i>Monthly charge at catalog price</span></div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ hasBySite }}" hint-placeholder-val="{{ true }}">
+      <div class="fx-card" aria-label="Egress by site class">
+        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by site class</h3><div class="fx-card-sub">{{ bySiteNote }}</div></div><button class="fx-btn" onClick="{{ goSites }}">Drill sites</button></div>
+        <div class="fx-rows">
+          <sc-for list="{{ bySite }}" as="bs" hint-placeholder-count="4"><div class="fx-row"><span class="lbl"><b>{{ bs.label }}</b><small>{{ bs.sub }}</small></span><span class="bar"><span style="width:{{ bs.wFab }};background:var(--cta)"></span><span style="width:{{ bs.wPub }};background:#8a949c"></span></span><span class="val">{{ bs.todayF }}<small>per month</small></span></div></sc-for>
+          <div class="fx-row total"><span class="lbl"><b>All sites</b></span><span class="bar"></span><span class="val">{{ bySiteTotalF }}<small>per month</small></span></div>
+        </div>
+        <div class="fx-legend"><span><i style="background:var(--cta)"></i>On the AT&amp;T fabric</span><span><i style="background:#8a949c"></i>Public first mile</span></div>
+      </div>
+      </sc-if>
     </div>
     <div style="display:grid;gap:12px">
       <h3 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">Savings by bucket</h3>

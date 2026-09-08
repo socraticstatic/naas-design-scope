@@ -41,7 +41,7 @@ function region(r, i, est) {
     const priv = r.priv && k < 2;
     const azList = Array.from({ length: azs[k] }, (_, a) => r.region + 'abc'[a]);
     const WL_TYPES = { pub: [['alb', 'Load balancer'], ['api', 'API gateway'], ['web', 'Web tier'], ['nat', 'Bastion']], prv: [['app', 'App server'], ['db', 'Database'], ['cache', 'Cache'], ['worker', 'Batch worker'], ['gpu', 'GPU inference'], ['queue', 'Message queue']] };
-    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 6) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; return { id: `${cidr}-${w}`, name: `${t[0]}-${'abc'[a]}${w + 1}`, type: t[1], ip: cidr.replace(/0\/24$/, String(10 + w * 7)), tag, exposed: pub && w < 2 }; });
+    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 6) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${w + 1}`, type: t[1], ip: cidr.replace(/0\/24$/, String(10 + w * 7)), tag, exposed: pub && w < 2 }; });
     const subnets = azList.flatMap((az, a) => {
       const pubN = Math.max(2, Math.round(wl / azs[k] * 0.4)), prvN = Math.max(2, Math.round(wl / azs[k] * 0.6));
       const pubC = `${cidrBase}.${a}.0/24`, prvC = `${cidrBase}.${10 + a}.0/24`;
@@ -58,7 +58,7 @@ function region(r, i, est) {
       ...(priv ? [{ name: isAzure ? 'ergw-prod' : 'dxgw-prod', type: isAzure ? 'ExpressRoute gateway' : 'Direct Connect gateway', kind: 'dx', lock: true, circuits: circuitsFor(est, r, i, k, isAzure) }] : []),
       { name: isAzure ? 'vwan-hub' : 'tgw-attach', type: isAzure ? 'Virtual WAN hub' : 'Transit gateway', kind: 'tgw' },
     ];
-    return { id: `${pfx}-${i}-${k}`, label: pfx.toUpperCase(), name: `${pfx}-${suffix[k]}`, purpose: purposes[k], cidr: `${cidrBase}.0.0/16`, tags: tagsFor(k), azs: azs[k], subnets, routeTables, gws, wl, priv, violations: routeTables.reduce((a, t) => a + t.viol, 0) };
+    return { id: `${pfx}-${i}-${k}`, managed: priv && k === 0, since: (i * 47 + k * 31 + 3) % 240, label: pfx.toUpperCase(), name: `${pfx}-${suffix[k]}`, purpose: purposes[k], cidr: `${cidrBase}.0.0/16`, tags: tagsFor(k), azs: azs[k], subnets, routeTables, gws, wl, priv, violations: routeTables.reduce((a, t) => a + t.viol, 0) };
   });
   return { id: 'r-' + r.cloud + '-' + r.region, cloud: r.cloud, region: r.region, city: CITY[r.region] || '', priv: r.priv, ramp: r.ramp, latency: r.priv ? r.fab : r.pub, wl: r.wl, rel: r.rel, tags: r.tags, vpcs, subnets: vpcs.reduce((a, v) => a + v.subnets.length, 0) };
 }
@@ -118,6 +118,11 @@ export function observe(est, steered, inv) {
   const blind = est.regionsList.filter(r => !r.priv && !steered.some(s => s.startsWith(`f-${est.regionsList.indexOf(r)}-`)));
   const worst = pubFlows.slice().sort((a, b) => b.latency - a.latency)[0];
   const anomaly = est.regionsList.find(r => r.rel === 'warn');
+  // Utilization: attached regions each ride a 10 Gbps NetBond port; fabric traffic against that capacity.
+  const attachedRs = est.regionsList.filter(r => r.priv);
+  const utilRows = attachedRs.map(r => { const i = est.regionsList.indexOf(r); const gbps = +flows.filter(f => f.id.startsWith(`f-${i}-`) && f.controlled).reduce((a, f) => a + f.gbps, 0).toFixed(1); const ports = Math.max(1, Math.ceil(gbps / 10 / (0.55 + ((i * 7) % 4) * 0.1))); const cap = ports * 10; return { id: 'u-' + r.region, region: r.region, cloud: r.cloud, ramp: r.ramp || 'NetBond', gbps, ports, cap, pct: Math.min(99, Math.round(gbps / cap * 100)) }; }).sort((a, b) => b.pct - a.pct);
+  const capTotal = utilRows.reduce((a, u) => a + u.cap, 0);
+  const util = capTotal ? Math.min(99, Math.round(utilRows.reduce((a, u) => a + u.gbps, 0) / capTotal * 100)) : 0;
   const kpis = [
     { key: 'thr', l: 'Throughput', v: total.toFixed(1), u: 'Gbps', e: '' },
     { key: 'p95', l: 'P95 Latency', v: String(p95), u: 'ms', e: '' },
@@ -125,6 +130,7 @@ export function observe(est, steered, inv) {
     { key: 'egr', l: 'Egress Spend', v: short(egressMo), u: '', e: '/mo' },
     { key: 'fab', l: 'On the AT&T fabric', v: String(covPct), u: '%', e: '' },
     { key: 'sav', l: 'Savings', v: short(savingsMo), u: '', e: '/mo' },
+    ...(capTotal ? [{ key: 'util', l: 'Utilization', v: String(util), u: '%', e: 'of attached capacity' }] : []),
   ];
   const verdict = total ? `${covPct}% of traffic on the AT&T fabric, saving ${short(savingsMo)}/mo. ${blind.length} ${blind.length === 1 ? 'region is' : 'regions are'} blind.` : 'No telemetry yet.';
   const coverage = `${covPct}% of traffic and ${Math.min(pathsCovered, est.regionsList.length)} of ${est.regionsList.length} paths are covered. ${blind.length} ${blind.length === 1 ? 'region is' : 'regions are'} blind.`;
@@ -145,7 +151,7 @@ export function observe(est, steered, inv) {
   const eastWest = pct(flows.filter(f => f.kind !== 'App' && f.controlled).reduce((a, f) => a + f.gbps, 0), flows.filter(f => f.kind !== 'App').reduce((a, f) => a + f.gbps, 0) || 1);
   const pathsSummary = `${covPct}% under AT&T control · North-south ${northSouth}% · East-west ${eastWest}% · ${steered.length} steered`;
   const sankey = sankey3(est, flows);
-  return { flows: flows.sort((a, b) => (a.kind === b.kind ? b.gbps - a.gbps : a.kind === 'App' ? -1 : 1)), total, fab, pub, covPct, kpis, verdict, coverage, subVerdict, briefing, records, pathsSummary, sankey, savingsMo, egressMo, blind, worst, pathsCovered };
+  return { flows: flows.sort((a, b) => (a.kind === b.kind ? b.gbps - a.gbps : a.kind === 'App' ? -1 : 1)), total, fab, pub, covPct, kpis, verdict, coverage, subVerdict, briefing, records, pathsSummary, sankey, savingsMo, egressMo, blind, worst, pathsCovered, util, capGbps: capTotal, utilRows };
 }
 
 function short(n) { return n >= 1000 ? '$' + (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : '$' + n; }

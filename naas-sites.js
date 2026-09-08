@@ -17,6 +17,9 @@ const STREETS = {
   Charlotte: ['Tryon St', 'Trade St', 'Independence Blvd', 'South Blvd', 'Providence Rd', 'Park Rd'],
   Nashville: ['Broadway', 'West End Ave', 'Charlotte Ave', 'Nolensville Pike', 'Gallatin Pike', '8th Ave'],
 };
+const STATE = { Dallas: 'TX', Houston: 'TX', Austin: 'TX', Atlanta: 'GA', Chicago: 'IL', Phoenix: 'AZ', Denver: 'CO', Seattle: 'WA', Miami: 'FL', Charlotte: 'NC', Nashville: 'TN', Ashburn: 'VA', 'San Jose': 'CA', Frankfurt: 'DE', Singapore: 'SG' };
+/** Two-letter state (or country) for a metro; the auto-label on every site row. */
+export const stateOf = (metro) => STATE[metro] || '';
 const HOSTS = ['7-Eleven', 'Kroger', 'Walgreens', 'QuikTrip', 'Costco', 'Target', 'CVS', 'H-E-B'];
 
 const CLASS = {
@@ -57,7 +60,8 @@ function siteRow(cls, metro, i, priv) {
   const streets = STREETS[metro] || STREETS.Dallas;
   const address = `${host}${1200 + i * 310} ${streets[i % streets.length]}`;
   const ms = priv ? 4 + (i * 5) % 12 : 28 + (i * 9) % 40;
-  return { id, name: id, address, metro, priv, ms, exposed: !priv };
+  const since = (i * 71 + (METROS.indexOf(metro) + 2) * 37) % 365; // days since discovery, seeded
+  return { id, name: id, address, metro, priv, ms, exposed: !priv, since };
 }
 
 /**
@@ -90,7 +94,7 @@ export function siteTree(est) {
         };
       }));
     } else {
-      children = g.named.map((st, i) => ({ kind: 'site', key: `${g.cls}:${st.name}`, ...siteRow(g.cls, st.metro, i, !!st.priv), name: st.name, address: `${st.metro} · ${st.access}`, metro: st.metro, priv: !!st.priv }));
+      children = g.named.map((st, i) => ({ kind: 'site', key: `${g.cls}:${st.name}`, ...siteRow(g.cls, st.metro, i, !!st.priv), name: st.name, address: `${st.metro} · ${st.access}`, metro: st.metro, priv: !!st.priv, since: (st.idx * 97 + 17) % 365 }));
     }
     // The class rolls up from what it contains, so a class badge can never contradict its metros.
     const onFabric = children.reduce((a, ch) => a + (ch.kind === 'metro' ? ch.onFabric : (ch.priv ? 1 : 0)), 0);
