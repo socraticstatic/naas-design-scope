@@ -638,7 +638,11 @@ function shellVals(s, set, go, est, c) {
     { key: 'transport', name: 'Transport and access', tag: 'The physical layer', icon: iconDir + '/cable.svg', kicker: 'Vision', vision: true, go: (e) => e.preventDefault(), href: '#' },
   ].map(l => ({ ...l, cur: l.key === curLayer, notCur: l.key !== curLayer, bg: l.key === curLayer ? 'var(--bg-accent)' : 'transparent', hover: l.vision ? 'transparent' : l.key === curLayer ? 'var(--bg-accent)' : 'var(--bg-neutral)', op: l.vision ? 0.4 : 1, cursor: l.vision ? 'default' : 'pointer' }));
   // ---- AI Fabric UI shell (Figma page 113:51): pills, grouped rail, page title, range.
-  const railCollapsed = !!s.railCollapsed;
+  // The export was drawn for a 64px rail beside a docked Andi at 1440. The
+  // 240px rail starts expanded only from 1600, where both fit beside the
+  // screens as drawn; the toggle overrides at any width.
+  const wideRail = typeof window !== 'undefined' ? window.innerWidth >= 1600 : true;
+  const railCollapsed = s.railCollapsed === undefined ? !wideRail : !!s.railCollapsed;
   const pillBg = (on) => on ? 'var(--bg-accent)' : 'transparent';
   const pills = [
     { key: 'ai', label: 'AI Fabric', current: top === 'ai', go: goTab('s3', { layer: 'ai', tab: 'connect' }) },
@@ -694,9 +698,11 @@ function shellVals(s, set, go, est, c) {
   const rangeValue = s.obWindow || '30d';
   const setRange = (e) => set({ obWindow: e.target.value });
   const bellLabel = s.submitted ? 'Pending actions: 1 order in flight' : 'Notifications';
+  // Screens that carry their own heading (Discover, Compose, Recommend, Review, Marketplace) keep it; the frame's title row stands only where there is none.
+  const showPageTitle = !['s1', 's4', 's5', 's6', 's7', 's8'].includes(s.screen);
   return {
     demoOpen: !!s.demoOpen, toggleDemo: () => set({ demoOpen: !s.demoOpen }),
-    pills, railGroups, pageTitle, rangeValue, setRange, bellLabel, railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
+    pills, railGroups, pageTitle, showPageTitle, rangeValue, setRange, bellLabel, railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s2', { layer: 'cloud' }),
     showRail, toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '0' : '0 12px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (railCollapsed ? '64px' : '240px') + ' minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
