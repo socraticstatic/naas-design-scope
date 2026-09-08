@@ -29,3 +29,15 @@ were pushed under the Andi panel.
 ## 4. By tag group line (`naas-app.js` tagTree)
 Pluralises regions and clouds and counts workloads from the detailed VPC
 objects, which carry their count under a different field than the rollups.
+
+## 5. AI Fabric UI shell (2026-09-08, afternoon)
+Header, rail and page header row replaced with the shell drawn on the Figma
+"AI Fabric UI" page (main-header 114:2195, nav items 114:2210): stacked
+wordmark (still opens the layer elevator), two flat product pills, outlined
+Ask Andi with the real Andi symbol (`brand/andi-symbol.svg`), bell, LG avatar
+(the demo controls live behind it), a 240px grouped text rail (Connect ·
+Observe · Deep dive · Govern for NaaS; their AI Fabric groups), and a title
+row with "Updated" and the date range above every screen. Everything below
+the title row is the export's own content. Props live in `shellVals` in
+`naas-app.js` (`pills`, `railGroups`, `pageTitle`, `rangeValue`, `setRange`).
+Andi docks at 1440 and wider, floats below.

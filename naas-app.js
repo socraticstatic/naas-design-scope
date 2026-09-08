@@ -612,7 +612,7 @@ function wizardVals(s, est, cp, setC, outcome, constraint, summary, set, c) {
 function shellVals(s, set, go, est, c) {
   const dark = s.theme === 'dark';
   const iconDir = dark ? 'brand/icons-dark' : 'brand/icons-light', iconLink = dark ? 'brand/icons-linkdark' : 'brand/icons-link';
-  const wide = typeof window !== 'undefined' ? window.innerWidth >= 1280 : true;
+  const wide = typeof window !== 'undefined' ? window.innerWidth >= 1440 : true;
   const andiOpen = s.andiOpen === undefined ? wide : !!s.andiOpen;
   const andiDocked = andiOpen && wide;
   const inAi = s.screen === 's3' && s.layer === 'ai';
@@ -628,7 +628,7 @@ function shellVals(s, set, go, est, c) {
   const railCur = s.screen === 's2' || s.screen === 's0' ? 'Home' : s.screen === 's3' ? ({ connect: 'Connect', govern: 'Govern', observe: 'Observe', cost: 'Cost' }[s.tab] || 'Home') : ['s4', 's5', 's6'].includes(s.screen) ? 'Connect' : null;
   const dataLayer = top === 'ai' ? 'ai' : 'cloud';
   const rail = [['Home', 'home', () => (top === 'ai' ? go('s3', { layer: 'ai', tab: 'connect' }) : go('s2', { layer: 'cloud' }))()], ['Connect', 'cable', go('s3', { layer: dataLayer, tab: 'connect' })], ['Govern', 'check-shield', go('s3', { layer: dataLayer, tab: 'govern' })], ['Observe', 'high-meter', go('s3', { layer: dataLayer, tab: 'observe' })], ['Cost', 'bill', go('s3', { layer: dataLayer, tab: 'cost' })]].map(([label, ic, fn]) => ({ key: label, label, done: label === 'Home' ? false : label === 'Connect' ? est.stage !== 'empty' : label === 'Govern' ? est.policiesEnforced > 0 : label === 'Observe' ? (est.observedPct || 0) > 0 : label === 'Cost' ? !!(s.steered && s.steered.length) : false, go: () => { fn(); set(close); }, cur: railCur === label, icon: (railCur === label ? iconLink : iconDir) + '/' + ic + '.svg', bg: railCur === label ? 'var(--bg-accent)' : 'transparent', color: railCur === label ? 'var(--link)' : 'var(--text-heading)', weight: railCur === label ? 700 : 500 }));
-  const showRail = top !== 'discover';
+  const showRail = true;
   const storeCur = s.screen === 's7' || s.screen === 's8';
   const curLayer = top === 'ai' ? 'ai' : top === 'net' ? 'net' : null;
   const elevator = [
@@ -637,11 +637,68 @@ function shellVals(s, set, go, est, c) {
     { key: 'net', name: 'Network services', tag: 'The services layer', icon: iconDir + '/hub.svg', kicker: '', go: (e) => { e.preventDefault(); go('s2', { layer: 'cloud' })(); set(close); }, href: '#' },
     { key: 'transport', name: 'Transport and access', tag: 'The physical layer', icon: iconDir + '/cable.svg', kicker: 'Vision', vision: true, go: (e) => e.preventDefault(), href: '#' },
   ].map(l => ({ ...l, cur: l.key === curLayer, notCur: l.key !== curLayer, bg: l.key === curLayer ? 'var(--bg-accent)' : 'transparent', hover: l.vision ? 'transparent' : l.key === curLayer ? 'var(--bg-accent)' : 'var(--bg-neutral)', op: l.vision ? 0.4 : 1, cursor: l.vision ? 'default' : 'pointer' }));
+  // ---- AI Fabric UI shell (Figma page 113:51): pills, grouped rail, page title, range.
+  const pillBg = (on) => on ? 'var(--bg-accent)' : 'transparent';
+  const pills = [
+    { key: 'ai', label: 'AI Fabric', current: top === 'ai', go: goTab('s3', { layer: 'ai', tab: 'connect' }) },
+    { key: 'net', label: 'NaaS', current: top !== 'ai', go: goTab('s2', { layer: 'cloud' }) },
+  ].map(p => ({ ...p, bg: pillBg(p.current) }));
+  const obTabNow = s.obTab || 'flow';
+  const logsTab = (typeof OBTABS !== 'undefined' && OBTABS.includes('records')) ? 'records' : 'control';
+  const item = (label, ic, fn, cur) => ({ key: label, label, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)' });
+  const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
+  const composeCur = ['s4', 's5', 's6'].includes(s.screen);
+  const railGroups = top === 'ai'
+    ? [
+        { key: 'home', hasTitle: false, title: '', items: [item('AI Fabric', 'home', go('s3', { layer: 'ai', tab: 'connect' }), onS3('ai', 'connect'))] },
+        { key: 'observe', hasTitle: true, title: 'Observe', items: [
+          item('Security & Governance', 'check-shield', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sec' }); }, onS3('ai', 'observe') && s.aiTab === 'sec'),
+          item('Cost', 'bill', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sav' }); }, onS3('ai', 'observe') && s.aiTab === 'sav'),
+          item('Performance & Reliability', 'high-meter', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'perf' }); }, onS3('ai', 'observe') && (s.aiTab || 'perf') === 'perf'),
+        ] },
+        { key: 'deep', hasTitle: true, title: 'Deep dive', items: [
+          item('Explore 360', 'search', go('s1'), s.screen === 's1'),
+          item('Logs', 'checklist', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sec' }); }, false),
+        ] },
+        { key: 'govern', hasTitle: true, title: 'Govern', items: [
+          item('Policies', 'check-shield', go('s3', { layer: 'ai', tab: 'govern' }), onS3('ai', 'govern')),
+          item('Budget & Limits', 'person-group', go('s3', { layer: 'ai', tab: 'cost' }), onS3('ai', 'cost')),
+          item('Providers', 'apis', go('s3', { layer: 'ai', tab: 'connect' }), false),
+          item('Virtual Keys', 'lock', go('s3', { layer: 'ai', tab: 'connect' }), false),
+        ] },
+      ]
+    : [
+        { key: 'home', hasTitle: false, title: '', items: [item('NaaS', 'home', go('s2', { layer: 'cloud' }), s.screen === 's2' || s.screen === 's0')] },
+        { key: 'connect', hasTitle: true, title: 'Connect', items: [
+          item('Fabric', 'cable', go('s3', { layer: 'cloud', tab: 'connect' }), onS3('cloud', 'connect')),
+          item('Compose', 'plus', () => c.setState({ screen: 's4', compose: s.compose && s.compose.outcome ? s.compose : prefillCompose(est) }), composeCur),
+          item('Marketplace', 'shopping-bag', go('s7'), storeCur),
+        ] },
+        { key: 'observe', hasTitle: true, title: 'Observe', items: [
+          item('Traffic', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obTab: 'flow' }); }, onS3('cloud', 'observe') && obTabNow !== logsTab),
+          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost')),
+        ] },
+        { key: 'deep', hasTitle: true, title: 'Deep dive', items: [
+          item('Explore 360', 'search', go('s1'), s.screen === 's1'),
+          item('Logs', 'checklist', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obTab: logsTab }); }, onS3('cloud', 'observe') && obTabNow === logsTab),
+        ] },
+        { key: 'govern', hasTitle: true, title: 'Govern', items: [
+          item('Policies', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern')),
+        ] },
+      ];
+  const aiTitle = { sec: 'Security & Governance', sav: 'Cost', perf: 'Performance & Reliability' }[s.aiTab || 'perf'];
+  const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
+    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Fabric', govern: 'Policies', observe: (obTabNow === logsTab ? 'Logs' : 'Traffic'), cost: 'Cost' }[s.tab] || 'NaaS'))
+    : 'NaaS';
+  const rangeValue = s.obWindow || '30d';
+  const setRange = (e) => set({ obWindow: e.target.value });
+  const bellLabel = s.submitted ? 'Pending actions: 1 order in flight' : 'Notifications';
   return {
     demoOpen: !!s.demoOpen, toggleDemo: () => set({ demoOpen: !s.demoOpen }),
+    pills, railGroups, pageTitle, rangeValue, setRange, bellLabel, iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s2', { layer: 'cloud' }),
-    showRail, railWide: !!s.railWide, toggleRail: () => set({ railWide: !s.railWide }), railW: s.railWide ? '200px' : '64px', railPad: s.railWide ? '20px 12px' : '20px 12px', railJustify: s.railWide ? 'flex-start' : 'center', railBtnPad: s.railWide ? '0 10px' : '0', railToggleLabel: s.railWide ? '‹' : '›', shellCols: (showRail ? (s.railWide ? '200px' : '64px') + ' minmax(0,1fr)' : 'minmax(0,1fr)') + (andiDocked ? ' 340px' : ''), andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
+    showRail, railWide: !!s.railWide, toggleRail: () => set({ railWide: !s.railWide }), railW: s.railWide ? '200px' : '64px', railPad: s.railWide ? '20px 12px' : '20px 12px', railJustify: s.railWide ? 'flex-start' : 'center', railBtnPad: s.railWide ? '0 10px' : '0', railToggleLabel: s.railWide ? '‹' : '›', shellCols: '240px minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
   };
 }
 

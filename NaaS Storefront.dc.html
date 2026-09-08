@@ -30,7 +30,8 @@ a{color:#0057b8}a:hover{color:#00388f}
 
 <header style="position:relative;z-index:30;display:flex;align-items:center;gap:32px;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
   <div style="position:relative">
-    <button onClick="{{ toggleElevator }}" aria-haspopup="menu" aria-expanded="{{ elevatorOpen }}" style="display:grid;gap:0;padding:4px 8px;margin:0 -8px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;white-space:nowrap" style-focus="outline:2px solid var(--border-active);outline-offset:1px"><span style="display:flex;align-items:center;gap:6px;font-size:16px;line-height:20px;font-weight:700;letter-spacing:-.03em;white-space:nowrap"><span style="color:#009fdb">AT&amp;T</span><span style="color:var(--text-heading)">AI-grade network</span><span aria-hidden="true" style="display:inline-block;font-size:12px;color:var(--text-light);font-weight:400;transform:{{ chevronRot }};transition:transform .15s">⌄</span></span><span style="font-size:11px;line-height:14px;color:var(--text-light)">{{ layerSubtitle }}</span></button>
+    <!-- Stacked wordmark, as drawn on the AI Fabric UI main-header. The click still opens the layer elevator. -->
+    <button onClick="{{ toggleElevator }}" aria-haspopup="menu" aria-expanded="{{ elevatorOpen }}" aria-label="AT&amp;T AI-grade network, layers" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:4px 8px;margin:0 -8px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;white-space:nowrap;line-height:1" style-focus="outline:2px solid var(--border-active);outline-offset:1px"><span style="font-size:10px;line-height:12px;font-weight:700;letter-spacing:.02em;color:#009fdb">AT&amp;T</span><span style="display:flex;align-items:center;gap:6px;font-size:22px;line-height:24px;letter-spacing:-.03em;color:var(--text-heading)"><span><span style="font-weight:500">AI-grade </span><span style="font-weight:700">network</span></span><span aria-hidden="true" style="display:inline-block;font-size:12px;color:var(--text-light);font-weight:400;transform:{{ chevronRot }};transition:transform .15s">⌄</span></span></button>
     <sc-if value="{{ elevatorOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeElevator }}" style="position:fixed;inset:0;z-index:25"></div>
       <div role="menu" aria-label="Switch network layer" style="position:absolute;z-index:26;top:calc(100% + 8px);left:0;width:320px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.08);overflow:hidden;animation:fadeIn .15s">
@@ -42,22 +43,24 @@ a{color:#0057b8}a:hover{color:#00388f}
       </div>
     </sc-if>
   </div>
-  <nav aria-label="Products" style="display:flex;gap:4px;height:64px;align-items:stretch;white-space:nowrap">
-    <sc-for list="{{ topTabs }}" as="t" hint-placeholder-count="3">
-      <sc-if value="{{ t.divider }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="width:1px;height:24px;background:var(--border-secondary);align-self:center;margin:0 8px"></span></sc-if>
-      <button onClick="{{ t.go }}" aria-current="{{ t.current }}" style="height:64px;padding:0 14px;border:0;border-bottom:2px solid {{ t.border }};background:transparent;color:{{ t.color }};font-size:14px;font-weight:{{ t.weight }};cursor:pointer;white-space:nowrap" style-hover="color:var(--link)">{{ t.label }}</button>
+  <!-- Product pills, flat: the active one carries the light-blue fill. -->
+  <nav aria-label="Products" style="display:flex;gap:4px;align-items:center;white-space:nowrap">
+    <sc-for list="{{ pills }}" as="p" hint-placeholder-count="2">
+      <button onClick="{{ p.go }}" aria-current="{{ p.current }}" style="height:36px;padding:0 12px;border:0;border-radius:8px;background:{{ p.bg }};color:var(--link);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-wash)">{{ p.label }}</button>
     </sc-for>
   </nav>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:20px">
-    <button onClick="{{ goBrowse }}" aria-label="Search the store" style="width:24px;height:24px;border:0;background:url('{{ iconSearch }}') center / contain no-repeat;cursor:pointer;white-space:nowrap"></button>
-    <sc-if value="{{ hasTasks }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goFloor }}" style="display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:0;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">✓ {{ taskCount }}</button></sc-if>
-    <span aria-hidden="true" style="width:22px;height:22px;background:url('{{ iconBell }}') center / contain no-repeat"></span>
-    <span aria-hidden="true" style="width:22px;height:22px;background:url('{{ iconPerson }}') center / contain no-repeat"></span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+    <!-- Ask Andi: outlined pill with the Andi symbol (att_andi_sym). -->
+    <button onClick="{{ toggleAndi }}" aria-label="Ask Andi" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px 0 10px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--border-active)"><span aria-hidden="true" style="width:20px;height:20px;flex:none;background:url('{{ iconAndi }}') center / contain no-repeat"></span>Ask Andi</button>
+    <!-- The bell: pending actions live in its name; a dot only while something is pending. -->
+    <button onClick="{{ goFloor }}" aria-label="{{ bellLabel }}" style="position:relative;width:40px;height:40px;border:0;border-radius:9999px;background:transparent;cursor:pointer" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="display:block;width:22px;height:22px;margin:0 auto;background:url('{{ iconBell }}') center / contain no-repeat"></span><sc-if value="{{ hasTasks }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:9999px;background:var(--cta);box-shadow:0 0 0 2px var(--bg-base)"></span></sc-if></button>
+    <!-- Avatar: the demo controls live behind it. -->
     <div style="position:relative">
-      <button onClick="{{ toggleDemo }}" aria-haspopup="menu" aria-expanded="{{ demoOpen }}" aria-label="Demo controls" style="width:28px;height:28px;border:0;border-radius:8px;background:url('{{ iconGear }}') center / 20px no-repeat;cursor:pointer;white-space:nowrap"></button>
+      <button onClick="{{ toggleDemo }}" aria-haspopup="menu" aria-expanded="{{ demoOpen }}" aria-label="Account menu" style="width:40px;height:40px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">LG</button>
       <sc-if value="{{ demoOpen }}" hint-placeholder-val="{{ false }}">
         <div onClick="{{ toggleDemo }}" style="position:fixed;inset:0;z-index:25"></div>
         <div role="menu" style="position:absolute;z-index:26;top:calc(100% + 8px);right:0;width:260px;padding:12px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);display:grid;gap:10px;font-size:12px;color:var(--text-light);animation:fadeIn .15s">
+          <button onClick="{{ goBrowseClose }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 6px;margin:0 -6px;border:0;border-radius:6px;background:transparent;font:inherit;font-size:13px;color:var(--text-heading);cursor:pointer;text-align:left" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:16px;height:16px;background:url('{{ iconSearch }}') center / contain no-repeat"></span>Search the store</button>
           <div style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Demo</div>
           <label style="display:grid;gap:4px">Persona <select value="{{ persona }}" onChange="{{ setPersona }}" aria-label="Persona" style="height:24px;padding:0 6px;border:1px solid var(--border-secondary);border-radius:6px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:12px"><option value="architect">Architect</option><option value="neteng">Network Eng</option><option value="security">Security</option><option value="finops">FinOps &amp; SRE</option><option value="exec">Executive</option></select></label>
           <label style="display:grid;gap:4px">Estate <select value="{{ view }}" onChange="{{ setView }}" aria-label="View as" style="height:24px;padding:0 6px;border:1px solid var(--border-secondary);border-radius:6px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:12px"><option value="live">Live estate</option><option value="empty">New customer</option><option value="partial">Growing</option><option value="mature">Established</option><option value="trust">Bank scale</option></select></label>
@@ -70,17 +73,26 @@ a{color:#0057b8}a:hover{color:#00388f}
 </header>
 <div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }}">
 <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
-<aside aria-label="Lifecycle" style="position:sticky;top:0;align-self:start;height:100vh;padding:20px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);display:grid;grid-template-rows:repeat(5,auto) auto auto 1fr;gap:2px;align-content:start;font-size:13px;width:{{ railW }};box-sizing:border-box;transition:width .15s">
-  <sc-for list="{{ rail }}" as="r" hint-placeholder-count="5">
-    <button onClick="{{ r.go }}" aria-current="{{ r.cur }}" aria-label="{{ r.label }}" title="{{ r.label }}" style="height:40px;padding:{{ railBtnPad }};border:0;border-radius:8px;display:flex;align-items:center;justify-content:{{ railJustify }};gap:10px;background:{{ r.bg }};color:{{ r.color }};font:inherit;font-size:13px;font-weight:{{ r.weight }};cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="position:relative;width:20px;height:20px;flex:none;background:url('{{ r.icon }}') center / contain no-repeat"><sc-if value="{{ r.done }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;border-radius:9999px;background:var(--success);border:2px solid var(--bg-base)"></span></sc-if></span><sc-if value="{{ railWide }}" hint-placeholder-val="{{ false }}">{{ r.label }}</sc-if></button>
+<aside aria-label="{{ railTitle }} sections" style="position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);width:240px;box-sizing:border-box;font-size:14px">
+  <sc-for list="{{ railGroups }}" as="g" hint-placeholder-count="4">
+    <sc-if value="{{ g.hasTitle }}" hint-placeholder-val="{{ true }}"><div style="padding:20px 12px 4px;font-size:12px;line-height:16px;font-weight:700;color:var(--text-heading)">{{ g.title }}</div></sc-if>
+    <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+      <button onClick="{{ r.go }}" aria-current="{{ r.cur }}" style="width:100%;height:40px;padding:0 12px;margin-bottom:2px;border:0;border-radius:8px;display:flex;align-items:center;gap:12px;background:{{ r.bg }};color:{{ r.color }};font:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:18px;height:18px;flex:none;background:url('{{ r.icon }}') center / contain no-repeat"></span><span style="overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span></button>
+    </sc-for>
   </sc-for>
-  <div style="height:1px;background:var(--border-secondary);margin:10px 0"></div>
-  <button onClick="{{ goBrowse }}" aria-current="{{ storeCur }}" aria-label="Marketplace" title="Marketplace" style="height:40px;padding:{{ railBtnPad }};border:0;border-radius:8px;display:flex;align-items:center;justify-content:{{ railJustify }};gap:10px;background:{{ storeBg }};color:{{ storeColor }};font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:20px;height:20px;flex:none;background:url('{{ storeIcon }}') center / contain no-repeat"></span><sc-if value="{{ railWide }}" hint-placeholder-val="{{ false }}">Marketplace</sc-if></button>
-  <button onClick="{{ toggleRail }}" aria-label="Expand or collapse navigation" style="margin-top:auto;height:32px;border:0;border-radius:8px;display:flex;align-items:center;justify-content:{{ railJustify }};padding:{{ railBtnPad }};background:transparent;color:var(--text-light);font:inherit;font-size:14px;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-wash)">{{ railToggleLabel }}</button>
 </aside>
 </sc-if>
 
 <main style="min-width:0;max-width:1392px;margin:0 auto;padding:16px 24px 64px;width:100%;box-sizing:border-box">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 16px;margin-bottom:16px;border-bottom:1px solid var(--border-secondary)">
+  <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:700;letter-spacing:-.03em;color:var(--text-heading)">{{ pageTitle }}</h1>
+  <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-light)">
+    <span>Updated 5m ago <span aria-hidden="true">↻</span></span>
+    <span aria-hidden="true" style="width:1px;height:16px;background:var(--border-secondary)"></span>
+    <label style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--text-heading)"><span aria-hidden="true" style="width:16px;height:16px;background:url('{{ iconCalendar }}') center / contain no-repeat"></span><select value="{{ rangeValue }}" onChange="{{ setRange }}" aria-label="Date range" style="border:0;background:transparent;font:inherit;font-size:14px;font-weight:500;color:var(--text-heading)"><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option></select></label>
+  </div>
+</div>
+
 
 <sc-if value="{{ showPending }}" hint-placeholder-val="{{ false }}">
   <section aria-label="Pending actions" style="display:grid;grid-template-columns:220px minmax(0,1fr) auto;gap:24px;align-items:center;padding:16px 24px;margin-bottom:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;animation:fadeIn .3s">
