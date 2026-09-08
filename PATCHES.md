@@ -41,3 +41,9 @@ row with "Updated" and the date range above every screen. Everything below
 the title row is the export's own content. Props live in `shellVals` in
 `naas-app.js` (`pills`, `railGroups`, `pageTitle`, `rangeValue`, `setRange`).
 Andi docks at 1440 and wider, floats below. The rail collapses to a 64px icon strip from the toggle at its foot; labels stay as tooltips. It starts collapsed under 1600 wide, since the screens were drawn for a 64px rail beside the docked Andi. The frame title row hides on screens that carry their own heading.
+
+## 6. Connect lens labels (export defect)
+The lens value on each region wire (private, 12 ms, $0.02/GB) was anchored
+to the wire's end and drew over the on-ramp chip and shield in the export
+itself. It now ends 8px left of the chip (`heroEdges` map in the storefront's
+inline script).

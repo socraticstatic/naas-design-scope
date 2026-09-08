@@ -1612,7 +1612,8 @@ class Component extends DCLogic {
     v.noop = (e) => e.preventDefault();
     v.setSourceCred = () => this.setState({ intakeSource: 'credential' });
     v.setSourceInv = () => this.setState({ intakeSource: 'inventory' });
-    v.heroEdges = v.heroEdges.map(e => ({ ...e, chipX: e.mx - e.chipW / 2, chipY: e.my - 9, chipTy: e.my + 4, sx: e.mx + (e.chip ? e.chipW / 2 + 14 : 0), sy: e.my }));
+    // The lens label (private, 12 ms, $0.02/GB) ends 8px left of the on-ramp chip instead of on top of it.
+    v.heroEdges = v.heroEdges.map(e => ({ ...e, chipX: e.mx - e.chipW / 2, chipY: e.my - 9, lx: e.hasLabel && e.chip ? e.mx - e.chipW / 2 - 188 : e.lx, ly: e.hasLabel && e.chip ? e.my - 22 : e.ly, chipTy: e.my + 4, sx: e.mx + (e.chip ? e.chipW / 2 + 14 : 0), sy: e.my }));
     v.strata = v.strata.map(st => ({ ...st }));
     v.facilityRows = v.facilityRows.map(f => ({ ...f, ty: f.y + 22, ty2: f.y + 40, ty3: f.y + 58 }));
     v.heroGroups = v.heroGroups.map(g => ({ ...g, ty: g.y + 14 }));
