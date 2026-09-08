@@ -39,7 +39,7 @@ Ask Andi with the real Andi symbol (`brand/andi-symbol.svg`), bell, LG avatar
 Observe · Deep dive · Govern for NaaS; their AI Fabric groups), and a title
 row with "Updated" and the date range above every screen. Everything below
 the title row is the export's own content. Props live in `shellVals` in
-`naas-app.js` (`pills`, `railGroups`, `pageTitle`, `rangeValue`, `setRange`).
+`naas-app.js` (`pills`, `railGroups`, `pageTitle`, `rangeValue`, `setRange`). The build stamp prints in the title row (`buildLabel`); `<body data-version-pill="off">` tells version.js not to float its pill over content.
 Andi docks at 1440 and wider, floats below. The rail collapses to a 64px icon strip from the toggle at its foot; labels stay as tooltips. It starts collapsed under 1600 wide, since the screens were drawn for a 64px rail beside the docked Andi. The frame title row hides on screens that carry their own heading.
 
 ## 6. Connect lens labels (export defect)
