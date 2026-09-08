@@ -34,3 +34,14 @@ Open the storefront. Gear (top right): persona Architect, estate Established, li
 6. **Cost** (40s). Thickness = $/mo, red sleeve = premium; hover for the arithmetic. Slide the forecast to +90d and watch the sleeves thin. Arbitrage strip, destination bar.
 7. **Compose → Review → Go live** (45s). Header CTA "Compose · $17.5k/mo". Six steps, prefilled. Submit; Pending Actions; **Go live** flips the region and opens Observe.
 8. **AI Fabric** (20s). Top tab. Observe: Insights (tokens, spend, TTFT, blocked).
+
+## Version footer and deploys
+Every push to `main` runs `.github/workflows/pages.yml`, which calls `scripts/stamp-version.sh`. That script copies the site to `_site/`, writes `version.js` from git (build = commit count, short SHA, commit date in Central time) and injects `<script src="./version.js" defer>` into every `*.dc.html`. The footer pill reads `v<build> · <date>`; hover it for the SHA. Nothing is committed, so a fresh Claude Design export keeps the footer.
+
+Pages is set to *GitHub Actions* as the source. To preview the stamp locally: `bash scripts/stamp-version.sh && npx serve _site`.
+
+## Replacing the export
+1. Unzip the new "Design scope and deliverables" download.
+2. `rsync -rc --delete --exclude .git --exclude .github --exclude scripts --exclude .gitignore <unzipped>/ <repo>/`
+3. Re-apply the local patches listed in `PATCHES.md` if the export does not already carry them.
+4. Commit and push `main`. The workflow deploys in about a minute.
