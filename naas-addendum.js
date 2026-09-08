@@ -79,6 +79,7 @@ export function inventoryStats(est, clouds) {
 }
 
 // ---------- Observe ----------
+import * as S from './naas-sites.js';
 const GBPS_PER_WL = 0.14;
 const DESTS = ['AI endpoints', 'object storage', 'public internet', 'SaaS', 'inter-cloud'];
 
@@ -157,29 +158,49 @@ export function observe(est, steered, inv) {
 function short(n) { return n >= 1000 ? '$' + (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : '$' + n; }
 
 function sankey3(est, flows) {
-  const W = 900, H = 300, colW = 12;
+  // Three source groups (sites, cloud workloads by tag, cloud to cloud) → fabric or public → destinations.
+  // Every node keeps a minimum height so its label always has room; the picture grows instead of overlapping.
+  const W = 900, colW = 12, minH = 16, pad = 6, headH = 18, gap = 24, top = 20;
+  const perSite = { 'Data center': 6, Campus: 2.5, Plant: 1.5, Office: 0.8, Branch: 0.04, Edge: 0.005, Field: 0.3 };
   const siteGroups = {};
-  est.sites.forEach(s => { const k = s.rollup ? s.name : s.cls === 'Data center' ? 'data centers' : 'offices'; siteGroups[k] = siteGroups[k] || { name: k, v: 0, priv: s.priv, n: 0 }; siteGroups[k].v += s.priv ? 4 : 3; siteGroups[k].n++; });
-  const srcs = Object.values(siteGroups).map(g => ({ ...g, name: g.n > 1 && !g.name.includes('(') ? `${g.n} ${g.name} ›` : g.name }));
-  const groups = {};
-  flows.forEach(f => { groups[f.from] = groups[f.from] || { name: f.from, v: 0, fabV: 0 }; groups[f.from].v += f.gbps; if (f.controlled) groups[f.from].fabV += f.gbps; });
-  const total = flows.reduce((a, f) => a + f.gbps, 0) || 1;
-  const sV = srcs.reduce((a, b) => a + b.v, 0) || 1;
-  srcs.forEach(s => { s.v = s.v / sV * total * 0.3; s.fabV = s.priv ? s.v * 0.9 : s.v * 0.05; });
-  const S = [...srcs, ...Object.values(groups)];
-  const T = S.reduce((a, b) => a + b.v, 0);
-  const fabV = S.reduce((a, b) => a + b.fabV, 0);
-  const M = [{ name: 'Public internet', v: T - fabV, priv: false }, { name: 'AT&T fabric', v: fabV, priv: true }];
+  (est.sites || []).forEach(s => {
+    const cls = S.classOf(s); const c = S.CLASS[cls]; const count = S.countOf(s.name); const v = (perSite[cls] || 0.5) * count;
+    const g = siteGroups[cls] = siteGroups[cls] || { kind: 'site', key: 'site:' + cls, cls, unit: c.unit, plural: c.plural, n: 0, v: 0, fabV: 0 };
+    g.n += count; g.v += v; g.fabV += s.priv ? v : v * 0.1;
+  });
+  const sites = Object.values(siteGroups).map(g => ({ ...g, name: `${g.n.toLocaleString('en-US')} ${g.n === 1 ? g.unit : g.plural}` })).sort((a, b) => b.v - a.v);
+  const grp = (list, kind) => { const m = {}; list.forEach(f => { const g = m[f.from] = m[f.from] || { kind, key: kind + ':' + f.from, name: f.from, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; }); return Object.values(m).sort((a, b) => b.v - a.v); };
+  const tags = grp(flows.filter(f => f.kind === 'App'), 'tag');
+  const regions = grp(flows.filter(f => f.kind !== 'App'), 'region');
+  const groups = [{ head: 'Sites · first mile', nodes: sites }, { head: 'Cloud workloads by tag', nodes: tags }, { head: 'Cloud to cloud', nodes: regions }].filter(g => g.nodes.length);
   const dmap = {};
-  flows.forEach(f => { dmap[f.to] = dmap[f.to] || { name: f.to, v: 0, fabV: 0 }; dmap[f.to].v += f.gbps; if (f.controlled) dmap[f.to].fabV += f.gbps; });
-  const Dn = Object.values(dmap); const dT = Dn.reduce((a, b) => a + b.v, 0) || 1; Dn.forEach(d => { d.fabV = d.fabV / d.v * (d.v / dT * T); d.v = d.v / dT * T; });
-  const stack = (arr, x) => { let y = 8; const pad = 6; const scale = (H - 16 - pad * (arr.length - 1)) / T; return arr.map(a => { const h = Math.max(2, a.v * scale); const o = { ...a, x, y, h, x2: x + colW, used: 0 }; y += h + pad; return o; }); };
-  const SS = stack(S, 0), MM = stack(M, W / 2 - colW / 2), DD = stack(Dn, W - colW);
+  flows.forEach(f => { const d = dmap[f.to] = dmap[f.to] || { kind: 'dest', key: 'dest:' + f.to, name: f.to, v: 0, fabV: 0 }; d.v += f.gbps; if (f.controlled) d.fabV += f.gbps; });
+  const sitesV = sites.reduce((a, s) => a + s.v, 0), sitesFab = sites.reduce((a, s) => a + s.fabV, 0);
+  const dests = [...(sitesV ? [{ kind: 'dest', key: 'dest:regions', name: 'Cloud regions (from sites)', v: sitesV, fabV: sitesFab }] : []), ...Object.values(dmap).sort((a, b) => b.v - a.v)];
+  const T = groups.reduce((a, g) => a + g.nodes.reduce((x, n) => x + n.v, 0), 0);
+  const fabV = groups.reduce((a, g) => a + g.nodes.reduce((x, n) => x + n.fabV, 0), 0);
+  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, priv: true }, { kind: 'mid', key: 'mid:public', name: 'Public internet', v: T - fabV, priv: false }].filter(m => m.v > 0);
+  const nLeft = groups.reduce((a, g) => a + g.nodes.length, 0);
+  const H0 = 320;
+  const leftOverhead = top + groups.length * (headH + gap) + (nLeft - groups.length) * pad;
+  const scale = (H0 - leftOverhead) / (T || 1);
+  const place = (arr, x, y0) => { let y = y0; return arr.map(a => { const h = Math.max(minH, a.v * scale); const o = { ...a, x, y, h, x2: x + colW, used: 0 }; y += h + pad; return o; }); };
+  const heads = []; const SS = [];
+  let y = top;
+  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const placed = place(g.nodes, 0, y + headH - 6); SS.push(...placed); y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
+  const leftH = SS.length ? y - gap + 8 : top;
+  heads.push({ x: W, y: top - 4, anchor: 'end', text: 'Destinations' });
+  const DD = place(dests, W - colW, top + headH - 6);
+  const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
+  const H = SS.length || DD.length ? Math.max(leftH, rightH, H0) : 60;
+  const midH = mids.reduce((a, m) => a + Math.max(minH, m.v * scale), 0) + pad * (mids.length - 1);
+  const MM = place(mids, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];
-  const link = (a, b, v, priv) => { if (v <= 0) return; const sa = a.h / a.v, sb = b.h / b.v; const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv }); };
-  SS.forEach(s => { link(s, MM[1], s.fabV, true); link(s, MM[0], s.v - s.fabV, false); });
-  DD.forEach(d => { link(MM[1], d, d.fabV, true); link(MM[0], d, d.v - d.fabV, false); });
-  return { W, H, nodes: [...SS.map(n => ({ ...n, side: 'l' })), ...MM.map(n => ({ ...n, side: 'm' })), ...DD.map(n => ({ ...n, side: 'r' }))], ribbons };
+  const link = (a, b, v, priv) => { if (v <= 0) return; const sa = a.h / a.v, sb = b.h / b.v; const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, v }); };
+  const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv);
+  SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); });
+  DD.forEach(d => { if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
+  return { W, H, heads, nodes: [...SS.map(n => ({ ...n, side: 'l' })), ...MM.map(n => ({ ...n, side: 'm' })), ...DD.map(n => ({ ...n, side: 'r' }))], ribbons };
 }
 
 export function trendBand(kind, ob) {

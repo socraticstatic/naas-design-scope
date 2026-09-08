@@ -99,3 +99,24 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   catalog charges).
 - Discover heading carries a "n new · window" pill that toggles the
   new-only view.
+
+## 10. Observe rebuilt: Sankey, scope bar, Insights (2026-09-08, evening)
+- Sankey (`sankey3` in `naas-addendum.js`): sources grouped under headers
+  (Sites · first mile, Cloud workloads by tag, Cloud to cloud), every node at
+  least 16px tall so labels can never collide, labels on pills with the Gbps
+  value, destinations headed, and the picture grows in height instead of
+  squeezing. Site traffic is seeded per class (data center 6 Gbps, campus
+  2.5, branch 0.04 ...) and lands on a "Cloud regions (from sites)"
+  destination. Every node is a door: site class → Explore 360 with the class
+  open, tag → By tag, region → Ask Andi, destination → flow logs.
+- Scope row is one Figma filter bar: Scope select, Live, View logs. The
+  duplicate "Whole estate" heading is gone.
+- Insights are six bar-list cards (`insightWidgets` in `naas-round2.js`,
+  doors in `iwVals`): Top talkers from the same per-region flows as the
+  Sankey; New destinations in the window by GB/day; Shadow SaaS by GB/day,
+  orange where no policy matches; Egress growth as twelve weekly columns
+  (fabric under public); Cloud-to-cloud paths; Latency over SLO. Rows open
+  Andi, Govern authoring, or steer the flow; the old gauges with hardcoded
+  27/61/18/84 are gone since the Utilization card carries the real numbers.
+- SVG `<text>` inside an `sc-for` does not render in this runtime; headers
+  use `foreignObject` like the labels.

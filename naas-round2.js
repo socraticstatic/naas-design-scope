@@ -153,34 +153,37 @@ export function gbPerWlExport(est, base) { return gbPerWl(est, base); }
 
 
 // ---------- Insight widgets: data shaped for drawing, not reading ----------
-export function insightWidgets(est, ob) {
+export function insightWidgets(est, ob, win = 30) {
   const rs = est.regionsList; if (!rs.length) return null;
-  const totalWl = rs.reduce((a, r) => a + r.wl, 0) || 1;
-  // 1. Top talkers: horizontal bars, fabric vs public split
-  const talkers = rs.slice().sort((a, b) => b.wl - a.wl).slice(0, 5).map(r => ({ key: r.region, region: r.region, label: r.cloud + ' ' + r.region, pctW: pct(r.wl, rs[0] ? Math.max(...rs.map(x => x.wl)) : 1) + '%', share: pct(r.wl, totalWl) + '%', priv: r.priv, fill: r.priv ? '#0057b8' : '#8a949c', tags: r.tags.slice(0, 2).join(' · ') }));
-  // 2. New destinations: 30-day strip, dots by day, class-colored
+  const flows = ob.flows || [];
+  // 1. Top talkers: the same per-region flows the Sankey draws.
+  const regGbps = (r) => { const i = rs.indexOf(r); return +flows.filter(f => f.id.startsWith(`f-${i}-`)).reduce((a, f) => a + f.gbps, 0).toFixed(1); };
+  const tk = rs.map(r => ({ r, gbps: regGbps(r) })).sort((a, b) => b.gbps - a.gbps).slice(0, 5);
+  const tMax = Math.max(1, ...tk.map(t => t.gbps)), tTot = ob.total || 1;
+  const talkers = tk.map(({ r, gbps }) => ({ key: r.region, region: r.region, cloud: r.cloud, label: `${r.cloud} ${r.region}`, sub: `${r.priv ? (r.ramp || 'NetBond') : 'public internet'} · ${r.tags.slice(0, 2).join(' · ') || 'untagged'}`, gbps, v: gbps.toFixed(1) + ' Gbps', share: pct(gbps, tTot) + '%', w: Math.round(gbps / tMax * 100) + '%', priv: r.priv, fill: r.priv ? '#0057b8' : '#8a949c' }));
+  // 2. New destinations inside the window, by volume.
   const pubN = rs.filter(r => !r.priv).length;
-  const dests = [{ d: 3, n: 'api.anthropic.com', c: 'ai' }, { d: 8, n: 'files.slack-edge.com', c: 'saas' }, { d: 11, n: 's3.eu-west-1', c: 'obj' }, { d: 17, n: 'intake.datadoghq.com', c: 'saas' }, { d: 22, n: 'blob.core.windows.net', c: 'obj' }, { d: 26, n: 'api.openai.com', c: 'ai' }].slice(0, 3 + pubN);
-  const CLASS = { ai: '#7b3fbf', saas: '#f57c00', obj: '#00838f' };
-  const newDest = dests.map(x => ({ key: x.n, x: (x.d / 30 * 100).toFixed(1) + '%', name: x.n, fill: CLASS[x.c], cls: { ai: 'AI endpoint', saas: 'SaaS', obj: 'Object storage' }[x.c], day: 'day ' + x.d }));
-  // 3. Shadow SaaS: domains sized by GB, colored by policy coverage
-  const saas = [['slack-edge', 3.1, false], ['datadoghq', 2.4, false], ['zoom.us', 1.8, true], ['github.com', 1.6, true], ['notion.so', 0.9, false], ['figma.com', 0.7, false]].slice(0, 3 + Math.min(3, pubN));
-  const shadow = saas.map(([n, gb, covered], i) => ({ key: n, name: n, gb: gb + ' GB/d', r: 14 + gb * 7, covered, fill: covered ? '#0057b8' : '#f57c00', op: covered ? 0.9 : 0.75, x: 18 + (i % 3) * 32 + (i > 2 ? 14 : 0), y: i > 2 ? 68 : 30 }));
-  const shadowN = shadow.filter(s => !s.covered).length;
-  // 4. Egress growth: 12-week sparkline, public vs fabric stacked
-  const wk = Array.from({ length: 12 }, (_, i) => { const pubW = (ob.pub || 1) * Math.pow(1.02, i) * (0.9 + 0.1 * Math.sin(i)); const fabW = (ob.fab || 1) * (0.97 + 0.03 * Math.cos(i * 0.6)); return { pub: pubW, fab: fabW }; });
-  const mx = Math.max(...wk.map(w => w.pub + w.fab)) * 1.1; const W = 300, H = 90;
-  const pt = (i, v) => `${(i / 11 * W).toFixed(1)},${(H - v / mx * H).toFixed(1)}`;
-  const fabArea = 'M' + wk.map((w, i) => pt(i, w.fab)).join(' L') + ` L${W},${H} L0,${H} Z`;
-  const pubArea = 'M' + wk.map((w, i) => pt(i, w.fab + w.pub)).join(' L') + ' L' + wk.map((w, i) => pt(11 - i, wk[11 - i].fab)).join(' L') + ' Z';
-  const growth = { fabArea, pubArea, W, H, pubPct: Math.round((wk[11].pub / wk[0].pub - 1) * 100), fabPct: Math.round((wk[11].fab / wk[0].fab - 1) * 100) };
-  // 5. Multi-cloud paths: chord-ish arcs between cloud nodes
-  const clouds = [...new Set(rs.map(r => r.cloud))].slice(0, 5);
-  const cx = 150, cy = 78, R = 58;
-  const nodes = clouds.map((c, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / clouds.length; return { key: c, name: c, x: +(cx + R * Math.cos(a)).toFixed(1), y: +(cy + R * Math.sin(a)).toFixed(1), lx: +(cx + (R + 22) * Math.cos(a)).toFixed(1), ly: +(cy + (R + 22) * Math.sin(a)).toFixed(1), anchor: Math.cos(a) > 0.3 ? 'start' : Math.cos(a) < -0.3 ? 'end' : 'middle' }; });
-  const arcs = (est.arcs || []).map((a, i) => { const A = rs.find(r => r.region === a.from), B = rs.find(r => r.region === a.to); const n1 = A && nodes.find(n => n.name === A.cloud), n2 = B && nodes.find(n => n.name === B.cloud); if (!n1 || !n2) return null; return { key: 'arc' + i, d: `M${n1.x},${n1.y} Q${cx},${cy} ${n2.x},${n2.y}`, stroke: a.priv ? '#0057b8' : '#8a949c', dash: a.priv ? 'none' : '4 4', w: a.priv ? 2.5 : 1.5 }; }).filter(Boolean);
-  const multi = { nodes, arcs, privN: (est.arcs || []).filter(a => a.priv).length, totalN: (est.arcs || []).length };
-  // 6. Port utilisation: gauges per committed on-ramp
-  const ports = rs.filter(r => r.priv).slice(0, 4).map((r, i) => { const u = [27, 61, 18, 84][i % 4]; return { key: r.region, label: `${r.cloud} ${r.region}`, pctN: u, pct: u + '%', dash: `${(u / 100 * 113).toFixed(1)} 113`, tone: u < 30 ? '#f57c00' : u > 80 ? '#c2185b' : '#0057b8', bw: i % 2 ? '5 Gbps' : '10 Gbps', idle: u < 30 }; });
-  return { talkers, newDest, newDestN: newDest.length, shadow, shadowN, growth, multi, ports, idleN: ports.filter(p => p.idle).length };
+  const DEST = [{ d: 3, n: 'api.anthropic.com', c: 'ai', gb: 4.6 }, { d: 8, n: 'files.slack-edge.com', c: 'saas', gb: 3.1 }, { d: 11, n: 's3.eu-west-1.amazonaws.com', c: 'obj', gb: 12.4 }, { d: 17, n: 'intake.datadoghq.com', c: 'saas', gb: 2.4 }, { d: 22, n: 'blob.core.windows.net', c: 'obj', gb: 8.8 }, { d: 26, n: 'api.openai.com', c: 'ai', gb: 2.2 }, { d: 41, n: 'api.mistral.ai', c: 'ai', gb: 1.1 }, { d: 63, n: 'storage.googleapis.com', c: 'obj', gb: 6.2 }].slice(0, 5 + pubN);
+  const CLASS = { ai: ['AI endpoint', '#7b3fbf'], saas: ['SaaS', '#f57c00'], obj: ['Object storage', '#00838f'] };
+  const inWin = DEST.filter(x => x.d <= win).sort((a, b) => b.gb - a.gb); const dMax = Math.max(1, ...inWin.map(x => x.gb));
+  const when = (d) => d === 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`;
+  const newDest = inWin.map(x => ({ key: x.n, name: x.n, sub: `${CLASS[x.c][0]} · first seen ${when(x.d)}`, v: x.gb + ' GB/d', w: Math.round(x.gb / dMax * 100) + '%', fill: CLASS[x.c][1], cls: CLASS[x.c][0], day: x.d }));
+  // 3. Shadow SaaS: domains by volume, colored by whether a policy covers them.
+  const SAAS = [['slack-edge.com', 3.1, false], ['datadoghq.com', 2.4, false], ['zoom.us', 1.8, true], ['github.com', 1.6, true], ['notion.so', 0.9, false], ['figma.com', 0.7, false]].slice(0, 3 + Math.min(3, pubN));
+  const sMax = Math.max(...SAAS.map(s => s[1]));
+  const shadow = SAAS.map(([n, gb, covered]) => ({ key: n, name: n, sub: covered ? 'covered by a policy' : 'no policy matches', v: gb + ' GB/d', w: Math.round(gb / sMax * 100) + '%', fill: covered ? '#0057b8' : '#f57c00', covered })).sort((a, b) => (a.covered === b.covered ? 0 : a.covered ? 1 : -1));
+  const shadowN = shadow.filter(s => !s.covered).length, shadowGb = SAAS.filter(s => !s[2]).reduce((a, s) => a + s[1], 0);
+  // 4. Egress growth: twelve weekly columns, fabric under public.
+  const wk = Array.from({ length: 12 }, (_, i) => ({ pub: (ob.pub || 1) * Math.pow(1.02, i) * (0.9 + 0.1 * Math.sin(i)), fab: (ob.fab || 1) * (0.97 + 0.03 * Math.cos(i * 0.6)) }));
+  const mx = Math.max(...wk.map(w => w.pub + w.fab)) || 1;
+  const weeks = wk.map((w, i) => ({ key: 'w' + i, fabH: Math.round(w.fab / mx * 100) + '%', pubH: Math.round(w.pub / mx * 100) + '%', title: `${i === 11 ? 'This week' : `${11 - i} weeks ago`} · fabric ${w.fab.toFixed(1)} Gbps · public ${w.pub.toFixed(1)} Gbps` }));
+  const growth = { weeks, pubPct: (Math.round((wk[11].pub / wk[0].pub - 1) * 100) || 0), fabPct: (Math.round((wk[11].fab / wk[0].fab - 1) * 100) || 0), pubNow: wk[11].pub.toFixed(1), fabNow: wk[11].fab.toFixed(1), pubThen: wk[0].pub.toFixed(1) };
+  // 5. Multi-cloud paths: every cloud-to-cloud flow.
+  const xflows = flows.filter(f => f.kind !== 'App'); const xMax = Math.max(1, ...xflows.map(f => f.gbps));
+  const multiRows = xflows.map(f => ({ key: f.id, id: f.id, name: f.name, sub: `${f.controlled ? 'on the fabric' : 'public internet'} · ${f.latency} ms`, v: f.gbps.toFixed(1) + ' Gbps', w: Math.round(f.gbps / xMax * 100) + '%', fill: f.controlled ? '#0057b8' : '#8a949c', controlled: f.controlled, steerable: !!f.steerable && !f.controlled }));
+  const multi = { rows: multiRows, privN: multiRows.filter(m => m.controlled).length, totalN: multiRows.length };
+  // 6. Latency over SLO: the flows above 100 ms, worst first.
+  const SLO = 100; const over = flows.filter(f => f.latency > SLO).sort((a, b) => b.latency - a.latency).slice(0, 5); const lMax = Math.max(SLO, ...over.map(f => f.latency));
+  const slo = over.map(f => ({ key: f.id, id: f.id, name: f.name, sub: `${f.controlled ? 'on the fabric' : 'public internet'} · ${f.gbps.toFixed(1)} Gbps`, v: f.latency + ' ms', w: Math.round(f.latency / lMax * 100) + '%', fill: '#ff605d', steerable: !!f.steerable && !f.controlled }));
+  return { talkers, newDest, newDestN: newDest.length, shadow, shadowN, shadowGb: shadowGb.toFixed(1), growth, multi, slo, sloN: slo.length, sloTotal: flows.length, SLO };
 }

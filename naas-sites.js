@@ -22,7 +22,7 @@ const STATE = { Dallas: 'TX', Houston: 'TX', Austin: 'TX', Atlanta: 'GA', Chicag
 export const stateOf = (metro) => STATE[metro] || '';
 const HOSTS = ['7-Eleven', 'Kroger', 'Walgreens', 'QuikTrip', 'Costco', 'Target', 'CVS', 'H-E-B'];
 
-const CLASS = {
+export const CLASS = {
   'Data center': { label: 'Data centers', icon: 'router', prefix: 'DC', unit: 'data center', plural: 'data centers' },
   Campus: { label: 'Campuses', icon: 'home', prefix: 'CAM', unit: 'campus', plural: 'campuses' },
   Office: { label: 'Offices', icon: 'home', prefix: 'OFF', unit: 'office', plural: 'offices' },
@@ -32,13 +32,13 @@ const CLASS = {
   Field: { label: 'Field (wireless)', icon: 'cable', prefix: 'FLD', unit: 'field site', plural: 'field sites' },
 };
 /** A site's class, from its declared class first and its name and access when the data is loose. */
-function classOf(st) {
+export function classOf(st) {
   if (/atm|kiosk/i.test(st.name)) return 'Edge';
   if (/field|wireless/i.test(st.name) || /mobility/i.test(st.access || '')) return 'Field';
   return CLASS[st.cls] ? st.cls : 'Branch';
 }
 
-const countOf = (name) => { const m = /\(([\d,]+)\)/.exec(name); return m ? parseInt(m[1].replace(/,/g, ''), 10) : 1; };
+export const countOf = (name) => { const m = /\(([\d,]+)\)/.exec(name); return m ? parseInt(m[1].replace(/,/g, ''), 10) : 1; };
 const isRollup = (st) => countOf(st.name) > 1;
 
 /** Deterministic split of n sites across k metros, largest first. */
