@@ -29,6 +29,8 @@ cat > "$out/version.js" <<EOF
   window.__naasVersion = v;
   function mount() {
     if (document.getElementById('naas-version')) return;
+    // A page that prints the build itself (the storefront's title row) opts out of the floating pill.
+    if (document.body && document.body.dataset.versionPill === 'off') return;
     var el = document.createElement('div');
     el.id = 'naas-version';
     el.setAttribute('role', 'contentinfo');

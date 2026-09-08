@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
-<body>
+<body data-version-pill="off">
 <x-dc><template>
 <helmet>
 <meta name="robots" content="noindex, nofollow, noarchive">
@@ -106,6 +106,7 @@ a{color:#0057b8}a:hover{color:#00388f}
 <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 16px;margin-bottom:16px;border-bottom:1px solid var(--border-secondary)">
   <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:700;letter-spacing:-.03em;color:var(--text-heading)">{{ pageTitle }}</h1>
   <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-light)">
+    <sc-if value="{{ hasBuildLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--text-disabled)">{{ buildLabel }}</span><span aria-hidden="true" style="width:1px;height:16px;background:var(--border-secondary)"></span></sc-if>
     <span>Updated 5m ago <span aria-hidden="true">↻</span></span>
     <span aria-hidden="true" style="width:1px;height:16px;background:var(--border-secondary)"></span>
     <label style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--text-heading)"><span aria-hidden="true" style="width:16px;height:16px;background:url('{{ iconCalendar }}') center / contain no-repeat"></span><select value="{{ rangeValue }}" onChange="{{ setRange }}" aria-label="Date range" style="border:0;background:transparent;font:inherit;font-size:14px;font-weight:500;color:var(--text-heading)"><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option></select></label>
