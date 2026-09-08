@@ -47,3 +47,14 @@ The lens value on each region wire (private, 12 ms, $0.02/GB) was anchored
 to the wire's end and drew over the on-ramp chip and shield in the export
 itself. It now ends 8px left of the chip (`heroEdges` map in the storefront's
 inline script).
+
+## 7. Filter grammar, Compose wrap, sites drill (2026-09-08, afternoon)
+- Every filter row uses the AI Fabric UI control grammar (Figma filters-bar
+  114:1427): inline label, 36px select with chevron, 272px search field,
+  outlined button. `.fx-*` classes in the storefront's helmet style.
+  Explore 360 facets, Observe scope, Marketplace search/sort/filters.
+- Compose: outcome and option cards and the summary rows wrap instead of
+  clipping (nowrap removed).
+- Explore 360 "Your sites" drills class → metro → site (`naas-sites.js`),
+  mirroring the cloud tree's rows, stat tiles, badges, Control and Ask Andi
+  doors, with a breadcrumb over the drilled path. Open state in `s.siteOpen`.
