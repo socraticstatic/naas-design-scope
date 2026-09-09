@@ -329,3 +329,13 @@ Impact · Records · Actions, with the drill trail). No verdict sentences, no ne
   themes. The picture's edge labels sit right of the band, clear of the on-ramp chips. Changing
   page resets the picture's drills (`go`) unless the door sets one on purpose. Workload pills
   open their region; the lane isolates what rides outside the fabric.
+- **Balance and the fold** (Micah, 14:29 to 14:33): Observe is a grid that fits 1440×900 with
+  the rail open and Andi closed: tiles, then the live flow map (modes and Jump in its head,
+  the Pattern lens on one row, a capped SVG, the scrubber, a one-line legend, the connection
+  gauges as its foot strip) on the left, the queue (capped, scrolls past four rows) and the
+  detail panel (always present, capped, scrolls) on the right. The duplicate picture and its
+  strip are off on Observe. Home fits the fold too (tighter incident rows, card rhythm, hero
+  padding). Picture rows are 200 wide with fixed slots for pill, dot and caret; the lane's
+  Attach sits in its own corner. Connect gains a **Sources** card (what the picture is drawn
+  from, plus "Add a source" → provider, access, scope, "Add and scan") which answers "where do
+  I connect my current ecosystem?" for a connected customer.

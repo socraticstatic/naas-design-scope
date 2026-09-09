@@ -155,7 +155,7 @@ export function litFor(map, key) {
 }
 
 /** The five patterns Ramesh named (19:04), in his order. */
-export const PATTERNS = [['region', 'Stays in the region'], ['regions', 'Across regions'], ['clouds', 'Across clouds'], ['internet', 'Out to the internet'], ['inbound', 'Coming in']];
+export const PATTERNS = [['region', 'In the region'], ['regions', 'Across regions'], ['clouds', 'Across clouds'], ['internet', 'To the internet'], ['inbound', 'Coming in']];
 /** Ribbon indexes and node keys a pattern lights. Mid nodes light when any of their ribbons do. */
 export function patternLit(map, pattern) {
   if (!pattern || pattern === 'all') return null;
