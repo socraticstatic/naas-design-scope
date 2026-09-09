@@ -275,3 +275,11 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   and a destination opens Logs on its pattern. Saturating links are incidents on the landing.
   The Connections rows draw the "Add a port" door. The Performance page ends with a next-stop
   row into Govern (the flywheel).
+- **Four words, one loop** (Micah, 13:23): the grays are gone, not dimmed. The rail is Connect,
+  Observe, Govern, Cost and nothing else (Explore 360, Compose, Marketplace, Logs, Policies,
+  the Observe sub-pages leave the rail; Logs is reached from Observe, Explore 360 from the scan).
+  Home for a connected customer is the fabric picture with the incidents and the four doors;
+  a new customer lands on Connect's intake (`sS0` covers `s2` when the estate is empty). The
+  health tiles, the Tailored tables, the Browse door, the Connect catalog doors and the S0 mode
+  tabs are removed. Every page ends with the next stop: Connect → Observe → Govern → Cost →
+  Connect (`connectNext`, `nextStop`, `governNext`, `costNext`). Titles are the four words.

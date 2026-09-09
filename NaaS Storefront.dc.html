@@ -401,9 +401,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </sc-if>
 </div>
 <sc-if value="{{ hasHealth }}" hint-placeholder-val="{{ true }}">
-<div aria-label="Fabric health" title="Later · not in the first cut" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;opacity:.4">
-  <sc-for list="{{ healthStrip }}" as="h" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;border-radius:12px"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:{{ h.tone }};flex:none"></span><span style="display:grid;gap:0;min-width:0"><span style="font-size:16px;line-height:20px;font-weight:700;color:var(--text-heading)">{{ h.v }}</span><span style="font-size:11px;line-height:14px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.l }}</span></span></div></sc-for>
-</div>
 <sc-if value="{{ hasIncidents }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ healthIncidents }}" as="i" hint-placeholder-count="1"><button onClick="{{ i.go }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;border:1px solid var(--warning);border-radius:12px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="flex:1;min-width:0">{{ i.text }}</span><span style="color:var(--link);font-weight:500;white-space:nowrap">Observe →</span></button></sc-for></sc-if>
 </sc-if>
 </div>
@@ -424,11 +421,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   </div>
 </aside>
 <section style="margin-top:24px">
-  <nav role="tablist" aria-label="Mode" style="display:flex;gap:24px;border-bottom:1px solid var(--border-secondary)">
-    <sc-for list="{{ modeTabs }}" as="t" hint-placeholder-count="2">
-      <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.click }}" style="height:40px;padding:0 4px;border:0;border-bottom:2px solid {{ t.border }};margin-bottom:-1px;background:transparent;color:{{ t.color }};font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">{{ t.label }}</button>
-    </sc-for>
-  </nav>
   <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
     <div style="display:grid;grid-template-columns:7fr 5fr;gap:24px;margin-top:24px">
       <form aria-label="Estate intake" style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px" onSubmit="{{ noop }}">
@@ -882,47 +874,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
 
 
-  <sc-if value="{{ hasTailored }}" hint-placeholder-val="{{ false }}">
-    <div style="display:grid;gap:24px;opacity:.4" title="Later · not in the first cut" aria-label="Later: tailored offers">
-      <h2 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">Tailored <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);margin-left:8px">Later</span></h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
-        <sc-if value="{{ hasAddons }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:8px">
-          <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Control add-ons per connection</h3>
-          <div class="dt" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px">
-            <div class="dt-h"><div class="dt-r" style="background:var(--bg-wash);color:var(--text-heading)"><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Connection</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Inspection</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Segmentation</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">SLO</div></div></div>
-            <div class="dt-b"><sc-for list="{{ tailored.addons }}" as="a" hint-placeholder-count="4"><div class="dt-r" style="border-top:1px solid var(--border-secondary)"><div class="dt-c" style="padding:10px 12px;color:var(--text-heading);font-weight:500;overflow:hidden;text-overflow:ellipsis">{{ a.conn }}</div><div class="dt-c" style="padding:10px 12px">{{ a.inspection }}</div><div class="dt-c" style="padding:10px 12px">{{ a.segmentation }}</div><div class="dt-c" style="padding:10px 12px">{{ a.slo }}</div></div></sc-for></div>
-          </div>
-        </div></sc-if>
-        <sc-if value="{{ hasTermUps }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:8px">
-          <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Term upgrades</h3>
-          <div class="dt" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px">
-            <div class="dt-h"><div class="dt-r" style="background:var(--bg-wash);color:var(--text-heading)"><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Connection</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">On-demand</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">12-month</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">36-month</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">Saved</div></div></div>
-            <div class="dt-b"><sc-for list="{{ tailored.terms }}" as="t" hint-placeholder-count="3"><div class="dt-r" style="border-top:1px solid var(--border-secondary)"><div class="dt-c" style="padding:10px 12px;color:var(--text-heading);font-weight:500;overflow:hidden;text-overflow:ellipsis">{{ t.conn }}</div><div class="dt-c" style="padding:10px 12px;text-align:right">{{ t.odF }}</div><div class="dt-c" style="padding:10px 12px;text-align:right">{{ t.m12F }}</div><div class="dt-c" style="padding:10px 12px;text-align:right">{{ t.m36F }}</div><div class="dt-c" style="padding:10px 12px;text-align:right;color:var(--success);font-weight:500">{{ t.save }}</div></div></sc-for></div>
-          </div>
-        </div></sc-if>
-        <sc-if value="{{ hasHubs }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:8px">
-          <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Hub consolidation</h3>
-          <div class="dt" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px">
-            <div class="dt-h"><div class="dt-r" style="background:var(--bg-wash);color:var(--text-heading)"><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Location</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Connections</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Into</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500">Result</div></div></div>
-            <div class="dt-b"><sc-for list="{{ tailored.hubs }}" as="h" hint-placeholder-count="2"><div class="dt-r" style="border-top:1px solid var(--border-secondary)"><div class="dt-c" style="padding:10px 12px;color:var(--text-heading);font-weight:500">{{ h.loc }}</div><div class="dt-c" style="padding:10px 12px">{{ h.conns }}</div><div class="dt-c" style="padding:10px 12px">{{ h.hub }}</div><div class="dt-c" style="padding:10px 12px">{{ h.save }}</div></div></sc-for></div>
-          </div>
-        </div></sc-if>
-        <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:12px">
-          <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Automation</h3>
-          <nav role="tablist" style="display:flex;gap:24px;border-bottom:1px solid var(--border-secondary)"><sc-for list="{{ tailored.automation }}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.click }}" style="height:36px;padding:0 4px;border:0;border-bottom:2px solid {{ t.border }};margin-bottom:-1px;background:transparent;color:{{ t.color }};font-size:14px;font-weight:500;cursor:pointer">{{ t.label }}</button></sc-for></nav>
-          <p style="margin:0;color:var(--text-body)">{{ tailored.autoText }}</p>
-        </div>
-      </div>
-      <sc-if value="{{ hasSteer }}" hint-placeholder-val="{{ false }}">
-      <div style="display:grid;gap:8px">
-        <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Steer to save</h3>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px"><sc-for list="{{ steerRecs }}" as="b" hint-placeholder-count="2"><div style="padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:6px"><div style="font-weight:700;color:var(--text-heading)">{{ b.name }}</div><div style="font-size:12px;color:var(--text-light)">{{ b.arb }}</div><button onClick="{{ b.steer }}" style="justify-self:start;height:32px;padding:0 12px;border:1px solid var(--cta);border-radius:9999px;background:transparent;color:var(--link);font-size:13px;font-weight:500;cursor:pointer">Steer</button></div></sc-for></div>
-      </div>
-      </sc-if>
-    </div>
-  </sc-if>
-
-  <div style="display:flex;align-items:center;gap:16px;padding:16px 24px;opacity:.4;border-top:1px solid var(--border-secondary);color:var(--text-light)"><button onClick="{{ goBrowse }}" style="border:0;background:transparent;padding:0;color:var(--link);font-size:14px;font-weight:500;cursor:pointer">Browse the marketplace</button></div>
 </section>
 </sc-if>
 
@@ -989,7 +940,10 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </aside>
       </sc-if>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="font-size:13px;color:var(--text-light);margin-right:8px">The estate itself and the catalog live one door away.</span><button class="fx-btn" onClick="{{ goDiscover }}" style="opacity:.4" title="Later · not in the first cut">Explore the estate</button><button class="fx-btn" onClick="{{ goBrowse }}" style="opacity:.4" title="Later · not in the first cut">Browse the catalog</button></div>
+    <div class="fx-alert" role="status" aria-label="Next stop">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div><div class="fx-alert-title">{{ connectNext.title }}</div><div class="fx-alert-text">{{ connectNext.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ connectNext.go }}">{{ connectNext.cta }}</button>
+    </div>
   </div>
   </sc-if>
 
@@ -1051,6 +1005,10 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
           <button onClick="{{ e.go }}" style="text-align:left;padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;cursor:pointer;display:grid;gap:6px;white-space:nowrap" style-hover="border-color:var(--border-primary)"><span style="font-weight:700;color:var(--text-heading)">{{ e.t }}</span><span style="font-size:12px;color:var(--text-light)">Match {{ e.m }} · {{ e.r }}</span><span style="font-size:12px;font-weight:500;color:var(--link)">Start from this</span></button>
         </sc-for>
       </div>
+    </div>
+    <div class="fx-alert" role="status" aria-label="Next stop">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div><div class="fx-alert-title">{{ governNext.title }}</div><div class="fx-alert-text">{{ governNext.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ governNext.go }}">{{ governNext.cta }}</button>
     </div>
   </div>
   </sc-if>
@@ -1160,15 +1118,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
     </sc-if>
     </sc-if>
-    <!-- Security & Governance: the audit -->
-    <sc-if value="{{ obIsSec }}" hint-placeholder-val="{{ false }}">
-    <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);font-weight:500;white-space:nowrap"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>Live · flow logs from every attached region</span><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goLogs }}">View logs</button></div>
-    <sc-if value="{{ hasGovernFindings }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:6px"><sc-for list="{{ governFindings }}" as="f" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;color:var(--text-heading);font-size:14px"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="font-weight:700;text-wrap:pretty">{{ f.head }}</span></span><span style="display:flex;align-items:center;gap:8px;white-space:nowrap"><button onClick="{{ f.rec.choose }}" style="height:32px;padding:0 14px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--cta-hover)">{{ f.rec.name }}</button><button onClick="{{ f.askAndi }}" style="height:32px;padding:0 10px;border:0;border-radius:9999px;background:transparent;color:var(--link);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Ask Andi</button></span></div></sc-for></div></sc-if>
-    <div class="fx-card" aria-label="Policy audit">
-      <div class="fx-card-head"><div><h3 class="fx-card-title">Policy audit</h3><div class="fx-card-sub" title="{{ governVerdict }}">{{ governVerdict }}</div></div><button class="fx-btn" onClick="{{ goGovern }}">Open Policies</button></div>
-      <div class="fx-rows"><sc-for list="{{ polRows }}" as="p" hint-placeholder-count="4"><div class="fx-row" style="grid-template-columns:minmax(0,1fr) 120px 120px 110px"><span class="lbl"><b>{{ p.name }}</b><small>{{ p.sent.match }} · {{ p.sent.req }}</small></span><span class="val">{{ p.matchedLabel }}</span><span class="val" style="color:{{ p.violColor }}">{{ p.violLabel }}</span><span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap"><i style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:{{ p.dot }};margin-right:6px"></i>{{ p.state }}</span></div></sc-for></div>
-    </div>
-    </sc-if>
     <!-- Logs: per-flow records by pattern; private destinations resolve to resource names, public ones stay an ip -->
     <sc-if value="{{ obIsLogs }}" hint-placeholder-val="{{ false }}">
     <div class="fx-filters"><span class="fx-label">Pattern</span><div class="fx-chips"><sc-for list="{{ logChips }}" as="ch" hint-placeholder-count="6"><button class="fx-chip" aria-pressed="{{ ch.on }}" onClick="{{ ch.go }}" style="cursor:pointer;background:{{ ch.bg }};color:{{ ch.color }};border-color:{{ ch.border }}">{{ ch.label }}</button></sc-for></div><span class="fx-spacer"></span><span style="font-size:12px;line-height:16px;color:var(--text-light)">{{ flowRecordCount }} · {{ logsPatternLabel }}</span><button class="fx-btn" onClick="{{ goPerf }}">Back to Performance</button></div>
@@ -1277,6 +1226,10 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </sc-if>
     </sc-if>
     <sc-if value="{{ hasCostFindings }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:6px"><sc-for list="{{ costFindings }}" as="f" hint-placeholder-count="1"><button onClick="{{ f.askAndi }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;color:var(--text-heading);font:inherit;font-size:14px;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--border-active)"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="font-weight:700;text-wrap:pretty">{{ f.head }}</span></span><span style="display:flex;align-items:center;gap:12px;white-space:nowrap"><span style="font-size:12px;font-weight:700;color:var(--success)">{{ f.saveLine }}</span><span style="font-size:12px;color:var(--link);font-weight:500">Ask Andi →</span></span></button></sc-for></div></sc-if>
+    <div class="fx-alert" role="status" aria-label="Next stop">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div><div class="fx-alert-title">{{ costNext.title }}</div><div class="fx-alert-text">{{ costNext.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ costNext.go }}">{{ costNext.cta }}</button>
+    </div>
     <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;color:var(--text-body)">No egress seen yet.</div></sc-if>
   </div>
   </sc-if>

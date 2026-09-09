@@ -152,7 +152,7 @@ export function siteDrillRows(est, trail) {
   if (second.kind === 'site') return pathsOf(all.find(x => x.name === second.name) || { ...second, cls: cls.cls, clsLabel: cls.label });
   if (trail.length === 2) {
     const rows = second.sites.map(siteRowOf);
-    if (second.more) rows.push({ key: 'more', name: `+${second.more.toLocaleString('en-US')} more in ${second.name}`, access: 'In Explore 360', more: true, rollup: false });
+    if (second.more) rows.push({ key: 'more', name: `+${second.more.toLocaleString('en-US')} more in ${second.name}`, access: `${second.sites.length} shown`, more: true, rollup: false });
     return { level: 'site', label: `${cls.label} · ${second.name}`, rows };
   }
   const site = all.find(x => x.id === trail[2] || x.name === trail[2]);
