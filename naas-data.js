@@ -19,7 +19,8 @@ export const HEADSTART = [
   { n: '6', label: 'connection types', cat: 'internet' },
 ];
 
-const REG = (cloud, region, wl, priv, ramp, pub, fab, tags, rel) => ({ cloud, region, wl, priv, ramp, pub, fab, tags: tags || [], rel: rel || 'ok' });
+// x: { link: 'ok'|'degraded', paths: 1|2, acct: string } for the Observe connections panel (2026-09-09).
+const REG = (cloud, region, wl, priv, ramp, pub, fab, tags, rel, x) => ({ cloud, region, wl, priv, ramp, pub, fab, tags: tags || [], rel: rel || 'ok', link: (x && x.link) || 'ok', paths: (x && x.paths) || 1, acct: (x && x.acct) || null });
 
 export const ESTATES = {
   empty: {
@@ -36,10 +37,10 @@ export const ESTATES = {
       { name: 'Denver plant', cls: 'Plant', access: 'ADI (Dedicated Internet)', priv: false, metro: 'Denver' },
     ],
     regionsList: [
-      REG('AWS', 'us-east-1', 89, true, 'NetBond', 41, 9, ['PCI', 'Prod']),
+      REG('AWS', 'us-east-1', 89, true, 'NetBond', 41, 9, ['PCI', 'Prod'], 'ok', { paths: 2 }),
       REG('AWS', 'us-west-2', 44, false, null, 58, 14, ['Prod']),
       REG('AWS', 'eu-west-1', 31, false, null, 96, 71, ['Internet-facing'], 'warn'),
-      REG('Azure', 'eastus', 40, true, 'ER', 39, 11, ['Finance']),
+      REG('Azure', 'eastus', 40, true, 'ER', 39, 11, ['Finance'], 'ok', { link: 'degraded', acct: 'sub 7f3a-…-21c4' }),
       REG('Azure', 'westeurope', 28, false, null, 102, 74, ['Finance']),
       REG('GCP', 'us-central1', 41, false, null, 47, 12, ['AI', 'GPU']),
       REG('GCP', 'europe-west1', 30, false, null, 99, 73, []),
@@ -83,12 +84,12 @@ export const ESTATES = {
       { name: 'Singapore DC', cls: 'Data center', access: 'ADI (Dedicated Internet)', priv: false, metro: 'Singapore' },
     ],
     regionsList: [
-      REG('AWS', 'us-east-1', 210, true, 'NetBond', 38, 8, ['PCI', 'Prod']),
-      REG('AWS', 'us-west-2', 120, true, 'DX', 52, 12, ['Prod']),
-      REG('AWS', 'eu-central-1', 96, true, 'DX', 88, 19, ['Prod']),
-      REG('Azure', 'eastus', 140, true, 'ER', 36, 9, ['Finance']),
-      REG('Azure', 'westeurope', 88, true, 'ER', 91, 21, ['Finance']),
-      REG('GCP', 'us-central1', 110, true, 'NetBond', 44, 11, ['AI', 'GPU']),
+      REG('AWS', 'us-east-1', 210, true, 'NetBond', 38, 8, ['PCI', 'Prod'], 'ok', { paths: 2 }),
+      REG('AWS', 'us-west-2', 120, true, 'DX', 52, 12, ['Prod'], 'ok', { acct: 'acct 4102-8837-5510', paths: 2 }),
+      REG('AWS', 'eu-central-1', 96, true, 'DX', 88, 19, ['Prod'], 'ok', { link: 'degraded', acct: 'acct 4102-8837-5510', paths: 1 }),
+      REG('Azure', 'eastus', 140, true, 'ER', 36, 9, ['Finance'], 'ok', { acct: 'sub 7f3a-…-21c4' }),
+      REG('Azure', 'westeurope', 88, true, 'ER', 91, 21, ['Finance'], 'ok', { acct: 'sub 7f3a-…-21c4' }),
+      REG('GCP', 'us-central1', 110, true, 'NetBond', 44, 11, ['AI', 'GPU'], 'ok', { paths: 2 }),
       REG('CoreWeave', 'us-east-04', 64, true, 'EQX', 51, 13, ['AI', 'GPU']),
       REG('AWS', 'ap-southeast-1', 52, false, null, 188, 96, ['Prod'], 'warn'),
     ],
@@ -143,10 +144,10 @@ export const ESTATES = {
       { name: 'Trading floors (12)', cls: 'Campus', access: 'ASE (Switched Ethernet)', priv: true, metro: 'Various', rollup: true },
     ],
     regionsList: [
-      REG('AWS', 'us-east-1', 812, true, 'NetBond', 40, 9, ['PCI', 'Prod']),
-      REG('AWS', 'us-east-2', 420, true, 'DX', 44, 10, ['PCI']),
+      REG('AWS', 'us-east-1', 812, true, 'NetBond', 40, 9, ['PCI', 'Prod'], 'ok', { paths: 2 }),
+      REG('AWS', 'us-east-2', 420, true, 'DX', 44, 10, ['PCI'], 'ok', { link: 'degraded', acct: 'acct 6620-1194-3308' }),
       REG('AWS', 'us-west-2', 388, false, null, 60, 14, ['Prod'], 'warn'),
-      REG('Azure', 'eastus', 560, true, 'ER', 38, 9, ['Finance']),
+      REG('Azure', 'eastus', 560, true, 'ER', 38, 9, ['Finance'], 'ok', { paths: 2, acct: 'sub 0c9e-…-88b1' }),
       REG('Azure', 'centralus', 210, false, null, 51, 13, ['Finance']),
       REG('GCP', 'us-central1', 290, true, 'NetBond', 46, 12, ['AI', 'GPU']),
     ],

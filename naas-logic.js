@@ -5,8 +5,12 @@ export const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 const CLOUD_ORDER = ['AWS', 'Azure', 'GCP', 'CoreWeave', 'Oracle'];
 
 export function heroLayout(est, opts) {
-  const W = 1392, H = 440, bandX = 560, bandW = 240, bandY = 24, bandH = 392, strataH = bandH / 4;
-  const out = { W, H, bandX, bandW, bandY, bandH, sites: [], groups: [], regions: [], workloads: [], edges: [], arcs: [], internet: null, strata: [], ghost: false };
+  const W = 1392, H = 440, bandX = 560, bandW = 240, bandY = 24, bandH = 300, strataH = bandH / 4;
+  // Beneath the band: the lane for traffic that never touches the AT&T fabric (third party, internet). Ramesh, 2026-09-09.
+  const lane = { x: bandX, y: bandY + bandH + 16, w: bandW, h: 76 };
+  const out = { W, H, bandX, bandW, bandY, bandH, lane, sites: [], groups: [], regions: [], workloads: [], edges: [], arcs: [], internet: null, strata: [], ghost: false };
+  const clampBand = (y) => Math.round(Math.min(bandY + bandH - 24, Math.max(bandY + 24, y)));
+  const clampLane = (y) => Math.round(Math.min(lane.y + lane.h - 14, Math.max(lane.y + 14, y)));
   const empty = !est || est.stage === 'empty';
   out.ghost = empty;
 
@@ -18,7 +22,8 @@ export function heroLayout(est, opts) {
   sites.forEach((s, i) => {
     const y = Math.round(top + i * gap);
     out.sites.push({ ...s, i, y, cy: y + 18, key: 'site' + i });
-    out.edges.push({ id: 'in' + i, kind: 'ingress', priv: !!s.priv, ghost: !!s.ghost, x1: 204, y1: y + 18, x2: bandX, y2: Math.round(Math.min(bandY + bandH - 24, Math.max(bandY + 24, y + 18))), site: s });
+    const viaLane = !s.priv && !s.ghost;
+    out.edges.push({ id: 'in' + i, kind: 'ingress', priv: !!s.priv, ghost: !!s.ghost, viaLane, x1: 204, y1: y + 18, x2: bandX, y2: viaLane ? clampLane(y + 18) : clampBand(y + 18), site: s });
   });
 
   const regs = empty ? [{ cloud: 'Clouds', region: 'Your regions', ghost: true, wl: 0 }, { cloud: 'Neoclouds', region: 'Your GPU regions', ghost: true, wl: 0 }] : est.regionsList;
@@ -34,7 +39,8 @@ export function heroLayout(est, opts) {
     byCloud[c].forEach((r, j) => {
       const ry = y;
       out.regions.push({ ...r, y: ry, cy: ry + 14, key: r.region });
-      out.edges.push({ id: 'eg' + out.regions.length, kind: 'egress', priv: !!r.priv, ghost: !!r.ghost, x1: bandX + bandW, y1: Math.round(Math.min(bandY + bandH - 40, Math.max(bandY + 24, ry + 14))), x2: 980, y2: ry + 14, chip: r.ramp, shield: !!r.priv && (r.ramp === 'NetBond' || r.ramp === 'ER'), region: r, dur: r.fab ? Math.max(1.2, r.fab / 6) : 3 });
+      const viaLane = !r.priv && !r.ghost;
+      out.edges.push({ id: 'eg' + out.regions.length, kind: 'egress', priv: !!r.priv, ghost: !!r.ghost, viaLane, x1: bandX + bandW, y1: viaLane ? clampLane(ry + 14) : Math.round(Math.min(bandY + bandH - 40, Math.max(bandY + 24, ry + 14))), x2: 980, y2: ry + 14, chip: r.ramp, shield: !!r.priv && (r.ramp === 'NetBond' || r.ramp === 'ER'), region: r, dur: r.fab ? Math.max(1.2, r.fab / 6) : 3 });
       if (r.wl) out.workloads.push({ region: r.region, y: ry + 3, label: r.wl.toLocaleString('en-US') + ' workloads', key: 'wl' + r.region, tags: r.tags });
       y += rowH;
     });
@@ -42,7 +48,7 @@ export function heroLayout(est, opts) {
   });
   if (!empty && est.regionsExtra) { out.regions.push({ cloud: '', region: '+' + est.regionsExtra + ' regions', rollup: true, y, cy: y + 14, key: 'more' }); y += rowH; }
   out.internet = { y: Math.min(404, Math.max(y + 4, 380)) };
-  out.edges.push({ id: 'inet', kind: 'internet', priv: false, ghost: empty, x1: bandX + bandW, y1: bandY + bandH - 20, x2: 980, y2: out.internet.y + 14, internet: true });
+  out.edges.push({ id: 'inet', kind: 'internet', priv: false, ghost: empty, viaLane: true, x1: bandX + bandW, y1: lane.y + lane.h - 14, x2: 980, y2: out.internet.y + 14, internet: true });
   (est && est.arcs || []).forEach((a, i) => {
     const r1 = out.regions.find(r => r.region === a.from), r2 = out.regions.find(r => r.region === a.to);
     if (r1 && r2) out.arcs.push({ id: 'arc' + i, priv: a.priv, y1: r1.cy, y2: r2.cy, from: a.from, to: a.to });
