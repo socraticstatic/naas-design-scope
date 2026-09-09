@@ -94,7 +94,7 @@ export function siteTree(est) {
         };
       }));
     } else {
-      children = g.named.map((st, i) => ({ kind: 'site', key: `${g.cls}:${st.name}`, ...siteRow(g.cls, st.metro, i, !!st.priv), name: st.name, address: `${st.metro} · ${st.access}`, metro: st.metro, priv: !!st.priv, since: (st.idx * 97 + 17) % 365 }));
+      children = g.named.map((st, i) => ({ kind: 'site', key: `${g.cls}:${st.name}`, ...siteRow(g.cls, st.metro, i, !!st.priv), name: st.name, address: `${st.metro} · ${st.access}`, metro: st.metro, access: st.access, priv: !!st.priv, since: (st.idx * 97 + 17) % 365 }));
     }
     // The class rolls up from what it contains, so a class badge can never contradict its metros.
     const onFabric = children.reduce((a, ch) => a + (ch.kind === 'metro' ? ch.onFabric : (ch.priv ? 1 : 0)), 0);

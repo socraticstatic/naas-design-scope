@@ -186,3 +186,19 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   tiles without a bar keep the slot.
 - Front-door fact labels fit their column ("metros with on-ramps");
   Compose outcome titles reserve two lines so the three cards align.
+
+## 15. Path drill: region ↔ site, hop by hop (2026-09-09)
+- `naas-paths.js`: a site's traffic toward a region from class weight,
+  geography and the region's share of its geography; the hops between them
+  (site → first mile → hub → PoP → fabric → on-ramp → region, or public
+  internet when the region is not attached) with cumulative latency and a
+  state per hop; `resolve()` for Jump.
+- Explore 360: a region row has "Sites that reach it" (ranked by traffic,
+  path shown inline as a chip trail, the bad hop tinted); a site row has
+  "Paths" (the regions it reaches, the same way). Opening a row shows the
+  hops with latency, and the bad hop carries its door: Attach the region,
+  Control the site, or Ask Andi.
+- Jump box in the tree toolbar: a site, region or VPC name opens its rows
+  and its paths and scrolls to it. Rows carry `data-jump` anchors.
+- Cloud region is a real facet; a region chip narrows the cloud tree and the
+  sites tree to what reaches it, visibly, and clears from the chip.
