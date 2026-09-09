@@ -10,6 +10,19 @@ This is the static prototype behind https://socraticstatic.github.io/naas-design
 - **Observe** shows both layers: the network layer in NetBond Advanced's Detailed Metrics shape (utilization in and out, current and average, up or down, BGP, drops, purchased ports), and beside it the workloads that connection impacts, with two confidence levels (AT&T-terminated: directly impacted; customer DX or ER: possible impact by account) and the resilience rule. Then the traffic flow, then five pattern cards (stays in the region, across regions, across clouds, out to the internet, coming in), each opening Logs.
 - **Drillable in place.** On Home and Connect the picture drills: left class → metro → site → paths, right region → VPC → subnet → workload. On Observe the live flow map is the drill surface: every node opens in place (semantic zoom) down to the workload or the unresolved ip, with a trail, keyboard navigation, a 24h scrubber with replay, a what-changed mode, and a detail panel (Overview, Impact, Records, Actions). Connections are gauges of used against purchased. See PATCHES.md section 9.
 
+## Information architecture: place, list, detail
+
+Every level of the estate has three faces, and the same trail runs through all three.
+
+| Level | Place on the canvas | List at volume | Detail |
+|---|---|---|---|
+| Site class → metro → site → circuit | the picture's left column, the map's Sites band | the drawer behind "+N more" | the Detail overlay: Overview, Paths, Records, Actions |
+| Cloud → region → VPC → subnet → workload | the picture's right column, the map's tag band | (counts past six, no data yet) | the Detail overlay: Overview, Impact, Records, Actions |
+| Fabric → facility → port → circuit | the band, opened in place | (fits on the band) | the circuit row's action |
+| Connection | the gauges, the queue | | Overview (in/out, purchased, BGP, drops), Impact, Records, Actions |
+
+Rules: nothing leaves the page; drawers and details are overlays over the content; the picture shows the sample and the drawer holds the list; every number and row carries its action.
+
 ## Files
 
 | File | What it is |

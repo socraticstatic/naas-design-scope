@@ -357,3 +357,11 @@ Impact · Records · Actions, with the drill trail). No verdict sentences, no ne
   row ("+N other metros", click to fold back). Door rows ("+N more") are fixed height.
 - Sources card on Connect (where a connected customer adds an account or inventory).
 - Still counts, not lists: the "+10 regions" rollup and a subnet's workloads past six (no data).
+- **Every thing has a detail** (Micah, 17:02: "what if I want to see the ATM details"): one
+  Detail overlay on every page (`sitePanel`, `findSite` in `naas-observe-dash.js`; selection
+  key `asset:<site id>`). A site, branch or ATM opens from the picture (click its row), from
+  the drawer (click its name; "‹ Back to the list" returns), from the map (its node) and from
+  the queue. Tabs fit the kind: Overview (class, metro, address, access, first mile, PoP and
+  latency, state, traffic, regions reached, discovered), Paths (every region with the hops,
+  latency and fabric or public), Records, Actions (Attach or Add a second path, Run a failover
+  test, Author a policy for the class). Overview also lists what the site talks to.

@@ -31,3 +31,13 @@ test('panel describes an opened node from its trail', () => {
   const m = buildMap(est, inv, flows, { open: ['site:Branch'] });
   const p = panelFor('site:Branch', { ...ctx, map: m }); assert.ok(p); assert.equal(p.kind, 'site'); assert.ok(p.overview.some(x => x[0] === 'Opened'));
 });
+import { findSite, sitePanel } from '../naas-observe-dash.js';
+import * as S from '../naas-sites.js';
+test('an ATM has a detail: identity, access, paths with hops, what it talks to, actions', () => {
+  const trust = D.ESTATES.trust; const tinv = A.inventory(trust); const tob = A.observe(trust, [], tinv);
+  const atmMetro = S.siteTree(trust).find(c => c.cls === 'Edge').children[0]; const atm = S.metroSites(atmMetro)[10];
+  const site = findSite(trust, atm.id); assert.ok(site); assert.equal(site.cls, 'Edge'); assert.deepEqual(site.trail.slice(0, 2), ['ATMs and kiosks', atmMetro.name]);
+  const p = sitePanel(atm.id, { est: trust, inv: tinv, flows: tob.flows }); assert.equal(p.kind, 'site'); assert.ok(p.overview.some(x => x[0] === 'First mile')); assert.ok(p.paths.length >= 1); assert.match(p.paths[0].via, /PoP/); assert.ok(p.talks.length >= 1); assert.ok(p.actions.some(a => /Attach|second path/.test(a.label)));
+  const named = sitePanel('Ashburn DC', { est, inv, flows }); assert.ok(named); assert.equal(named.trail.length, 3);
+  const viaPanel = panelFor('asset:' + atm.id, { est: trust, inv: tinv, flows: tob.flows, map: buildMap(trust, tinv, tob.flows, {}), conns: connections(trust, tob) }); assert.equal(viaPanel.kind, 'site');
+});
