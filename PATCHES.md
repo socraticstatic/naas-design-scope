@@ -120,3 +120,43 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   27/61/18/84 are gone since the Utilization card carries the real numbers.
 - SVG `<text>` inside an `sc-for` does not render in this runtime; headers
   use `foreignObject` like the labels.
+
+## 11. Audit moves 1–3: one navigation, hero collapse, one grammar (2026-09-09)
+- The CONNECT/OBSERVE/GOVERN/COST band under the hero is gone; its verdict is
+  the title row's subtitle (`pageSub`). A recognized estate opens on the
+  Floor (`init`), so there is one home. The Floor's own band is gone too.
+- The fabric picture opens on Home and Fabric only. Elsewhere a one-line
+  strip ("16 of 18 regions on the fabric · …") with "Show the fabric";
+  the choice is remembered per screen in `localStorage` (`naas.hero`).
+- Naming: Observe tab Control → Logs; Discover heading → Explore 360;
+  Explore 360 leads the Connect group in the rail.
+- Fabric no longer embeds the Explore 360 tree or the catalog; two doors
+  instead. The catalog block is gone from AI Fabric too. Marketplace's dead
+  "Vision strata" chips are gone. AI Observe's in-page tabs are gone (the
+  rail selects the section) and its Insights window reads the title row.
+- Andi docks only on data screens; the rail expands whenever Andi is not
+  docked. Title row is 26px everywhere; export section heads are 18px.
+  "Updated …" is live and its glyph re-reads the estate. Every button in the
+  content column has the kit's 8px radius (pills stay for chips).
+- Observe KPI tiles use the Figma KPI card content (label, trend badge,
+  36→32px value) and open the matching tab; AI tiles match. Cost carries
+  the same Scope bar as Traffic and reads the scoped estate; the AI
+  Providers panel uses the search and select from the filter grammar.
+
+## 12. Audit move 4: empty states and the broken layouts (2026-09-09)
+- Discover: the scanning state is the finished layout's skeleton with one
+  progress line ("Reading AT&T access records · 2 of 4"); the tick row, the
+  COLLAPSED VIEW label and the bottom Home button are gone; clouds carry the
+  same section header as sites; site crumbs show only once drilled.
+- Review: empty order shows "Nothing in this order yet" with doors to
+  Compose and the catalog; Submit is not shown without lines.
+- Compose: a default is not a choice (`resiliencyChosen`); the summary row
+  reads "Standard (default)" and the timeline waits for lines.
+- Floor: tailored tables render only with rows. Recommend: "Recommended for
+  your estate", four findings, tiles wrap. Front door: the fact strip wraps
+  in its columns. Product: the stage rail has its column; cards wrap.
+- Tables: the HTML parser foster-parents `<sc-for>` out of `<table>` (in the
+  runtime's own `compileTemplate` too), so no table in the export ever
+  rendered its rows in a browser; the raw `<tr>` printed once with unresolved
+  values (the "/mo · /mo" row). All 13 tables are CSS tables now
+  (`.dt/.dt-h/.dt-b/.dt-r/.dt-c`), and every one has rows.
