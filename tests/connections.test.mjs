@@ -66,7 +66,7 @@ test('four launch cards; Observe primary on a live estate, Connect on an empty o
   assert.match(c[1].value, /1 of \d+ connections/); assert.match(c[1].sub, /degraded/);
   const e = launchCards({ est: D.ESTATES.empty, ob: A.observe(D.ESTATES.empty, [], []), conns: { rows: [], degraded: 0, total: 0 }, totalSave: 0, violations: 0, isEmpty: true });
   assert.equal(e.find(x => x.primary).key, 'connect'); assert.equal(e[0].value, 'Nothing connected yet');
-  assert.equal(c[1].door, 'See what is impacted'); assert.match(c[1].eyebrow, /Start here/); assert.equal(c[0].eyebrow, ''); assert.equal(e[0].door, 'Connect a cloud');
+  assert.equal(c[1].door, 'What is impacted'); assert.match(c[1].eyebrow, /Start here/); assert.equal(c[0].eyebrow, ''); assert.equal(e[0].door, 'Connect a cloud');
 });
 
 import { records } from '../naas-connections.js';

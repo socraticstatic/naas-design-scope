@@ -93,7 +93,7 @@ export function launchCards({ est, ob, conns, totalSave, violations, isEmpty }) 
     { key: 'cost', label: 'Cost', value: isEmpty ? 'No egress seen yet' : totalSave ? money(totalSave) + '/mo' : money(ob.savingsMo || 0) + '/mo', sub: isEmpty ? 'priced after the scan' : totalSave ? `on the table across ${est.findings.filter(f => f.priced).length} findings` : 'already saved on the fabric', bar: null },
   ].map(c => {
     const primary = isEmpty ? c.key === 'connect' : c.key === 'observe';
-    const door = { connect: isEmpty ? 'Connect a cloud' : pub ? `Attach the ${pub === 1 ? 'region' : pub + ' regions'}` : 'See the fabric', observe: isEmpty ? 'Open Observe' : degRow ? 'See what is impacted' : 'See the traffic', govern: isEmpty ? 'Start a policy' : violations ? 'Review the violations' : 'Review the policies', cost: isEmpty ? 'Open Cost' : 'See the savings' }[c.key];
+    const door = { connect: isEmpty ? 'Connect a cloud' : pub ? `Attach the ${pub === 1 ? 'region' : pub + ' regions'}` : 'See the fabric', observe: isEmpty ? 'Open Observe' : degRow ? 'What is impacted' : 'See the traffic', govern: isEmpty ? 'Start a policy' : violations ? 'Review violations' : 'Review policies', cost: isEmpty ? 'Open Cost' : 'See the savings' }[c.key];
     return { ...c, primary, door, eyebrow: primary ? (isEmpty ? 'Start here · new to the fabric' : 'Start here · you are connected') : '' };
   });
 }

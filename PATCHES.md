@@ -291,3 +291,7 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   security and cost ("4 of 5 sites on the fabric · 1 uninspected · $0.04/GB"); the bank-scale
   estate is a demo-menu entry ("Bank scale", `?view=trust`) and drills to an ATM's paths; a
   link-degraded region's tooltip says "BGP flapping on DX"; `HANDOFF.md` is the port note.
+- **Nothing leaves the page** (Micah, 13:36): Logs opens inline under the patterns (`toLogs`
+  scrolls to `#observe-logs`, "Close logs" folds it); the fabric picture is open on all four
+  pages (`heroDefault`); selecting a connection drills the picture to that region
+  (`cloudDrill`). Launch-card doors are contained (`max-width:100%`, ellipsis) and shorter.
