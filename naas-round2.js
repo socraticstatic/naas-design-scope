@@ -84,7 +84,7 @@ export function applyScope(est, scope) {
 export function trends(ob, window) {
   const f = { '7d': 1, '30d': 1, '90d': 1 }[window] || 1;
   const d = { '7d': [0.04, -0.03, 0.01, 0.06, 0.02, 0.05, 0.03], '30d': [0.11, -0.08, -0.02, 0.18, 0.06, 0.14, 0.09], '90d': [0.31, -0.19, -0.05, 0.42, 0.15, 0.36, 0.22] }[window] || [0, 0, 0, 0, 0, 0, 0];
-  return ob.kpis.map((k, i) => { const delta = d[i] || 0; const good = (i === 1 || i === 2 || i === 3) ? delta <= 0 : delta >= 0; return { ...k, delta: (delta >= 0 ? '+' : '') + Math.round(delta * 100) + '%', deltaTone: good ? 'var(--success)' : 'var(--warning)', arrow: delta >= 0 ? '↑' : '↓', vs: `vs prior ${window}` }; });
+  return ob.kpis.map((k, i) => { const delta = d[i] || 0; const good = (i === 1 || i === 2 || i === 3) ? delta <= 0 : delta >= 0; return { ...k, delta: (delta >= 0 ? '+' : '') + Math.round(delta * 100) + '%', deltaTone: good ? 'var(--success)' : 'var(--warning)', arrow: delta >= 0 ? '↑' : '↓', vs: `vs prior ${window}`, vsShort: `vs ${window}` }; });
 }
 export function anomalies(est, ob) {
   const out = [];
@@ -177,7 +177,8 @@ export function insightWidgets(est, ob, win = 30) {
   const wk = Array.from({ length: 12 }, (_, i) => ({ pub: (ob.pub || 1) * Math.pow(1.02, i) * (0.9 + 0.1 * Math.sin(i)), fab: (ob.fab || 1) * (0.97 + 0.03 * Math.cos(i * 0.6)) }));
   const mx = Math.max(...wk.map(w => w.pub + w.fab)) || 1;
   const weeks = wk.map((w, i) => ({ key: 'w' + i, fabH: Math.round(w.fab / mx * 100) + '%', pubH: Math.round(w.pub / mx * 100) + '%', title: `${i === 11 ? 'This week' : `${11 - i} weeks ago`} · fabric ${w.fab.toFixed(1)} Gbps · public ${w.pub.toFixed(1)} Gbps` }));
-  const growth = { weeks, pubPct: (Math.round((wk[11].pub / wk[0].pub - 1) * 100) || 0), fabPct: (Math.round((wk[11].fab / wk[0].fab - 1) * 100) || 0), pubNow: wk[11].pub.toFixed(1), fabNow: wk[11].fab.toFixed(1), pubThen: wk[0].pub.toFixed(1) };
+  const sgn = (n) => (n >= 0 ? '+' : '') + n + '%';
+  const growth = { weeks, pubPct: (Math.round((wk[11].pub / wk[0].pub - 1) * 100) || 0), fabPct: (Math.round((wk[11].fab / wk[0].fab - 1) * 100) || 0), pubNow: wk[11].pub.toFixed(1), fabNow: wk[11].fab.toFixed(1), pubThen: wk[0].pub.toFixed(1), pubPctF: sgn(Math.round((wk[11].pub / wk[0].pub - 1) * 100) || 0), fabPctF: sgn(Math.round((wk[11].fab / wk[0].fab - 1) * 100) || 0) };
   // 5. Multi-cloud paths: every cloud-to-cloud flow.
   const xflows = flows.filter(f => f.kind !== 'App'); const xMax = Math.max(1, ...xflows.map(f => f.gbps));
   const multiRows = xflows.map(f => ({ key: f.id, id: f.id, name: f.name, sub: `${f.controlled ? 'on the fabric' : 'public internet'} · ${f.latency} ms`, v: f.gbps.toFixed(1) + ' Gbps', w: Math.round(f.gbps / xMax * 100) + '%', fill: f.controlled ? '#0057b8' : '#8a949c', controlled: f.controlled, steerable: !!f.steerable && !f.controlled }));

@@ -172,3 +172,17 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   says so. "Hide the fabric" sits in the legend row, not over the picture.
 - Observe tile "On the AT&T fabric" → "On fabric" so no label wraps past two
   lines at 128px.
+
+## 14. Gestalt pass on widget heads (2026-09-09)
+- No widget head wraps. Card titles and subs are one line with the full
+  text on hover; sub copy was cut to fit its card ("6 new, by volume",
+  "2 with no policy · 5.5 GB/day", "$32,200/mo · carries $61,400/mo of
+  savings").
+- Traffic KPI tiles use a compact variant (`.fx-kpi.sm`): 12px label on one
+  line, 26px value, trend badge and "vs 30d" on one sub line. Labels are
+  sentence case (P95 latency, Packet loss, Egress spend, On fabric).
+- Floor rollup tiles share four fixed rows (label, value, one-line sub, bar
+  slot) so the six values sit on one baseline; every tile has a sub, and
+  tiles without a bar keep the slot.
+- Front-door fact labels fit their column ("metros with on-ramps");
+  Compose outcome titles reserve two lines so the three cards align.

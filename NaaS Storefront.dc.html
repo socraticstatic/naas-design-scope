@@ -31,8 +31,10 @@ a{color:#0057b8}a:hover{color:#00388f}
 /* Figma AI Fabric UI cards (table-horizontal-bar-chart 114:1719, Alert 114:2625, Badge). */
 .fx-card{padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px;min-width:0;align-content:start}
 .fx-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.fx-card-title{margin:0;font-size:16px;line-height:24px;font-weight:500;color:var(--text-heading)}
-.fx-card-sub{font-size:12px;line-height:16px;color:var(--text-light);margin-top:2px}
+.fx-card-head>div{min-width:0;flex:1 1 auto}
+.fx-card-head>.fx-btn{flex:none}
+.fx-card-title{margin:0;font-size:16px;line-height:24px;font-weight:500;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-card-sub{font-size:12px;line-height:16px;color:var(--text-light);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fx-rows{display:grid}
 .fx-row{display:grid;grid-template-columns:minmax(150px,40%) minmax(0,1fr) 84px;align-items:center;min-height:40px;border-bottom:1px solid var(--border-secondary)}
 .fx-row>*{padding:0 8px;min-width:0}
@@ -55,6 +57,12 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 .fx-kpi .val{font-size:32px;line-height:36px;font-weight:700;letter-spacing:-.96px;white-space:nowrap}
 .fx-kpi .val small{font-size:14px;font-weight:500;letter-spacing:-.4px;color:var(--text-body);margin-left:4px}
 .fx-kpi .sub{font-size:13px;line-height:18px;letter-spacing:-.4px;color:var(--text-light)}
+.fx-kpi.sm{padding:14px 16px;gap:6px}
+.fx-kpi.sm .lab{display:block;font-size:12px;line-height:16px;letter-spacing:-.2px;font-weight:500;color:var(--text-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-kpi.sm .val{font-size:26px;line-height:32px;letter-spacing:-.78px}
+.fx-kpi.sm .val small{font-size:12px;margin-left:3px}
+.fx-kpi.sm .sub{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;font-size:11px;line-height:14px;letter-spacing:-.2px}
+.fx-kpi.sm .sub .fx-badge{height:20px;font-size:11px;padding:0 6px;gap:3px;flex:none}
 .fx-card.sm{padding:20px;gap:12px}
 .fx-card.sm .fx-row{grid-template-columns:minmax(0,48%) minmax(0,1fr) 72px;min-height:36px}
 .fx-card.sm .fx-row .lbl{padding:4px 6px 4px 0}
@@ -752,11 +760,11 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <section style="display:grid;gap:32px;margin-top:24px;animation:fadeIn .3s">
   <div aria-label="Success metrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:24px">
     <sc-for list="{{ rollup }}" as="r" hint-placeholder-count="6">
-      <button onClick="{{ r.go }}" style="text-align:left;padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;cursor:pointer;display:grid;gap:4px" style-hover="box-shadow:0 1px 2px rgba(0,0,0,.08);border-color:var(--border-primary)">
-        <span style="font-size:12px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">{{ r.label }}</span>
-        <span style="font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">{{ r.value }}</span>
-        <sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--text-light)">{{ r.sub }}</span></sc-if>
-        <sc-if value="{{ r.hasBar }}" hint-placeholder-val="{{ false }}"><span style="display:block;height:4px;border-radius:9999px;background:var(--bg-neutral);margin-top:6px;overflow:hidden"><span style="display:block;height:4px;border-radius:9999px;width:{{ r.barW }};background:{{ r.barColor }}"></span></span></sc-if>
+      <button onClick="{{ r.go }}" title="{{ r.label }} · {{ r.value }} {{ r.sub }}" style="text-align:left;padding:16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;cursor:pointer;display:grid;grid-template-rows:18px 26px 16px 10px;gap:4px;align-content:start;min-width:0" style-hover="box-shadow:0 1px 2px rgba(0,0,0,.08);border-color:var(--border-primary)">
+        <span style="font-size:12px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span>
+        <span style="font-size:20px;line-height:26px;font-weight:700;letter-spacing:-.4px;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.value }}</span>
+        <span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
+        <span style="display:block;height:4px;border-radius:9999px;background:var(--bg-neutral);margin-top:6px;overflow:hidden;visibility:{{ r.barVis }}"><span style="display:block;height:4px;border-radius:9999px;width:{{ r.barW }};background:{{ r.barColor }}"></span></span>
       </button>
     </sc-for>
   </div>
@@ -1001,7 +1009,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     <sc-if value="{{ hasKpis }}" hint-placeholder-val="{{ true }}">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);font-weight:500;white-space:nowrap"><span style="width:8px;height:8px;border-radius:9999px;background:var(--success)"></span>Live · flow logs from every attached region</span><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goLogs }}">View logs</button></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:12px">
-      <sc-for list="{{ obTrends }}" as="k" hint-placeholder-count="6"><button class="fx-kpi" onClick="{{ k.go }}" aria-label="{{ k.l }} {{ k.v }} {{ k.u }}"><span class="lab"><span>{{ k.l }}</span><span class="fx-badge" style="color:{{ k.deltaTone }}">{{ k.badge }}</span></span><span class="val">{{ k.v }}<sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><small>{{ k.u }}</small></sc-if></span><span class="sub">{{ k.vs }}</span></button></sc-for>
+      <sc-for list="{{ obTrends }}" as="k" hint-placeholder-count="6"><button class="fx-kpi sm" onClick="{{ k.go }}" title="{{ k.l }} · {{ k.badge }} {{ k.vs }}" aria-label="{{ k.l }} {{ k.v }} {{ k.u }}, {{ k.badge }} {{ k.vs }}"><span class="lab">{{ k.l }}</span><span class="val">{{ k.v }}<sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><small>{{ k.u }}</small></sc-if></span><span class="sub"><span class="fx-badge" style="color:{{ k.deltaTone }}">{{ k.badge }}</span><span>{{ k.vsShort }}</span></span></button></sc-for>
     </div>
     <sc-if value="{{ obStrip.has }}" hint-placeholder-val="{{ true }}">
     <div class="fx-alert" role="status" aria-label="Act on it">
@@ -1029,7 +1037,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
     <sc-if value="{{ hasUtil }}" hint-placeholder-val="{{ true }}">
     <div class="fx-card" aria-label="Utilization by connection">
-      <div class="fx-card-head"><div><h3 class="fx-card-title">Utilization by connection</h3><div class="fx-card-sub">{{ utilLine }}</div></div><button class="fx-btn" onClick="{{ goCapacity }}">Add capacity</button></div>
+      <div class="fx-card-head"><div><h3 class="fx-card-title">Utilization by connection</h3><div class="fx-card-sub" title="{{ utilLine }}">{{ utilLine }}</div></div><button class="fx-btn" onClick="{{ goCapacity }}">Add capacity</button></div>
       <div class="fx-rows">
         <sc-for list="{{ utilRows }}" as="u" hint-placeholder-count="3"><div class="fx-row door" role="button" tabindex="0" onClick="{{ u.go }}" aria-label="{{ u.label }} {{ u.pctF }} · {{ u.doorLabel }}"><span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span><span class="bar"><span style="width:{{ u.w }};background:{{ u.fill }}"></span></span><span class="val">{{ u.pctF }}<small>{{ u.v }} of {{ u.cap }} Gbps</small><span class="door-l" style="color:{{ u.doorColor }}">{{ u.doorLabel }}</span></span></div></sc-for>
       </div>
@@ -1049,33 +1057,33 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Insights</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
         <div class="fx-card sm" aria-label="Top talkers">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">Top talkers</h3><div class="fx-card-sub">{{ iw.talkers.0.label }} carries {{ iw.talkers.0.share }} of all traffic</div></div><button class="fx-btn" onClick="{{ iw.talkersGo }}">Logs</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">Top talkers</h3><div class="fx-card-sub" title="{{ iw.talkers.0.label }} carries {{ iw.talkers.0.share }} of all traffic">{{ iw.talkers.0.label }} · {{ iw.talkers.0.share }} of traffic</div></div><button class="fx-btn" onClick="{{ iw.talkersGo }}">Logs</button></div>
           <div class="fx-rows"><sc-for list="{{ iw.talkers }}" as="t" hint-placeholder-count="5"><div class="fx-row door" role="button" tabindex="0" onClick="{{ t.go }}" aria-label="{{ t.label }} {{ t.v }} · {{ t.doorLabel }}"><span class="lbl"><b title="{{ t.label }}">{{ t.label }}</b><small>{{ t.sub }}</small></span><span class="bar"><span style="width:{{ t.w }};background:{{ t.fill }}"></span></span><span class="val">{{ t.share }}<small>{{ t.v }}</small></span></div></sc-for></div>
           <div class="fx-legend"><span><i style="background:#0057b8"></i>On the fabric</span><span><i style="background:#8a949c"></i>Public internet</span></div>
         </div>
         <div class="fx-card sm" aria-label="New destinations">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">New destinations · {{ iw.winLabel }}</h3><div class="fx-card-sub">{{ iw.newDestN }} not seen before the window, by volume</div></div><button class="fx-btn" onClick="{{ iw.newDestGo }}">Policies</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">New destinations · {{ iw.winLabel }}</h3><div class="fx-card-sub" title="{{ iw.newDestN }} destinations not seen before the window, by volume">{{ iw.newDestN }} new, by volume</div></div><button class="fx-btn" onClick="{{ iw.newDestGo }}">Policies</button></div>
           <sc-if value="{{ iw.hasNewDest }}" hint-placeholder-val="{{ true }}"><div class="fx-rows"><sc-for list="{{ iw.newDest }}" as="d" hint-placeholder-count="4"><div class="fx-row door" role="button" tabindex="0" onClick="{{ d.go }}" aria-label="{{ d.name }} · {{ d.doorLabel }}"><span class="lbl"><b title="{{ d.name }}">{{ d.name }}</b><small>{{ d.sub }}</small></span><span class="bar"><span style="width:{{ d.w }};background:{{ d.fill }}"></span></span><span class="val">{{ d.v }}<span class="door-l" style="color:var(--link)">{{ d.doorLabel }}</span></span></div></sc-for></div></sc-if>
           <sc-if value="{{ iw.hasNewDest }}" hint-placeholder-val="{{ true }}"><div class="fx-legend"><span><i style="background:#7b3fbf"></i>AI endpoint</span><span><i style="background:#f57c00"></i>SaaS</span><span><i style="background:#00838f"></i>Object storage</span></div></sc-if>
         </div>
         <div class="fx-card sm" aria-label="Shadow SaaS">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">Shadow SaaS</h3><div class="fx-card-sub">{{ iw.shadowN }} domains move {{ iw.shadowGb }} GB a day with no policy</div></div><button class="fx-btn" onClick="{{ iw.shadowGo }}">Policies</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">Shadow SaaS</h3><div class="fx-card-sub" title="{{ iw.shadowN }} domains move {{ iw.shadowGb }} GB a day with no policy">{{ iw.shadowN }} with no policy · {{ iw.shadowGb }} GB/day</div></div><button class="fx-btn" onClick="{{ iw.shadowGo }}">Policies</button></div>
           <div class="fx-rows"><sc-for list="{{ iw.shadow }}" as="d" hint-placeholder-count="5"><div class="fx-row door" role="button" tabindex="0" onClick="{{ d.go }}" aria-label="{{ d.name }} · {{ d.doorLabel }}"><span class="lbl"><b title="{{ d.name }}">{{ d.name }}</b><small>{{ d.sub }}</small></span><span class="bar"><span style="width:{{ d.w }};background:{{ d.fill }}"></span></span><span class="val">{{ d.v }}<span class="door-l" style="color:var(--link)">{{ d.doorLabel }}</span></span></div></sc-for></div>
           <div class="fx-legend"><span><i style="background:#f57c00"></i>No policy</span><span><i style="background:#0057b8"></i>Covered</span></div>
         </div>
         <div class="fx-card sm" aria-label="Egress growth">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">Egress growth · 12 weeks</h3><div class="fx-card-sub">Public {{ iw.growth.pubThen }} → {{ iw.growth.pubNow }} Gbps ({{ iw.growth.pubPct }}%) · fabric {{ iw.growth.fabPct }}%</div></div><button class="fx-btn" onClick="{{ iw.growthGo }}">Cost</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">Egress growth · 12 weeks</h3><div class="fx-card-sub" title="Public {{ iw.growth.pubThen }} → {{ iw.growth.pubNow }} Gbps · fabric {{ iw.growth.fabPctF }}">Public {{ iw.growth.pubPctF }} · fabric {{ iw.growth.fabPctF }}</div></div><button class="fx-btn" onClick="{{ iw.growthGo }}">Cost</button></div>
           <div class="fx-cols" role="img" aria-label="Weekly egress, fabric under public"><sc-for list="{{ iw.growth.weeks }}" as="w" hint-placeholder-count="12"><div title="{{ w.title }}"><span style="height:{{ w.pubH }};background:#8a949c"></span><span style="height:{{ w.fabH }};background:#0057b8"></span></div></sc-for></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;line-height:12px;color:var(--text-light)"><span>12 weeks ago</span><span>this week</span></div>
           <div class="fx-legend"><span><i style="background:#0057b8"></i>On the fabric</span><span><i style="background:#8a949c"></i>Public internet</span></div>
         </div>
         <div class="fx-card sm" aria-label="Multi-cloud paths">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">Cloud-to-cloud paths</h3><div class="fx-card-sub">{{ iw.multi.privN }} of {{ iw.multi.totalN }} paths ride the fabric</div></div><button class="fx-btn" onClick="{{ iw.multiGo }}">Flows</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">Cloud-to-cloud paths</h3><div class="fx-card-sub">{{ iw.multi.privN }} of {{ iw.multi.totalN }} on the fabric</div></div><button class="fx-btn" onClick="{{ iw.multiGo }}">Flows</button></div>
           <div class="fx-rows"><sc-for list="{{ iw.multi.rows }}" as="m" hint-placeholder-count="3"><div class="fx-row door" role="button" tabindex="0" onClick="{{ m.go }}" aria-label="{{ m.name }} · {{ m.doorLabel }}"><span class="lbl"><b title="{{ m.name }}">{{ m.name }}</b><small>{{ m.sub }}</small></span><span class="bar"><span style="width:{{ m.w }};background:{{ m.fill }}"></span></span><span class="val">{{ m.v }}<span class="door-l" style="color:{{ m.doorColor }}">{{ m.doorLabel }}</span></span></div></sc-for></div>
           <div class="fx-legend"><span><i style="background:#0057b8"></i>On the fabric</span><span><i style="background:#8a949c"></i>Public internet</span></div>
         </div>
         <div class="fx-card sm" aria-label="Latency over SLO">
-          <div class="fx-card-head"><div><h3 class="fx-card-title">Latency over SLO</h3><div class="fx-card-sub">{{ iw.sloN }} of {{ iw.sloTotal }} flows run above {{ iw.SLO }} ms</div></div><button class="fx-btn" onClick="{{ iw.sloGo }}">Latency</button></div>
+          <div class="fx-card-head"><div><h3 class="fx-card-title">Latency over SLO</h3><div class="fx-card-sub">{{ iw.sloN }} of {{ iw.sloTotal }} flows over {{ iw.SLO }} ms</div></div><button class="fx-btn" onClick="{{ iw.sloGo }}">Latency</button></div>
           <sc-if value="{{ iw.hasSlo }}" hint-placeholder-val="{{ true }}"><div class="fx-rows"><sc-for list="{{ iw.slo }}" as="f" hint-placeholder-count="3"><div class="fx-row door" role="button" tabindex="0" onClick="{{ f.go }}" aria-label="{{ f.name }} {{ f.v }} · {{ f.doorLabel }}"><span class="lbl"><b title="{{ f.name }}">{{ f.name }}</b><small>{{ f.sub }}</small></span><span class="bar"><span style="width:{{ f.w }};background:{{ f.fill }}"></span></span><span class="val">{{ f.v }}<span class="door-l" style="color:{{ f.doorColor }}">{{ f.doorLabel }}</span></span></div></sc-for></div></sc-if>
           <div class="fx-legend"><span><i style="background:#ff605d"></i>{{ iw.sloLegend }}</span></div>
         </div>
@@ -1137,7 +1145,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     <sc-if value="{{ hasBuckets }}" hint-placeholder-val="{{ true }}">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start">
       <div class="fx-card" aria-label="Egress by destination">
-        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by destination</h3><div class="fx-card-sub">Today on the hyperscaler, and what the fabric would carry</div></div></div>
+        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by destination</h3><div class="fx-card-sub">Today, and what the fabric would carry</div></div></div>
         <div style="display:grid;gap:8px">
           <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px"><sc-for list="{{ destClasses }}" as="d" hint-placeholder-count="4"><span title="{{ d.label }} · {{ d.nowF }} today · {{ d.ifAllF }} on fabric" style="width:{{ d.w }};background:var(--cta);opacity:{{ d.op }};cursor:help"></span></sc-for></div>
           <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px;font-size:12px"><sc-for list="{{ destClasses }}" as="d" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:8px"><span style="display:inline-flex;align-items:center;gap:6px;color:var(--text-body);min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:2px;background:var(--cta);opacity:{{ d.op }};flex:none"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.label }}</span></span><span style="white-space:nowrap"><strong style="color:var(--text-heading)">{{ d.nowF }}</strong> <span style="color:var(--success)">→ {{ d.ifAllF }}</span></span></div></sc-for></div>
@@ -1164,7 +1172,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start">
       <sc-if value="{{ hasAttCharges }}" hint-placeholder-val="{{ true }}">
       <div class="fx-card" aria-label="AT&amp;T charges">
-        <div class="fx-card-head"><div><h3 class="fx-card-title">AT&amp;T charges</h3><div class="fx-card-sub">{{ attNote }}</div></div><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
+        <div class="fx-card-head"><div><h3 class="fx-card-title">AT&amp;T charges</h3><div class="fx-card-sub" title="{{ attNote }}">{{ attNote }}</div></div><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
         <div class="fx-rows">
           <sc-for list="{{ attCharges }}" as="ch" hint-placeholder-count="3"><div class="fx-row"><span class="lbl"><b>{{ ch.label }}</b><small>{{ ch.sub }}</small></span><span class="bar"><span style="width:{{ ch.w }};background:#009fdb"></span></span><span class="val">{{ ch.vF }}<small>per month</small></span></div></sc-for>
           <div class="fx-row total" style="min-height:32px"><span class="lbl"><b>Total to AT&amp;T</b></span><span class="bar"></span><span class="val">{{ attTotalF }}<small>per month</small></span></div>
@@ -1175,7 +1183,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </sc-if>
       <sc-if value="{{ hasBySite }}" hint-placeholder-val="{{ true }}">
       <div class="fx-card" aria-label="Egress by site class">
-        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by site class · per month</h3><div class="fx-card-sub">{{ bySiteNote }}</div></div><button class="fx-btn" onClick="{{ goSites }}">Drill sites</button></div>
+        <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by site class · per month</h3><div class="fx-card-sub" title="{{ bySiteNote }}">{{ bySiteNote }}</div></div><button class="fx-btn" onClick="{{ goSites }}">Drill sites</button></div>
         <div class="fx-rows">
           <sc-for list="{{ bySite }}" as="bs" hint-placeholder-count="4"><div class="fx-row door" role="button" tabindex="0" onClick="{{ bs.go }}" aria-label="Drill {{ bs.label }} in Explore 360"><span class="lbl"><b>{{ bs.label }}</b><small>{{ bs.sub }}</small></span><span class="bar"><span style="width:{{ bs.wFab }};background:var(--cta)"></span><span style="width:{{ bs.wPub }};background:#8a949c"></span></span><span class="val">{{ bs.todayF }}<span class="door-l" style="color:var(--link)">{{ bs.doorLabel }}</span></span></div></sc-for>
           <div class="fx-row total"><span class="lbl"><b>All sites</b></span><span class="bar"></span><span class="val">{{ bySiteTotalF }}<small>per month</small></span></div>
@@ -1231,7 +1239,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
           <sc-for list="{{ outcomeCards }}" as="o" hint-placeholder-count="3">
             <button onClick="{{ o.click }}" aria-pressed="{{ o.on }}" style="text-align:left;padding:20px;border-radius:16px;border:1px solid {{ o.border }};background:{{ o.bg }};cursor:pointer;display:grid;gap:10px;align-content:start;min-height:172px" style-hover="border-color:var(--border-active)">
               <span style="font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text-disabled)">{{ o.dir }}</span>
-              <span style="font-weight:700;color:var(--text-heading);font-size:18px;line-height:24px">{{ o.name }}</span>
+              <span style="display:block;min-height:48px;font-weight:700;color:var(--text-heading);font-size:18px;line-height:24px;text-wrap:balance">{{ o.name }}</span>
               <span style="font-size:13px;line-height:18px;color:var(--text-body)">{{ o.desc }}</span>
               <span style="font-size:12px;color:var(--link);font-weight:500;margin-top:auto">Ships with: {{ o.controlLine }}</span>
             </button>

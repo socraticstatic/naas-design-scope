@@ -126,9 +126,9 @@ export function observe(est, steered, inv) {
   const util = capTotal ? Math.min(99, Math.round(utilRows.reduce((a, u) => a + u.gbps, 0) / capTotal * 100)) : 0;
   const kpis = [
     { key: 'thr', l: 'Throughput', v: total.toFixed(1), u: 'Gbps', e: '' },
-    { key: 'p95', l: 'P95 Latency', v: String(p95), u: 'ms', e: '' },
-    { key: 'loss', l: 'Packet Loss', v: loss.toFixed(2), u: '%', e: '' },
-    { key: 'egr', l: 'Egress Spend', v: short(egressMo), u: '', e: '/mo' },
+    { key: 'p95', l: 'P95 latency', v: String(p95), u: 'ms', e: '' },
+    { key: 'loss', l: 'Packet loss', v: loss.toFixed(2), u: '%', e: '' },
+    { key: 'egr', l: 'Egress spend', v: short(egressMo), u: '', e: '/mo' },
     { key: 'fab', l: 'On fabric', v: String(covPct), u: '%', e: '' },
     { key: 'sav', l: 'Savings', v: short(savingsMo), u: '', e: '/mo' },
     ...(capTotal ? [{ key: 'util', l: 'Utilization', v: String(util), u: '%', e: 'of attached capacity' }] : []),

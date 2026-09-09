@@ -13,10 +13,10 @@ export const VIEWS = [
 ];
 
 export const HEADSTART = [
-  { n: '41', label: 'metros with AT&T on-ramps', cat: 'private' },
-  { n: '12', label: 'clouds and neoclouds reachable', cat: 'hosted' },
-  { n: '9', label: 'Last Mile metros live today', cat: 'maxres' },
-  { n: '6', label: 'connection types orderable now', cat: 'internet' },
+  { n: '41', label: 'metros with on-ramps', cat: 'private' },
+  { n: '12', label: 'clouds and neoclouds', cat: 'hosted' },
+  { n: '9', label: 'Last Mile metros live', cat: 'maxres' },
+  { n: '6', label: 'connection types', cat: 'internet' },
 ];
 
 const REG = (cloud, region, wl, priv, ramp, pub, fab, tags, rel) => ({ cloud, region, wl, priv, ramp, pub, fab, tags: tags || [], rel: rel || 'ok' });
