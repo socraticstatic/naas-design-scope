@@ -283,3 +283,7 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   health tiles, the Tailored tables, the Browse door, the Connect catalog doors and the S0 mode
   tabs are removed. Every page ends with the next stop: Connect → Observe → Govern → Cost →
   Connect (`connectNext`, `nextStop`, `governNext`, `costNext`). Titles are the four words.
+- **Andi** (Micah, 13:30): closed by default on every screen (`andiOpen` is only ever what the
+  user set); opens from the header button or any Ask Andi door. On NaaS it never leads with an
+  AI Fabric finding; the home lead names the degraded connection and the four-word loop, and a
+  region scope on a degraded link says what is behind it and what to do.

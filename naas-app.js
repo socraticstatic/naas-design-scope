@@ -273,7 +273,7 @@ export function vals(c) {
     deliverNow: () => { const cand = (s.compose && s.compose.prefillRegion ? s.compose.prefillRegion.split(' ')[1] : null) || (estRaw.regionsList.find(r => !r.priv) || {}).region; if (!cand) return; c.setState({ landed: cand, layer: 'cloud', tab: 'observe', screen: 's3', events: [...(s.events || []), { key: 'e' + Date.now(), t: new Date().toLocaleTimeString('en-US', { hour12: false }), text: `${cand} validated · live. Hosted VPC on the fabric; first flow logs received; coverage up by one region.` }] }); syncHash('s3', 'cloud', 'observe'); scrollToResult('S3 Department'); },
     ...shellVals(s, set, go, est, c),
     headOpen: s.headOpen !== false, headClosed: s.headOpen === false, toggleHead: () => { const v = s.headOpen === false; set({ headOpen: v }); try { localStorage.setItem('naas.headOpen', String(v)); } catch (e) {} }, headRot: s.headOpen === false ? 'rotate(-90deg)' : 'rotate(0deg)',
-    ...andiVals(s, set, go, est, ob, { floorVerdict, connectVerdict, governVerdict, costVerdict, discoverVerdict, stageKicker, findingCard, sortF, findingsFor, isEmpty, totalSave, persona, personaTab }),
+    ...andiVals(s, set, go, est, ob, { conns, floorVerdict, connectVerdict, governVerdict, costVerdict, discoverVerdict, stageKicker, findingCard, sortF, findingsFor, isEmpty, totalSave, persona, personaTab }),
     deptVerdict: s.tab === 'govern' ? governVerdict : s.tab === 'cost' ? costVerdict : s.tab === 'observe' ? ob.verdict : connectVerdict, pageSub: s.screen === 's3' ? (s.tab === 'govern' ? governVerdict : s.tab === 'cost' ? costVerdict : s.tab === 'observe' ? ob.verdict : connectVerdict) : s.screen === 's2' ? floorVerdict : '', hasPageSub: s.screen === 's3' || s.screen === 's2', personaLine: PERSONA_LINE[persona] || '', connectEmptyHead, connectEmptySub: isEmpty ? 'Start with one of the packages below.' : 'Nothing to close here today. The products estates like yours chose, if you want to add more.',
     persona: s.persona || 'architect', personaName: persona, setPersona: (e) => set({ persona: e.target.value }), personas: PERSONAS.map(p => ({ key: p, label: p })), moreByTab, hasMoreByTab: moreByTab.length > 0, pendingTitle: (s.order && s.order.title) || 'Hosted VPC order', dismissPending: () => set({ pendingDismissed: true }),
     estateName: est.name, isEmpty, isPartial, isMature, notEmpty: !isEmpty, stageKicker, floorVerdict,
@@ -780,7 +780,8 @@ function shellVals(s, set, go, est, c) {
   const dark = s.theme === 'dark';
   const iconDir = dark ? 'brand/icons-dark' : 'brand/icons-light', iconLink = dark ? 'brand/icons-linkdark' : 'brand/icons-link';
   const wide = typeof window !== 'undefined' ? window.innerWidth >= 1440 : true;
-  const andiOpen = s.andiOpen === undefined ? (wide && !['s4', 's5', 's6', 's7', 's8'].includes(s.screen)) : !!s.andiOpen;
+  // Closed by default (Micah, 13:30); opens from the header button or any Ask Andi door.
+  const andiOpen = !!s.andiOpen;
   const andiDocked = andiOpen && wide;
   const inAi = s.screen === 's3' && s.layer === 'ai';
   const top = s.screen === 's1' ? 'discover' : inAi ? 'ai' : 'net';
@@ -933,9 +934,11 @@ function tagTree(inv, tree, chip) {
 function andiVals(s, set, go, est, ob, x) {
   const { findingCard, sortF, findingsFor, isEmpty } = x;
   const scope = s.andiScope || null; // {kind:'region'|'tag'|'finding'|'flow', id, label}
-  const screenFindings = s.screen === 's3' ? sortF(findingsFor(s.layer, s.tab)) : s.screen === 's2' || s.screen === 's1' ? sortF(est.findings) : [];
+  const onAi = s.screen === 's3' && s.layer === 'ai';
+  const naasFindings = est.findings.filter(f => f.layer !== 'ai');
+  const screenFindings = s.screen === 's3' ? sortF(onAi ? findingsFor('ai', s.tab) : findingsFor(s.layer, s.tab).filter(f => f.layer !== 'ai')) : s.screen === 's2' || s.screen === 's1' || s.screen === 's0' ? sortF(naasFindings) : [];
   let lead = '', sub = '', focus = null, qs = [], acts = [];
-  if (s.screen === 's2' || s.screen === 's0') { lead = x.floorVerdict; sub = x.stageKicker.replace(/^For [^:]+: /, ''); qs = ['What should I do first?', 'Which region is the outlier?', 'How much is on the table?']; }
+  if (s.screen === 's2' || s.screen === 's0') { const c = x.conns; const deg = c && c.rows.find(r => r.degraded); lead = isEmpty ? 'Nothing connected yet. Connect a cloud and the picture fills in.' : deg ? `${deg.cloud} ${deg.region} is degraded on ${deg.ramp}: ${deg.wl.toLocaleString('en-US')} workloads behind it. ${x.floorVerdict}` : x.floorVerdict; sub = isEmpty ? 'Connect, then Observe, then Govern, then Cost. Each page ends with the next stop.' : 'Connect what is still public. Observe what the fabric carries. Govern it. Cost proves it.'; qs = isEmpty ? ['What do I need to connect?', 'What will I see once attached?', 'What does it cost?'] : ['What is degraded and what does it impact?', 'Which region should I attach first?', 'How much is on the table?']; }
   else if (s.screen === 's1') { lead = x.discoverVerdict; sub = 'Open a cloud to see regions, VPCs, subnets, endpoints and resources. Tags are how you will control them.'; qs = ['Which VPCs are internet-exposed?', 'What does tag PCI touch?', 'Where are my sites attached?']; }
   else if (s.screen === 's3') {
     lead = { connect: x.connectVerdict, govern: x.governVerdict, observe: ob.verdict, cost: x.costVerdict }[s.tab] || '';
@@ -947,7 +950,7 @@ function andiVals(s, set, go, est, ob, x) {
   else if (s.screen === 's6') { lead = 'Review the order. Nothing is ordered until you submit.'; qs = ['What ships on day one?', 'Can I change the policy later?']; }
   else if (s.screen === 's7' || s.screen === 's8') { lead = 'Filter by what the path must do, not by product name.'; qs = ['Which products fit tag PCI?', 'What do estates like mine choose?']; }
   // scoped focus
-  if (scope && scope.kind === 'region') { const r = est.regionsList.find(z => z.region === scope.id); if (r) { lead = `${r.cloud} ${r.region}: ${r.wl} workloads, ${r.priv ? 'on the fabric at ' + r.fab + ' ms' : 'on the public internet at ' + r.pub + ' ms'}. Tags ${r.tags.join(', ') || 'none'}.`; sub = r.priv ? 'Already attached. The remaining lever is policy: which tags may reach the internet.' : `Attaching it moves ${r.wl} workloads to $0.02/GB and ${r.fab} ms, deterministic.`; qs = ['Compare the three paths here', 'What would a private-path policy change?', 'Who owns these resources?']; } }
+  if (scope && scope.kind === 'region') { const r = est.regionsList.find(z => z.region === scope.id); if (r) { const deg = r.link === 'degraded'; lead = deg ? `${r.cloud} ${r.region} is degraded on ${r.ramp || 'NetBond'}: BGP flapping, 0.31% drops, ${r.wl} workloads behind it${(r.paths || 1) >= 2 ? ', a second path holding' : ', single path'}.` : `${r.cloud} ${r.region}: ${r.wl} workloads, ${r.priv ? 'on the fabric at ' + r.fab + ' ms' : 'on the public internet at ' + r.pub + ' ms'}. Tags ${r.tags.join(', ') || 'none'}.`; sub = deg ? ((r.paths || 1) >= 2 ? 'Access holds. Govern it: a policy that requires the second path keeps it that way.' : 'Access is lost if this link fails. Add a second path, then a policy that requires it.') : r.priv ? 'Already attached. The remaining lever is policy: which tags may reach the internet.' : `Attaching it moves ${r.wl} workloads to $0.02/GB and ${r.fab} ms, deterministic.`; qs = deg ? ['Which workloads are impacted?', 'What does a second path cost?', 'Author the policy'] : ['Compare the three paths here', 'What would a private-path policy change?', 'Who owns these resources?']; } }
   if (scope && scope.kind === 'tag') { lead = `Tag ${scope.id} spans clouds. One policy covers every VPC carrying it.`; sub = 'When tag ' + scope.id + ' reaches any cloud, require a private path.'; qs = ['Author that policy', 'Which VPCs carry it?', 'Any of them internet-exposed?']; }
   const top = scope && scope.kind === 'finding' ? est.findings.find(f => f.kind === scope.id) : screenFindings[0];
   if (top) focus = findingCard(top);
