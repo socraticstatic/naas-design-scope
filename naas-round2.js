@@ -44,9 +44,12 @@ export function lensVerdict(est, lens) {
 export function health(est, ob, steered) {
   const rs = est.regionsList;
   const regionHealth = {};
-  rs.forEach(r => { regionHealth[r.region] = r.rel === 'warn' ? 'amber' : !r.priv && r.pub > 120 ? 'amber' : 'green'; });
+  rs.forEach(r => { regionHealth[r.region] = r.rel === 'warn' || r.link === 'degraded' ? 'amber' : !r.priv && r.pub > 120 ? 'amber' : 'green'; });
   const amber = Object.values(regionHealth).filter(h => h === 'amber').length;
-  const incidents = rs.filter(r => r.rel === 'warn').map(r => ({ region: r.region, cloud: r.cloud, text: `${r.cloud} ${r.region} · p95 ${r.pub + 40} ms · 22 min · public path` }));
+  const incidents = [
+    ...rs.filter(r => r.link === 'degraded').map(r => ({ region: r.region, cloud: r.cloud, text: `${r.cloud} ${r.region} · BGP flapping on ${r.ramp || 'NetBond'} · 0.31% drops · 22 min · ${r.wl.toLocaleString('en-US')} workloads behind it` })),
+    ...rs.filter(r => r.rel === 'warn').map(r => ({ region: r.region, cloud: r.cloud, text: `${r.cloud} ${r.region} · p95 ${r.pub + 40} ms · 22 min · public path` })),
+  ];
   const uptime = rs.length ? (rs.reduce((a, r) => a + (r.priv ? 99.99 : 99.5), 0) / rs.length).toFixed(2) : '—';
   return { regionHealth, amber, incidents, strip: rs.length ? [
     { key: 'up', l: 'Uptime', v: uptime + '%', tone: 'var(--success)' },

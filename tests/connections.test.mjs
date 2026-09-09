@@ -67,3 +67,13 @@ test('four launch cards; Observe primary on a live estate, Connect on an empty o
   const e = launchCards({ est: D.ESTATES.empty, ob: A.observe(D.ESTATES.empty, [], []), conns: { rows: [], degraded: 0, total: 0 }, totalSave: 0, violations: 0, isEmpty: true });
   assert.equal(e.find(x => x.primary).key, 'connect'); assert.equal(e[0].value, 'Nothing connected yet');
 });
+
+import { records } from '../naas-connections.js';
+test('records carry one pattern each and resolve private destinations', () => {
+  const all = records(est, inv, ob, 'all');
+  assert.ok(all.length >= 10);
+  for (const k of ['region', 'regions', 'clouds', 'internet', 'inbound']) assert.ok(records(est, inv, ob, k).every(r => r.pattern === k) && records(est, inv, ob, k).length >= 1, k);
+  const priv = all.find(r => r.pattern === 'region'); assert.match(priv.dstName, /\//);
+  const pub = all.find(r => r.pattern === 'internet'); assert.match(pub.dstName, /^\d+\.\d+\.\d+\.\d+$/);
+  assert.equal(records(D.ESTATES.empty, [], ob, 'all').length, 0);
+});

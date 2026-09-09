@@ -223,3 +223,38 @@ The header is pinned (sticky). The rail and the Andi dock are
 instead of 65px below it; the rail's list is `overflow:hidden` and can
 never show a scrollbar. Under 720px tall the rail is static and scrolls
 with the page.
+
+## 8. Iteration 2 after Ramesh's review (2026-09-09)
+Spec: `cloud-connect/docs/superpowers/specs/2026-09-09-storefront-iteration-2-ramesh-review-design.md`.
+Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-transcript.md`.
+- **Data** (`naas-data.js`): `REG` takes a tenth argument `{ link, paths, acct }`. One attached
+  region per estate is `link: 'degraded'` (partial eastus, mature eu-central-1, trust us-east-2).
+  DX and ER regions carry an account or subscription id; NetBond regions in mature estates
+  carry `paths: 2`.
+- **New module** `naas-connections.js` (pure data, tests in `tests/`, run `node --test 'tests/*.test.mjs'`):
+  `connections` (one row per attached region in NetBond Advanced's monitor shape: state, BGP,
+  drops, in/out sparklines, purchased ports), `impacted` (directly impacted vs possible impact,
+  resilience-aware, VPCs plus the partner regions they talk to), `patterns` (the five patterns:
+  stays in the region, across regions, across clouds, out to the internet, coming in),
+  `resolveDest` (private ip → resource name through the discovery tree), `records` (per-flow
+  logs, one pattern each), `launchCards` (the four launch-off points).
+- **Hero** (`naas-logic.js` `heroLayout`, storefront band markup): the band is 300 tall (four
+  strata of 75, cards 64) and a lane "Outside the AT&T fabric · third party · internet" sits at
+  y 340 to 416. Public ingress and egress edges and the internet edge route through the lane;
+  private edges are unchanged. Every edge carries `viaLane`.
+- **Landing** (`rollup` in `naas-app.js`, `aria-label="Launch points"`): four cards, Connect,
+  Observe, Govern, Cost, baseline line plus door. Connect is primary on an empty estate,
+  Observe everywhere else.
+- **Rail**: the NaaS Observe group is Performance & Reliability, Cost, Security & Governance,
+  mirroring the AI Fabric group. Deep dive keeps Logs. State: `obPage` (`perf` | `sec`),
+  `obTab: 'control'` is Logs, `obConn` the selected connection, `logPattern` the Logs chip.
+- **Observe** (the `netObserve` block): one section in the AI Fabric's shape. Four tiles
+  (Throughput, Utilization, P95 latency, Packet loss), the Act on it strip (leads with the
+  degraded connection), Connections beside Impacted workloads, the Sankey alone under
+  "Traffic flow", five pattern cards each with a Logs door. Security & Governance: the layer's
+  Govern findings plus a Policy audit list. Logs: pattern chips over per-flow records with
+  resolved private destinations. Removed: the seven trend tabs, Anomalies, Utilization by
+  connection, the six insight cards (Top talkers, New destinations, Shadow SaaS, Egress
+  growth, Multi-cloud paths, Latency over SLO), Flows and paths, Event stream.
+- **Health** (`naas-round2.js`): `link: 'degraded'` is amber on the hero and adds an
+  incident line ("BGP flapping on DX · 0.31% drops · 22 min").

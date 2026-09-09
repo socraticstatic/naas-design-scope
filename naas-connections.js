@@ -87,3 +87,37 @@ export function launchCards({ est, ob, conns, totalSave, violations, isEmpty }) 
     { key: 'cost', label: 'Cost', value: isEmpty ? 'No egress seen yet' : totalSave ? money(totalSave) + '/mo' : money(ob.savingsMo || 0) + '/mo', sub: isEmpty ? 'priced after the scan' : totalSave ? `on the table across ${est.findings.filter(f => f.priced).length} findings` : 'already saved on the fabric', bar: null },
   ].map(c => ({ ...c, primary: isEmpty ? c.key === 'connect' : c.key === 'observe' }));
 }
+
+const PROTO = ['tcp/443', 'tcp/5432', 'tcp/8080', 'udp/53', 'tcp/6379', 'tcp/22'];
+const PUBLIC_DST = [['52.94.236.248', 's3 · public'], ['104.18.32.7', 'unresolved · public'], ['20.60.132.10', 'blob · public'], ['142.250.72.14', 'unresolved · public'], ['3.5.140.2', 'unresolved · public']];
+const PATTERN_OF = { region: 'region', regions: 'regions', clouds: 'clouds', internet: 'internet', inbound: 'inbound' };
+
+/** Per-flow records for Logs, one pattern each; private destinations carry the resource name, public ones stay an ip. */
+export function records(est, inv, ob, pattern = 'all') {
+  const regionsOf = inv.flatMap(c => c.regions);
+  if (!regionsOf.length) return [];
+  const wls = regionsOf.flatMap(r => r.vpcs.flatMap(v => v.subnets.flatMap(s => (s.workloads || []).map(w => ({ ...w, region: r.region, cloud: r.cloud, priv: r.priv, vpc: v.name })))));
+  const pick = (seed, arr) => arr[hash(seed) % arr.length];
+  const sites = P.allSites(est);
+  const out = [];
+  const push = (id, pat, src, dst, path, action, seed) => out.push({ id, pattern: pat, time: `14:0${hash(seed) % 10}:${String(10 + hash(seed + 'x') % 50)}`, srcName: src.name, srcSub: src.sub, dstName: dst.name, dstSub: dst.sub, proto: pick(seed + 'p', PROTO), bytes: (0.2 + (hash(seed + 'b') % 900) / 100).toFixed(1) + ' GB', path, action, deny: action === 'deny' });
+  const wlRef = (w) => ({ name: `${w.tag || w.vpc}/${w.name}`, sub: `${w.ip} · ${w.region}` });
+  const hit = (ip) => resolveDest(inv, ip);
+  regionsOf.slice(0, 4).forEach((r, i) => {
+    const mine = wls.filter(w => w.region === r.region); if (mine.length < 2) return;
+    const a = mine[0], b = mine[Math.min(3, mine.length - 1)];
+    push(`rec-region-${i}`, 'region', wlRef(a), hit(b.ip) || { name: b.ip, sub: 'unresolved' }, r.priv ? 'private' : 'public', 'allow', `r${i}`);
+    const other = wls.find(w => w.cloud === r.cloud && w.region !== r.region);
+    if (other) push(`rec-regions-${i}`, 'regions', wlRef(a), hit(other.ip) || { name: other.ip, sub: 'unresolved' }, r.priv && other.priv ? 'private' : 'public', 'allow', `x${i}`);
+    const xc = wls.find(w => w.cloud !== r.cloud);
+    if (xc) push(`rec-clouds-${i}`, 'clouds', wlRef(a), hit(xc.ip) || { name: xc.ip, sub: 'unresolved' }, r.priv && xc.priv ? 'private' : 'public', 'allow', `c${i}`);
+    const pd = PUBLIC_DST[i % PUBLIC_DST.length];
+    push(`rec-internet-${i}`, 'internet', wlRef(mine[1]), { name: pd[0], sub: pd[1] }, 'public', r.priv && (a.tag === 'pci' || a.tag === 'prod') ? 'deny' : 'allow', `n${i}`);
+  });
+  sites.slice(0, 4).forEach((st, i) => {
+    const target = wls.find(w => w.priv) || wls[0]; if (!target) return;
+    push(`rec-inbound-${i}`, 'inbound', { name: st.name, sub: `${st.access || 'Access'} · ${st.metro || ''}`.trim() }, wlRef(target), st.priv && target.priv ? 'private' : 'public', 'allow', `s${i}`);
+  });
+  const filtered = pattern === 'all' ? out : out.filter(r => r.pattern === PATTERN_OF[pattern]);
+  return filtered.sort((a, b) => a.time.localeCompare(b.time));
+}
