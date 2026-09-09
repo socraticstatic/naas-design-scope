@@ -1110,7 +1110,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
         <div class="fx-card-head"><div><h3 class="fx-card-title">Connections</h3><div class="fx-card-sub">{{ connHead }} · {{ connSub }}</div></div></div>
         <div class="fx-rows">
           <sc-for list="{{ connRows }}" as="u" hint-placeholder-count="4">
-            <div class="fx-row door" role="button" tabindex="0" aria-pressed="{{ u.on }}" onClick="{{ u.select }}" aria-label="{{ u.label }} {{ u.state }} {{ u.pctF }}" style="grid-template-columns:minmax(140px,27%) minmax(0,1fr) 108px 152px;background:{{ u.rowBg }};margin:0 -8px;padding:0 8px;border-radius:8px">
+            <div class="fx-row door" role="button" tabindex="0" aria-pressed="{{ u.on }}" onClick="{{ u.select }}" aria-label="{{ u.label }} {{ u.state }} {{ u.pctF }}" style="grid-template-columns:minmax(130px,25%) minmax(0,1fr) 104px 176px;background:{{ u.rowBg }};margin:0 -8px;padding:0 8px;border-radius:8px">
               <span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span>
               <svg viewBox="0 0 100 24" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="Utilization in and out, last 24h"><path d="{{ u.inD }}" fill="none" stroke="{{ u.lineColor }}" stroke-width="1.5" vector-effect="non-scaling-stroke"></path><path d="{{ u.outD }}" fill="none" stroke="{{ u.lineColor }}" stroke-width="1" opacity=".5" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></path></svg>
               <span class="val">{{ u.pctF }}<small>{{ u.curAvg }}</small></span>
