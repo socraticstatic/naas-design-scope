@@ -30,7 +30,7 @@ export function panelFor(sel, ctx) {
     const imp = impacted(est, inv, row);
     const recs = records(est, inv, { flows }, 'all').filter(r => (r.srcSub + ' ' + r.dstSub).includes(row.region)).slice(0, 8);
     return { kind: 'connection', title: `${row.cloud} ${row.region}`, sub: `${row.ramp} · ${row.ports} × 10 Gbps purchased`, trail: [{ key: sel, name: `${row.cloud} ${row.region}` }],
-      overview: [['Used', `${row.gbps} Gbps`], ['Purchased', `${row.cap} Gbps`], ['Utilization', `${row.pct}%`], ['State', row.state], ['BGP', row.bgp], ['Drops', row.drops], ['Workloads behind it', n(row.wl)]],
+      overview: [['Current · in / out', `${row.gbps} / ${(row.gbps * 0.62).toFixed(1)} Gbps`], ['Average · in / out', `${row.avg} / ${(row.avg * 0.62).toFixed(1)} Gbps`], ['Purchased', `${row.ports} × 10 Gbps`], ['Utilization', `${row.pct}% of ${row.cap} Gbps`], ['State', row.state], ['BGP', row.bgp], ['Drops', row.drops], ['Workloads behind it', n(row.wl)]],
       impact: imp, records: recs, actions: [...(row.hot ? [{ key: 'port', label: 'Add a port', region: row.region }] : []), { key: 'policy', label: 'Author a policy for these workloads', region: row.region }, { key: 'logs', label: 'All records for this connection', region: row.region }] };
   }
   const node = map.nodes.find(x => x.key === sel); if (!node) return null;

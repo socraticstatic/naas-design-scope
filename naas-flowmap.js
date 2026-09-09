@@ -102,13 +102,17 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const L0 = leftRoots(est, flows), R0 = rightRoots(est, flows);
   const L = expand(L0, open, est, inv, flows), R = expand(R0, open, est, inv, flows);
   const scale = (nd) => opts.t == null ? nd : { ...nd, v: nd.v * shapeAt(nd.key, opts.t), fabV: nd.fabV * shapeAt(nd.key, opts.t) };
-  const Ls = L.map(scale), Rs = R.map(scale);
+  // Ramesh's first pattern (19:09): what stays within the region. Workload groups carry east-west traffic that never leaves the region; it gets its own band.
+  const LOCAL = 0.6;
+  const Ls = L.map(scale).map(x => x.group === 'tags' || (!x.group && rootGroup(x) === 'tags') ? { ...x, locV: x.v * LOCAL } : { ...x, locV: 0 });
+  const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
+  const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 18, gap = 22, top = 20, H0 = 340;
   const groups = [['sites', 'Sites · first mile'], ['tags', 'Cloud workloads by tag'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
-  const T = Ls.reduce((a, x) => a + x.v, 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
+  const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   const nLeft = Ls.length; const overhead = top + groups.length * (headH + gap) + (nLeft - groups.length) * pad;
   const sc = Math.max(0.5, (H0 - overhead) / T);
-  const place = (arr, x, y0) => { let y = y0; return arr.map(a => { const h = Math.max(minH, a.v * sc); const o = { ...a, x, y, h, x2: x + colW, used: 0 }; y += h + pad; return o; }); };
+  const place = (arr, x, y0) => { let y = y0; return arr.map(a => { const tot = a.v + (a.locV || 0); const h = Math.max(minH, tot * sc); const o = { ...a, x, y, h, x2: x + colW, used: 0, tot }; y += h + pad; return o; }); };
   const heads = []; const SS = []; let y = top;
   groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const placed = place(g.nodes, 0, y + headH - 6); SS.push(...placed); y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
   const leftH = SS.length ? y - gap + 8 : top;
@@ -116,16 +120,17 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const DD = place(Rs, W - colW, top + headH - 6);
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);
-  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV, fabV: 0, priv: false, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
+  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:local', name: 'Stays in the region', v: localV, fabV: 0, priv: false, local: true, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
   const midH = mids.reduce((a, m) => a + Math.max(minH, m.v * sc), 0) + pad * (mids.length - 1);
   const MM = place(mids, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];
-  const link = (a, b, v, priv) => { if (v <= 0.0005) return; const sa = a.h / (a.v || 1), sb = b.h / (b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, v, from: a.key, to: b.key, state: priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key) }); };
-  const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv);
-  SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); });
-  DD.forEach(d => { if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
+  const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (a.key === 'mid:local' || b.key === 'mid:local' || b.key === 'dest:local') return 'region'; if (g === 'sites' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
+  const link = (a, b, v, priv, kindOverride) => { if (v <= 0.0005) return; const sa = a.h / (a.tot || a.v || 1), sb = b.h / (b.tot || b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, local: !!kindOverride, v, from: a.key, to: b.key, state: kindOverride ? 'ok' : priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key), pattern: kindOverride || patternOf(a, b) }); };
+  const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv && !m.local), loc = MM.find(m => m.local);
+  SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); if (loc && s.locV) link(s, loc, s.locV, false, 'region'); });
+  DD.forEach(d => { if (d.key === 'dest:local') { if (loc) link(loc, d, d.v, false, 'region'); return; } if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
   const nodes = [...SS.map(x => ({ ...x, side: 'l' })), ...MM.map(x => ({ ...x, side: 'm' })), ...DD.map(x => ({ ...x, side: 'r' }))].map(x => ({ ...x, delta: deltaOf(x.key), open: open.has(x.key) }));
-  return { W, H, heads, nodes, ribbons, total: T, fabV, open: [...open] };
+  return { W, H, heads, nodes, ribbons, total: T, fabV, localV, open: [...open] };
 }
 function rootGroup(x) { return x.kind === 'site' || x.kind === 'metro' || x.kind === 'sitename' || x.kind === 'circuit' ? 'sites' : x.kind === 'c2c' ? 'c2c' : 'tags'; }
 
@@ -147,4 +152,15 @@ export function litFor(map, key) {
   const rb = map.ribbons.filter(r => isMine(r.from) || isMine(r.to));
   const keys = new Set([key, ...map.nodes.filter(x => isMine(x.key)).map(x => x.key), ...rb.map(r => r.from), ...rb.map(r => r.to)]);
   return { keys, ribbons: new Set(rb.map((r, i) => map.ribbons.indexOf(r))) };
+}
+
+/** The five patterns Ramesh named (19:04), in his order. */
+export const PATTERNS = [['region', 'Stays in the region'], ['regions', 'Across regions'], ['clouds', 'Across clouds'], ['internet', 'Out to the internet'], ['inbound', 'Coming in']];
+/** Ribbon indexes and node keys a pattern lights. Mid nodes light when any of their ribbons do. */
+export function patternLit(map, pattern) {
+  if (!pattern || pattern === 'all') return null;
+  const idx = new Set(); const keys = new Set();
+  map.ribbons.forEach((r, i) => { if (r.pattern === pattern) { idx.add(i); keys.add(r.from); keys.add(r.to); } });
+  // second hop: a destination lit by the pattern also lights the mid→dest ribbons of the same pattern (already tagged), and sources feeding a lit mid keep their own tag.
+  return { ribbons: idx, keys };
 }

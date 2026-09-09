@@ -49,3 +49,12 @@ test('trail walks root to leaf; litFor lights ribbons through a node', () => {
   const tr = trail(site.key, est, inv, flows); assert.deepEqual(tr.map(x => x.kind), ['site', 'metro', 'sitename']);
   const m = buildMap(est, inv, flows, {}); const lit = litFor(m, 'site:Branch'); assert.ok(lit.keys.has('site:Branch') && lit.keys.has('mid:fabric')); assert.ok(lit.ribbons.size >= 1);
 });
+import { PATTERNS, patternLit } from '../naas-flowmap.js';
+test('a third band carries what stays in the region, and every ribbon carries a pattern', () => {
+  const m = buildMap(est, inv, flows, {});
+  assert.ok(m.nodes.some(x => x.key === 'mid:local') && m.nodes.some(x => x.key === 'dest:local'));
+  assert.ok(m.localV > 0); assert.ok(m.ribbons.every(r => r.pattern));
+  assert.deepEqual(PATTERNS.map(p => p[0]), ['region', 'regions', 'clouds', 'internet', 'inbound']);
+  for (const [k] of PATTERNS) { const lit = patternLit(m, k); assert.ok(lit.ribbons.size >= 1, k); }
+  assert.equal(patternLit(m, 'all'), null);
+});

@@ -313,3 +313,11 @@ Impact · Records · Actions, with the drill trail). No verdict sentences, no ne
   `/` opens Jump. ▶ replays the last 24h through the scrubber.
 - Removed: the connections table, the impact card, the five pattern cards, the inline Logs
   section, the Act on it strip, the next-stop row. Tests: 38 across `tests/`.
+- **Big to tiny** (Micah, 14:11 and 14:13): the fabric band opens in place (`naas-fabric.js`:
+  facilities → ports → circuits that land on a customer site; state `fabDrill`), and no
+  stratum navigates to a layer page any more. Home cards land inside the picture or the map at
+  the level they name (Observe → the degraded connection selected, panel on Impact; Connect →
+  the first public region opened). Observe tiles open the map to the thing behind the number.
+  Rollup rows stay on the page. Every drillable row on the picture carries a caret. The map
+  gains a third band, "Stays in the region", and a Pattern lens (the five patterns in Ramesh's
+  order); gauges show in and out; the connection Overview lists current and average in and out.
