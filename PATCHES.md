@@ -295,3 +295,21 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   scrolls to `#observe-logs`, "Close logs" folds it); the fabric picture is open on all four
   pages (`heroDefault`); selecting a connection drills the picture to that region
   (`cloudDrill`). Launch-card doors are contained (`max-width:100%`, ellipsis) and shorter.
+
+## 9. Observe dashboard (2026-09-09, 13:50)
+Spec: `cloud-connect/docs/superpowers/specs/2026-09-09-observe-dashboard-design.md`. A dashboard,
+not a presentation: tiles with deltas (each a filter), the alert queue (worst first, one action
+each), the **live flow map** as the primary visual and the drill surface, connections as gauges
+(used against purchased with the 24h line inside), and a detail panel on selection (Overview ·
+Impact · Records · Actions, with the drill trail). No verdict sentences, no next stops.
+- `naas-flowmap.js`: `leftRoots`, `rightRoots`, `childrenOf` (site class → metro → site →
+  circuit; tag → region → VPC → subnet → workload; destination → resource or unresolved ip),
+  `buildMap` (semantic zoom: open keys are replaced by their children in place; `filterRegion`;
+  scrubber `t`), `trail`, `litFor` (follow the flow), `deltaOf`, `shapeAt`.
+- `naas-observe-dash.js`: `gauges`, `queue`, `panelFor`.
+- State: `mapOpen` (open keys), `mapSel`, `mapHov`, `mapPins`, `mapMode` (state · delta · slo),
+  `mapRegion` (filter), `mapT` (0..1, null = window), `mapPlay`, `mapJumpOpen`, `panelTab`.
+- Keyboard on the map card: arrows move between siblings, Enter opens, Esc or Backspace climbs,
+  `/` opens Jump. ▶ replays the last 24h through the scrubber.
+- Removed: the connections table, the impact card, the five pattern cards, the inline Logs
+  section, the Act on it strip, the next-stop row. Tests: 38 across `tests/`.

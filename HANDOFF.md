@@ -8,7 +8,7 @@ This is the static prototype behind https://socraticstatic.github.io/naas-design
 - **Four words** in the rail and on the four doors: Connect, Observe, Govern, Cost. Nothing else is in the navigation. A new customer lands on Connect (intake and scan). A connected customer is pushed to Observe.
 - **One loop.** Every page ends with a "Next stop" row: Connect → Observe → Govern → Cost → Connect.
 - **Observe** shows both layers: the network layer in NetBond Advanced's Detailed Metrics shape (utilization in and out, current and average, up or down, BGP, drops, purchased ports), and beside it the workloads that connection impacts, with two confidence levels (AT&T-terminated: directly impacted; customer DX or ER: possible impact by account) and the resilience rule. Then the traffic flow, then five pattern cards (stays in the region, across regions, across clouds, out to the internet, coming in), each opening Logs.
-- **Drillable in place.** Left: class → metro → site → paths. Right: region → VPC → subnet → workload. The Sankey splits a site class by metro or a tag group by region. The rest of the picture never moves.
+- **Drillable in place.** On Home and Connect the picture drills: left class → metro → site → paths, right region → VPC → subnet → workload. On Observe the live flow map is the drill surface: every node opens in place (semantic zoom) down to the workload or the unresolved ip, with a trail, keyboard navigation, a 24h scrubber with replay, a what-changed mode, and a detail panel (Overview, Impact, Records, Actions). Connections are gauges of used against purchased. See PATCHES.md section 9.
 
 ## Files
 
@@ -16,6 +16,7 @@ This is the static prototype behind https://socraticstatic.github.io/naas-design
 |---|---|
 | `NaaS Storefront.dc.html` | Markup, dc-runtime templates (`sc-if`, `sc-for`, `{{ }}`). Sections are marked `<!-- ===== S0 … -->`. |
 | `naas-app.js` | State → template values. `shellVals` (rail, pills, titles), the hero block (`heroLayout` call, drills), `addendumVals` (Observe), `andiVals`. |
+| `naas-flowmap.js`, `naas-observe-dash.js` | The Observe dashboard: the live flow map (`buildMap`, `childrenOf`, `trail`, `litFor`), gauges, queue, panel. |
 | `naas-connections.js` | Pure derivations added for Ramesh's asks: `connections`, `impacted`, `patterns`, `records`, `resolveDest`, `launchCards`, `siteDrillRows`, `regionDrillRows`, `splitSources`. Unit tests in `tests/`. |
 | `naas-logic.js` | `heroLayout` (geometry of the picture, including the lane and `regionRows`). |
 | `naas-addendum.js` | `observe` (flows, KPIs, Sankey via `sankey3`), inventory tree. |
