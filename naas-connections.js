@@ -125,3 +125,79 @@ export function records(est, inv, ob, pattern = 'all') {
   const filtered = pattern === 'all' ? out : out.filter(r => r.pattern === PATTERN_OF[pattern]);
   return filtered.sort((a, b) => a.time.localeCompare(b.time));
 }
+
+// ---------- Drills in place (Santosh, 16:02: "I don't want to lose the context") ----------
+import * as S from './naas-sites.js';
+
+function pathsOfSite(est, site) { const sr = P.siteRegions(est, site, 6); return { level: 'path', label: `${site.name || site.id} · paths`, rows: sr.rows.map(x => ({ key: 'path:' + x.region.region, name: `${x.region.cloud} ${x.region.region}`, access: `${site.access || 'Access'} · ${P.path(site, x.region).ms} ms · ${x.region.priv ? 'AT&T fabric' : 'public internet'}`, priv: !!x.region.priv, gbps: x.gbps, leaf: true, region: x.region.region })) }; }
+
+/** Left column of the hero for a drill trail: [] → the estate's sites; [class] → metros or named sites; [class, metro] → sites; [class, metro, site] → the site's paths. */
+export function siteDrillRows(est, trail) {
+  if (!trail || !trail.length) return null;
+  const tree = S.siteTree(est);
+  const all = P.allSites(est);
+  const cls = tree.find(c => c.cls === trail[0] || c.label === trail[0]);
+  if (!cls) { const named = all.find(x => x.name === trail[0]); return named && trail.length === 1 ? pathsOfSite(est, named) : null; }
+  const siteRowOf = (x) => ({ key: 'site:' + x.id, name: x.id, access: x.address || `${x.metro} · ${x.access || ''}`, priv: !!x.priv, drillKey: x.id, rollup: false, cursor: 'pointer' });
+  const pathsOf = (site) => pathsOfSite(est, site);
+  const _unused = (site) => { const sr = P.siteRegions(est, site, 6); return { level: 'path', label: `${site.name || site.id} · paths`, rows: sr.rows.map(x => ({ key: 'path:' + x.region.region, name: `${x.region.cloud} ${x.region.region}`, access: `${site.access || 'Access'} · ${P.path(site, x.region).ms} ms · ${x.region.priv ? 'AT&T fabric' : 'public internet'}`, priv: !!x.region.priv, gbps: x.gbps, leaf: true, region: x.region.region })) }; };
+  if (trail.length === 1) {
+    const rows = cls.children.map(ch => ch.kind === 'metro'
+      ? { key: 'metro:' + ch.name, name: `${ch.name} (${ch.count.toLocaleString('en-US')})`, access: `${ch.onFabric.toLocaleString('en-US')} of ${ch.count.toLocaleString('en-US')} on the fabric · ${ch.access}`, priv: ch.onFabric >= ch.count / 2, drillKey: ch.name, rollup: true, cursor: 'pointer' }
+      : { key: 'site:' + ch.name, name: ch.name, access: ch.address || ch.access, priv: !!ch.priv, drillKey: ch.name, rollup: false, cursor: 'pointer' });
+    return { level: cls.children[0] && cls.children[0].kind === 'metro' ? 'metro' : 'site', label: cls.label, rows };
+  }
+  const second = cls.children.find(ch => ch.name === trail[1] || ch.key === trail[1]);
+  if (!second) return null;
+  if (second.kind === 'site') return pathsOf(all.find(x => x.name === second.name) || { ...second, cls: cls.cls, clsLabel: cls.label });
+  if (trail.length === 2) {
+    const rows = second.sites.map(siteRowOf);
+    if (second.more) rows.push({ key: 'more', name: `+${second.more.toLocaleString('en-US')} more in ${second.name}`, access: 'In Explore 360', more: true, rollup: false });
+    return { level: 'site', label: `${cls.label} · ${second.name}`, rows };
+  }
+  const site = all.find(x => x.id === trail[2] || x.name === trail[2]);
+  return site ? pathsOf(site) : null;
+}
+
+/** Right column of the hero for a cloud drill: [region] → its VPCs; [region, vpc] → subnets; [region, vpc, subnet] → workloads. Other regions fold into one row. */
+export function regionDrillRows(est, inv, trail) {
+  if (!trail || !trail.length) return null;
+  const top = est.regionsList.find(r => r.region === trail[0]); if (!top) return null;
+  const reg = inv.flatMap(c => c.regions).find(r => r.region === trail[0]); if (!reg) return null;
+  const pinned = { ...top, pinned: true, drillUp: true };
+  const child = (o) => ({ cloud: top.cloud, region: o.name, wl: o.wl, priv: o.priv, ramp: null, child: true, noEdge: true, indent: 14, drill: o.drill || null, leaf: !!o.leaf, wlLabel: o.wlLabel || null, sub: o.sub || '' });
+  let children, level, label;
+  if (trail.length === 1) { level = 'vpc'; label = `${top.cloud} ${top.region}`; children = reg.vpcs.map(v => child({ name: v.name, wl: v.wl, priv: v.priv, drill: v.id, sub: v.purpose })); }
+  else {
+    const vpc = reg.vpcs.find(v => v.id === trail[1]); if (!vpc) return null;
+    if (trail.length === 2) { level = 'subnet'; label = `${top.region} › ${vpc.name}`; children = vpc.subnets.map(sn => child({ name: `${sn.name} · ${sn.cidr}`, wl: sn.wl, priv: !sn.pub, drill: sn.id, sub: sn.az })); }
+    else { const sn = vpc.subnets.find(x => x.id === trail[2]); if (!sn) return null; level = 'workload'; label = `${vpc.name} › ${sn.name}`; children = (sn.workloads || []).slice(0, 6).map(w => child({ name: w.name, wl: 1, priv: !w.exposed, leaf: true, wlLabel: w.ip, sub: w.type })); }
+  }
+  const others = est.regionsList.length - 1 + (est.regionsExtra || 0);
+  const rows = [pinned, ...children, ...(others > 0 ? [{ cloud: '', region: `+${others} other regions`, rollup: true, other: true, wl: 0, priv: false }] : [])];
+  return { level, label, rows, top };
+}
+
+/** Sankey split: 'site:<class>' splits a site class by metro; 'tag:<group>' splits a workload group by region. */
+export function splitSources(est, flows, split) {
+  if (!split) return null;
+  const [kind, name] = split.split(':');
+  const perSite = { 'Data center': 6, Campus: 2.5, Plant: 1.5, Office: 0.8, Branch: 0.04, Edge: 0.005, Field: 0.3 };
+  if (kind === 'site') {
+    const cls = S.siteTree(est).find(c => c.cls === name); if (!cls) return null;
+    const per = perSite[name] || 0.5;
+    return { kind, name, nodes: cls.children.map(ch => ch.kind === 'metro'
+      ? { kind: 'sitemetro', key: `site:${name}/${ch.name}`, cls: name, name: `${ch.name} · ${ch.count.toLocaleString('en-US')}`, v: per * ch.count, fabV: per * ch.onFabric }
+      : { kind: 'sitemetro', key: `site:${name}/${ch.name}`, cls: name, name: ch.name, v: per, fabV: ch.priv ? per : per * 0.1 }).sort((a, b) => b.v - a.v) };
+  }
+  if (kind === 'tag') {
+    const m = {};
+    flows.filter(f => f.kind === 'App' && f.from === name).forEach(f => { const g = m[f.region] = m[f.region] || { kind: 'tagregion', key: `tag:${name}/${f.region}`, name: `${name} · ${f.region}`, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; });
+    const nodes = Object.values(m).sort((a, b) => b.v - a.v);
+    return nodes.length ? { kind, name, nodes } : null;
+  }
+  return null;
+}
+
+/** Pattern a Sankey destination belongs to, for the Logs door. */
+export const destPattern = (name) => /object storage/.test(name) ? 'regions' : /inter-cloud/.test(name) ? 'clouds' : /from sites/.test(name) ? 'inbound' : 'internet';

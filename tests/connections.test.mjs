@@ -78,3 +78,35 @@ test('records carry one pattern each and resolve private destinations', () => {
   const pub = all.find(r => r.pattern === 'internet'); assert.match(pub.dstName, /^\d+\.\d+\.\d+\.\d+$/);
   assert.equal(records(D.ESTATES.empty, [], ob, 'all').length, 0);
 });
+
+import { siteDrillRows, regionDrillRows, splitSources, destPattern } from '../naas-connections.js';
+test('left drill: class → metros → sites → paths, context kept', () => {
+  const l1 = siteDrillRows(est, ['Branch']);
+  assert.equal(l1.level, 'metro'); assert.ok(l1.rows.length >= 2); assert.ok(l1.rows[0].drillKey);
+  const l2 = siteDrillRows(est, ['Branch', l1.rows[0].drillKey]);
+  assert.equal(l2.level, 'site'); assert.ok(l2.rows.length >= 1); assert.match(l2.rows[0].name, /^BR-/);
+  const l3 = siteDrillRows(est, ['Branch', l1.rows[0].drillKey, l2.rows[0].drillKey]);
+  assert.equal(l3.level, 'path'); assert.ok(l3.rows.length >= 1); assert.ok(l3.rows[0].leaf); assert.match(l3.rows[0].access, /ms/);
+  const named = siteDrillRows(est, ['Data center']);
+  assert.equal(named.level, 'site'); assert.equal(named.rows[0].name, 'Ashburn DC');
+  const dcPaths = siteDrillRows(est, ['Data center', 'Ashburn DC']);
+  assert.equal(dcPaths.level, 'path');
+  assert.equal(siteDrillRows(est, []), null);
+});
+test('right drill: region → VPCs → subnets → workloads, other regions fold', () => {
+  const r1 = regionDrillRows(est, inv, ['us-east-1']);
+  assert.equal(r1.level, 'vpc'); assert.equal(r1.rows[0].pinned, true); assert.ok(r1.rows[1].child && r1.rows[1].drill); assert.ok(r1.rows[r1.rows.length - 1].other);
+  const r2 = regionDrillRows(est, inv, ['us-east-1', r1.rows[1].drill]);
+  assert.equal(r2.level, 'subnet'); assert.match(r2.rows[1].region, /\d+\.\d+\.\d+\.\d+\/24/);
+  const r3 = regionDrillRows(est, inv, ['us-east-1', r1.rows[1].drill, r2.rows[1].drill]);
+  assert.equal(r3.level, 'workload'); assert.ok(r3.rows[1].leaf); assert.match(r3.rows[1].wlLabel, /^\d+\./);
+  assert.equal(regionDrillRows(est, inv, ['nope']), null);
+});
+test('sankey split by metro and by region', () => {
+  const s1 = splitSources(est, ob.flows, 'site:Branch'); assert.ok(s1 && s1.nodes.length >= 2); assert.equal(s1.nodes[0].kind, 'sitemetro');
+  const tag = ob.flows.find(f => f.kind === 'App').from;
+  const s2 = splitSources(est, ob.flows, 'tag:' + tag); assert.ok(s2 && s2.nodes.length >= 1); assert.equal(s2.nodes[0].kind, 'tagregion');
+  assert.equal(splitSources(est, ob.flows, null), null);
+  assert.equal(destPattern('object storage'), 'regions'); assert.equal(destPattern('Cloud regions (from sites)'), 'inbound');
+});
+test('a named top-level site drills straight to its paths', () => { const r = siteDrillRows(est, ['Ashburn DC']); assert.equal(r.level, 'path'); assert.ok(r.rows.length >= 1); });

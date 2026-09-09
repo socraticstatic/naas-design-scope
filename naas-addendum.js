@@ -83,7 +83,7 @@ import * as S from './naas-sites.js';
 const GBPS_PER_WL = 0.14;
 const DESTS = ['AI endpoints', 'object storage', 'public internet', 'SaaS', 'inter-cloud'];
 
-export function observe(est, steered, inv) {
+export function observe(est, steered, inv, split) {
   const flows = [];
   est.regionsList.forEach((r, i) => {
     const tag = r.tags[0] ? r.tags[0].toLowerCase() : 'untagged';
@@ -151,13 +151,13 @@ export function observe(est, steered, inv) {
   const northSouth = pct(flows.filter(f => f.kind === 'App' && f.controlled).reduce((a, f) => a + f.gbps, 0), total || 1);
   const eastWest = pct(flows.filter(f => f.kind !== 'App' && f.controlled).reduce((a, f) => a + f.gbps, 0), flows.filter(f => f.kind !== 'App').reduce((a, f) => a + f.gbps, 0) || 1);
   const pathsSummary = `${covPct}% under AT&T control · North-south ${northSouth}% · East-west ${eastWest}% · ${steered.length} steered`;
-  const sankey = sankey3(est, flows);
+  const sankey = sankey3(est, flows, split);
   return { flows: flows.sort((a, b) => (a.kind === b.kind ? b.gbps - a.gbps : a.kind === 'App' ? -1 : 1)), total, fab, pub, covPct, kpis, verdict, coverage, subVerdict, briefing, records, pathsSummary, sankey, savingsMo, egressMo, blind, worst, pathsCovered, util, capGbps: capTotal, utilRows };
 }
 
 function short(n) { return n >= 1000 ? '$' + (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : '$' + n; }
 
-function sankey3(est, flows) {
+function sankey3(est, flows, split) {
   // Three source groups (sites, cloud workloads by tag, cloud to cloud) → fabric or public → destinations.
   // Every node keeps a minimum height so its label always has room; the picture grows instead of overlapping.
   const W = 900, colW = 12, minH = 16, pad = 6, headH = 18, gap = 24, top = 20;
@@ -172,7 +172,10 @@ function sankey3(est, flows) {
   const grp = (list, kind) => { const m = {}; list.forEach(f => { const g = m[f.from] = m[f.from] || { kind, key: kind + ':' + f.from, name: f.from, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; }); return Object.values(m).sort((a, b) => b.v - a.v); };
   const tags = grp(flows.filter(f => f.kind === 'App'), 'tag');
   const regions = grp(flows.filter(f => f.kind !== 'App'), 'region');
-  const groups = [{ head: 'Sites · first mile', nodes: sites }, { head: 'Cloud workloads by tag', nodes: tags }, { head: 'Cloud to cloud', nodes: regions }].filter(g => g.nodes.length);
+  // In-place split (2026-09-09): a clicked site class opens by metro, a clicked tag group opens by region; the rest of the picture stays.
+  const sitesS = split && split.kind === 'site' ? sites.flatMap(n => n.cls === split.name ? split.nodes : [n]) : sites;
+  const tagsS = split && split.kind === 'tag' ? tags.flatMap(n => n.name === split.name ? split.nodes : [n]) : tags;
+  const groups = [{ head: 'Sites · first mile', nodes: sitesS }, { head: 'Cloud workloads by tag', nodes: tagsS }, { head: 'Cloud to cloud', nodes: regions }].filter(g => g.nodes.length);
   const dmap = {};
   flows.forEach(f => { const d = dmap[f.to] = dmap[f.to] || { kind: 'dest', key: 'dest:' + f.to, name: f.to, v: 0, fabV: 0 }; d.v += f.gbps; if (f.controlled) d.fabV += f.gbps; });
   const sitesV = sites.reduce((a, s) => a + s.v, 0), sitesFab = sites.reduce((a, s) => a + s.fabV, 0);

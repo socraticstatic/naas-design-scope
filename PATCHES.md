@@ -265,3 +265,13 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
 - **Launch cards are doors**: each carries a verb ("Attach the region", "See what is impacted",
   "Review the violations", "See the savings"); the primary card (Observe when connected, Connect
   when new) shows an eyebrow "Start here" and a filled button.
+- **Drillable in place** (Micah, 12:56: "he loves the visualizations, but make them drillable"):
+  the hero's left column explodes class → metro → site → paths (`X.siteDrillRows`, state
+  `drill`), the right column region → VPC → subnet → workload with the other regions folded
+  into one row (`X.regionDrillRows`, state `cloudDrill`, `heroLayout` takes `regionRows` and
+  skips edges for children). The column heads carry the trail and climb on click; the
+  breadcrumb above the hero covers both drills. The Sankey splits a site class by metro or a
+  tag group by region when clicked (`X.splitSources`, state `skSplit`, `observe(..., split)`),
+  and a destination opens Logs on its pattern. Saturating links are incidents on the landing.
+  The Connections rows draw the "Add a port" door. The Performance page ends with a next-stop
+  row into Govern (the flywheel).

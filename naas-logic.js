@@ -26,7 +26,7 @@ export function heroLayout(est, opts) {
     out.edges.push({ id: 'in' + i, kind: 'ingress', priv: !!s.priv, ghost: !!s.ghost, viaLane, x1: 204, y1: y + 18, x2: bandX, y2: viaLane ? clampLane(y + 18) : clampBand(y + 18), site: s });
   });
 
-  const regs = empty ? [{ cloud: 'Clouds', region: 'Your regions', ghost: true, wl: 0 }, { cloud: 'Neoclouds', region: 'Your GPU regions', ghost: true, wl: 0 }] : est.regionsList;
+  const regs = empty ? [{ cloud: 'Clouds', region: 'Your regions', ghost: true, wl: 0 }, { cloud: 'Neoclouds', region: 'Your GPU regions', ghost: true, wl: 0 }] : (opts.regionRows || est.regionsList);
   const byCloud = {};
   regs.forEach(r => { (byCloud[r.cloud] = byCloud[r.cloud] || []).push(r); });
   const ord = (c) => { const i = CLOUD_ORDER.indexOf(c); return i < 0 ? 99 : i; };
@@ -38,15 +38,15 @@ export function heroLayout(est, opts) {
     y += groupHead;
     byCloud[c].forEach((r, j) => {
       const ry = y;
-      out.regions.push({ ...r, y: ry, cy: ry + 14, key: r.region });
+      out.regions.push({ ...r, y: ry, cy: ry + 14, key: (r.child ? 'c:' : '') + r.region });
       const viaLane = !r.priv && !r.ghost;
-      out.edges.push({ id: 'eg' + out.regions.length, kind: 'egress', priv: !!r.priv, ghost: !!r.ghost, viaLane, x1: bandX + bandW, y1: viaLane ? clampLane(ry + 14) : Math.round(Math.min(bandY + bandH - 40, Math.max(bandY + 24, ry + 14))), x2: 980, y2: ry + 14, chip: r.ramp, shield: !!r.priv && (r.ramp === 'NetBond' || r.ramp === 'ER'), region: r, dur: r.fab ? Math.max(1.2, r.fab / 6) : 3 });
-      if (r.wl) out.workloads.push({ region: r.region, y: ry + 3, label: r.wl.toLocaleString('en-US') + ' workloads', key: 'wl' + r.region, tags: r.tags });
+      if (!r.noEdge && !r.other) out.edges.push({ id: 'eg' + out.regions.length, kind: 'egress', priv: !!r.priv, ghost: !!r.ghost, viaLane, x1: bandX + bandW, y1: viaLane ? clampLane(ry + 14) : Math.round(Math.min(bandY + bandH - 40, Math.max(bandY + 24, ry + 14))), x2: 980, y2: ry + 14, chip: r.ramp, shield: !!r.priv && (r.ramp === 'NetBond' || r.ramp === 'ER'), region: r, dur: r.fab ? Math.max(1.2, r.fab / 6) : 3 });
+      if (r.wl) out.workloads.push({ region: r.region, y: ry + 3, label: r.wlLabel || (r.wl.toLocaleString('en-US') + ' workloads'), key: 'wl' + (r.child ? 'c:' : '') + r.region, tags: r.tags });
       y += rowH;
     });
     y += groupGap;
   });
-  if (!empty && est.regionsExtra) { out.regions.push({ cloud: '', region: '+' + est.regionsExtra + ' regions', rollup: true, y, cy: y + 14, key: 'more' }); y += rowH; }
+  if (!empty && est.regionsExtra && !opts.regionRows) { out.regions.push({ cloud: '', region: '+' + est.regionsExtra + ' regions', rollup: true, y, cy: y + 14, key: 'more' }); y += rowH; }
   out.internet = { y: Math.min(404, Math.max(y + 4, 380)) };
   out.edges.push({ id: 'inet', kind: 'internet', priv: false, ghost: empty, viaLane: true, x1: bandX + bandW, y1: lane.y + lane.h - 14, x2: 980, y2: out.internet.y + 14, internet: true });
   (est && est.arcs || []).forEach((a, i) => {

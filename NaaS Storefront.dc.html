@@ -266,8 +266,8 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <defs>
     <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e2a4d"></stop><stop offset="1" stop-color="#00235a"></stop></linearGradient>
   </defs>
-  <text x="24" y="14" style="fill:var(--text-disabled);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Sites</text>
-  <text x="980" y="14" style="fill:var(--text-disabled);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Clouds</text>
+  <foreignObject x="24" y="0" width="460" height="18"><button onClick="{{ sitesUp }}" title="Up one level" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ sitesHeadColor }};font-size:13px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit">{{ sitesHead }}</button></foreignObject>
+  <foreignObject x="980" y="0" width="240" height="18"><button onClick="{{ cloudsUp }}" title="Up one level" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ cloudsHeadColor }};font-size:13px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit">{{ cloudsHead }}</button></foreignObject>
   <sc-if value="{{ showWorkloads }}" hint-placeholder-val="{{ true }}"><text x="1230" y="14" style="fill:var(--text-disabled);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Workloads</text></sc-if>
 
   <sc-for list="{{ heroEdges }}" as="e" hint-placeholder-count="6">
@@ -361,9 +361,9 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   </sc-for>
   <sc-for list="{{ heroRegions }}" as="r" hint-placeholder-count="6">
     <g onClick="{{ r.click }}" onMouseEnter="{{ r.enter }}" onMouseLeave="{{ r.leave }}" opacity="{{ r.op }}" style="cursor:pointer;transition:opacity .2s">
-      <rect x="980" y="{{ r.y }}" width="180" height="28" rx="8" style="fill:var(--bg-base);stroke:var(--border-primary)" stroke-dasharray="{{ r.dash }}"></rect>
-      <foreignObject x="980" y="{{ r.y }}" width="160" height="28" style="pointer-events:none"><div style="padding:0 12px;font-size:13px;line-height:28px;font-weight:500;color:{{ r.color }};display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><sc-if value="{{ r.markSrc }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="{{ r.cloud }}" style="display:inline-block;width:16px;height:16px;flex:none;background:url('{{ r.markSrc }}') center / contain no-repeat"></span></sc-if>{{ r.region }}</div></foreignObject>
-      <circle cx="1148" cy="{{ r.cy }}" r="4" fill="{{ r.relFill }}"><title>{{ r.relTitle }}</title></circle>
+      <rect x="{{ r.rx }}" y="{{ r.y }}" width="{{ r.rw }}" height="28" rx="8" style="fill:{{ r.rectFill }};stroke:var(--border-primary)" stroke-dasharray="{{ r.dash }}"></rect>
+      <foreignObject x="{{ r.rx }}" y="{{ r.y }}" width="{{ r.rw }}" height="28" style="pointer-events:none"><div style="padding:0 12px;font-size:13px;line-height:28px;font-weight:500;color:{{ r.color }};display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><sc-if value="{{ r.markSrc }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="{{ r.cloud }}" style="display:inline-block;width:16px;height:16px;flex:none;background:url('{{ r.markSrc }}') center / contain no-repeat"></span></sc-if>{{ r.region }}</div></foreignObject>
+      <circle cx="1148" cy="{{ r.cy }}" r="4" fill="{{ r.relFill }}" opacity="{{ r.relOp }}"><title>{{ r.relTitle }}</title></circle>
     </g>
   </sc-for>
   <g opacity="{{ inetOp }}" style="transition:opacity .2s">
@@ -1115,7 +1115,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
               <span class="lbl"><b>{{ u.label }}</b><small>{{ u.sub }}</small></span>
               <svg viewBox="0 0 100 24" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="Utilization in and out, last 24h"><path d="{{ u.inD }}" fill="none" stroke="{{ u.lineColor }}" stroke-width="1.5" vector-effect="non-scaling-stroke"></path><path d="{{ u.outD }}" fill="none" stroke="{{ u.lineColor }}" stroke-width="1" opacity=".5" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></path></svg>
               <span class="val">{{ u.pctF }}<small>{{ u.curAvg }}</small></span>
-              <span style="display:grid;gap:2px;font-size:11px;line-height:14px;min-width:0"><span style="display:inline-flex;align-items:center;gap:6px;color:var(--text-heading);font-weight:500;white-space:nowrap"><i style="width:8px;height:8px;border-radius:9999px;background:{{ u.stateColor }};display:inline-block;flex:none"></i>{{ u.state }}</span><span style="color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">BGP {{ u.bgp }} · {{ u.drops }} drops</span></span>
+              <span style="display:grid;gap:2px;font-size:11px;line-height:14px;min-width:0"><span style="display:inline-flex;align-items:center;gap:6px;color:var(--text-heading);font-weight:500;white-space:nowrap"><i style="width:8px;height:8px;border-radius:9999px;background:{{ u.stateColor }};display:inline-block;flex:none"></i>{{ u.state }}</span><span style="color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">BGP {{ u.bgp }} · {{ u.drops }} drops<sc-if value="{{ u.hasDoor }}" hint-placeholder-val="{{ false }}"> · <button onClick="{{ u.go }}" style="border:0;background:transparent;padding:0;color:var(--warning);font:inherit;font-weight:500;cursor:pointer">{{ u.doorLabel }} →</button></sc-if></span></span>
             </div>
           </sc-for>
         </div>
@@ -1153,6 +1153,10 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
           </div>
         </sc-for>
       </div>
+    </div>
+    <div class="fx-alert" role="status" aria-label="Next stop">
+      <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div><div class="fx-alert-title">{{ nextStop.title }}</div><div class="fx-alert-text">{{ nextStop.text }}</div></div></div>
+      <button class="fx-btn" onClick="{{ nextStop.go }}">{{ nextStop.cta }}</button>
     </div>
     </sc-if>
     </sc-if>
