@@ -27,3 +27,7 @@ test('panel for a workload leaf resolves the resource; for an ai endpoint stays 
   const ai = m.nodes.find(x => x.name === 'AI endpoints'); const m2 = buildMap(est, inv, flows, { open: [ai.key] }); const ep = m2.nodes.find(x => x.kind === 'endpoint'); const p2 = panelFor(ep.key, { ...ctx, map: m2 }); assert.ok(p2.overview.some(x => x[1] === 'unresolved · public'));
 });
 test('panel for nothing is null', () => { assert.equal(panelFor(null, ctx), null); assert.equal(panelFor('nope', ctx), null); });
+test('panel describes an opened node from its trail', () => {
+  const m = buildMap(est, inv, flows, { open: ['site:Branch'] });
+  const p = panelFor('site:Branch', { ...ctx, map: m }); assert.ok(p); assert.equal(p.kind, 'site'); assert.ok(p.overview.some(x => x[0] === 'Opened'));
+});

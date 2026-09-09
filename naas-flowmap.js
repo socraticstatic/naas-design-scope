@@ -139,7 +139,7 @@ export function trail(key, est, inv, flows) {
   const parts = key.split('/'); const out = []; let acc = '';
   const roots = [...leftRoots(est, flows), ...rightRoots(est, flows)];
   let node = null;
-  for (let i = 0; i < parts.length; i++) { acc = i ? acc + '/' + parts[i] : parts[i]; node = i === 0 ? roots.find(r => r.key === acc) : (node ? childrenOf(node, est, inv, flows).find(c => c.key === acc) : null); if (!node) break; out.push({ key: acc, name: node.name, kind: node.kind }); }
+  for (let i = 0; i < parts.length; i++) { acc = i ? acc + '/' + parts[i] : parts[i]; node = i === 0 ? roots.find(r => r.key === acc) : (node ? childrenOf(node, est, inv, flows).find(c => c.key === acc) : null); if (!node) break; out.push({ key: acc, name: node.name, kind: node.kind, node }); }
   return out;
 }
 

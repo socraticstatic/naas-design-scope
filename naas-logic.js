@@ -5,7 +5,8 @@ export const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 const CLOUD_ORDER = ['AWS', 'Azure', 'GCP', 'CoreWeave', 'Oracle'];
 
 export function heroLayout(est, opts) {
-  const W = 1392, H = 440, bandX = 560, bandW = 240, bandY = 24, bandH = 300, strataH = bandH / 4;
+  // The band widens when the fabric is open (facilities, ports, circuits) so its rows read at full size.
+  const W = 1392, H = 440, bandX = opts.bandX || 560, bandW = opts.bandW || 240, bandY = 24, bandH = 300, strataH = bandH / 4;
   // Beneath the band: the lane for traffic that never touches the AT&T fabric (third party, internet). Ramesh, 2026-09-09.
   const lane = { x: bandX, y: bandY + bandH + 16, w: bandW, h: 76 };
   const out = { W, H, bandX, bandW, bandY, bandH, lane, sites: [], groups: [], regions: [], workloads: [], edges: [], arcs: [], internet: null, strata: [], ghost: false };

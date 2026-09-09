@@ -321,3 +321,11 @@ Impact · Records · Actions, with the drill trail). No verdict sentences, no ne
   Rollup rows stay on the page. Every drillable row on the picture carries a caret. The map
   gains a third band, "Stays in the region", and a Pattern lens (the five patterns in Ramesh's
   order); gauges show in and out; the connection Overview lists current and average in and out.
+- **Actionable everywhere** (Micah, 14:22): page subtitles are numbers, not sentences. Region
+  rows on the picture carry Attach (public), Add port (saturating) or Impact (degraded); public
+  site rows carry Attach; the lane carries "N public · Attach"; circuits in the band carry Add
+  circuit; the Observe panel shows its primary action in the header. The band widens to 420
+  when open so facilities, ports and circuits read at full size; its trail is readable in both
+  themes. The picture's edge labels sit right of the band, clear of the on-ramp chips. Changing
+  page resets the picture's drills (`go`) unless the door sets one on purpose. Workload pills
+  open their region; the lane isolates what rides outside the fabric.

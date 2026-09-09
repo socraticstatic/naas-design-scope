@@ -33,8 +33,9 @@ export function panelFor(sel, ctx) {
       overview: [['Current · in / out', `${row.gbps} / ${(row.gbps * 0.62).toFixed(1)} Gbps`], ['Average · in / out', `${row.avg} / ${(row.avg * 0.62).toFixed(1)} Gbps`], ['Purchased', `${row.ports} × 10 Gbps`], ['Utilization', `${row.pct}% of ${row.cap} Gbps`], ['State', row.state], ['BGP', row.bgp], ['Drops', row.drops], ['Workloads behind it', n(row.wl)]],
       impact: imp, records: recs, actions: [...(row.hot ? [{ key: 'port', label: 'Add a port', region: row.region }] : []), { key: 'policy', label: 'Author a policy for these workloads', region: row.region }, { key: 'logs', label: 'All records for this connection', region: row.region }] };
   }
-  const node = map.nodes.find(x => x.key === sel); if (!node) return null;
+  // An opened node is replaced by its children on the map; its trail still knows it.
   const tr = F.trail(sel, est, inv, flows);
+  const node = map.nodes.find(x => x.key === sel) || (tr.length && tr[tr.length - 1].key === sel ? { ...tr[tr.length - 1].node, delta: F.deltaOf(sel), opened: true } : null); if (!node) return null;
   const region = node.region || node.regionName || (node.kind === 'c2c' ? node.name.split(' ')[1] : null) || (node.kind === 'endpoint' && /^[A-Z]/.test(node.name) ? node.name.split(' ')[1] : null);
   const row = region ? conns.rows.find(r => r.region === region) : null;
   const imp = row ? impacted(est, inv, row) : null;
@@ -42,6 +43,6 @@ export function panelFor(sel, ctx) {
   const recs = records(est, inv, { flows }, 'all').filter(r => region ? (r.srcSub + ' ' + r.dstSub).includes(region) : true).slice(0, 8);
   const resolved = node.kind === 'workload' ? { name: node.resource, sub: node.ip } : node.unresolved ? { name: node.name, sub: 'unresolved · public' } : null;
   return { kind: node.kind, title: node.name, sub: node.sub || '', trail: tr,
-    overview: [['Traffic', `${node.v.toFixed(2)} Gbps`], ['On the fabric', `${node.v ? Math.round(node.fabV / node.v * 100) : 0}%`], ['Share of all traffic', `${share}%`], ['Change vs prior window', (node.delta >= 0 ? '+' : '') + node.delta + '%'], ['State', node.state === 'ok' ? 'Healthy' : node.state === 'degraded' ? 'Degraded' : 'Over SLO or public'], ...(resolved ? [['Resource', resolved.name], ['Address', resolved.sub]] : [])],
+    overview: [...(node.opened ? [['Opened', 'children shown in place']] : []), ['Traffic', `${node.v.toFixed(2)} Gbps`], ['On the fabric', `${node.v ? Math.round(node.fabV / node.v * 100) : 0}%`], ['Share of all traffic', `${share}%`], ['Change vs prior window', (node.delta >= 0 ? '+' : '') + node.delta + '%'], ['State', node.state === 'ok' ? 'Healthy' : node.state === 'degraded' ? 'Degraded' : 'Over SLO or public'], ...(resolved ? [['Resource', resolved.name], ['Address', resolved.sub]] : [])],
     impact: imp, records: recs, actions: [...(node.state !== 'ok' && node.fabV < node.v ? [{ key: 'steer', label: 'Steer onto the fabric' }] : []), ...(region && !(row) ? [{ key: 'attach', label: `Attach ${region}`, region }] : []), ...(row && row.hot ? [{ key: 'port', label: 'Add a port', region }] : []), { key: 'policy', label: 'Author a policy here', region }] };
 }
