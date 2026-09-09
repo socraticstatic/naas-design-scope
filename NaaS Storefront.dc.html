@@ -190,7 +190,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       <sc-if value="{{ railCollapsed }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="height:1px;margin:12px 8px;background:var(--border-secondary)"></div></sc-if>
     </sc-if>
     <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
-      <button onClick="{{ r.go }}" aria-current="{{ r.cur }}" aria-label="{{ r.label }}" title="{{ r.label }}" style="width:100%;height:40px;padding:{{ railBtnPad }};margin-bottom:2px;border:0;border-radius:8px;display:flex;align-items:center;justify-content:{{ railJustify }};gap:12px;background:{{ r.bg }};color:{{ r.color }};font:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:18px;height:18px;flex:none;background:url('{{ r.icon }}') center / contain no-repeat"></span><sc-if value="{{ railExpanded }}" hint-placeholder-val="{{ true }}"><span style="overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span></sc-if></button>
+      <button onClick="{{ r.go }}" aria-current="{{ r.cur }}" aria-label="{{ r.label }}" title="{{ r.title }}" style="width:100%;height:40px;padding:{{ railBtnPad }};margin-bottom:2px;border:0;border-radius:8px;display:flex;align-items:center;justify-content:{{ railJustify }};gap:12px;background:{{ r.bg }};color:{{ r.color }};opacity:{{ r.op }};font:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:18px;height:18px;flex:none;background:url('{{ r.icon }}') center / contain no-repeat"></span><sc-if value="{{ railExpanded }}" hint-placeholder-val="{{ true }}"><span style="overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span></sc-if></button>
     </sc-for>
   </sc-for>
   </div>
@@ -401,7 +401,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </sc-if>
 </div>
 <sc-if value="{{ hasHealth }}" hint-placeholder-val="{{ true }}">
-<div aria-label="Fabric health" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+<div aria-label="Fabric health" title="Later · not in the first cut" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;opacity:.4">
   <sc-for list="{{ healthStrip }}" as="h" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;border-radius:12px"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:{{ h.tone }};flex:none"></span><span style="display:grid;gap:0;min-width:0"><span style="font-size:16px;line-height:20px;font-weight:700;color:var(--text-heading)">{{ h.v }}</span><span style="font-size:11px;line-height:14px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.l }}</span></span></div></sc-for>
 </div>
 <sc-if value="{{ hasIncidents }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ healthIncidents }}" as="i" hint-placeholder-count="1"><button onClick="{{ i.go }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;border:1px solid var(--warning);border-radius:12px;background:var(--bg-base);color:var(--text-heading);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-wash)"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="flex:1;min-width:0">{{ i.text }}</span><span style="color:var(--link);font-weight:500;white-space:nowrap">Observe →</span></button></sc-for></sc-if>
@@ -843,13 +843,14 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <!-- ===== S2 FLOOR: below the hero ===== -->
 <sc-if value="{{ sS2 }}" hint-placeholder-val="{{ false }}">
 <section style="display:grid;gap:32px;margin-top:24px;animation:fadeIn .3s">
-  <div aria-label="Launch points" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px">
+  <div aria-label="Launch points" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px">
     <sc-for list="{{ rollup }}" as="r" hint-placeholder-count="4">
-      <button onClick="{{ r.go }}" title="{{ r.label }} · {{ r.value }} {{ r.sub }}" aria-current="{{ r.primary }}" style="text-align:left;padding:20px;background:var(--bg-base);border:{{ r.borderW }} solid {{ r.border }};border-radius:16px;cursor:pointer;display:grid;grid-template-rows:18px 26px 16px 10px;gap:4px;align-content:start;min-width:0" style-hover="box-shadow:0 1px 2px rgba(0,0,0,.08);border-color:var(--border-primary)">
+      <button onClick="{{ r.go }}" title="{{ r.label }} · {{ r.value }} {{ r.sub }}" aria-current="{{ r.primary }}" style="text-align:left;padding:20px;background:var(--bg-base);border:{{ r.borderW }} solid {{ r.border }};border-radius:16px;cursor:pointer;display:grid;grid-template-rows:16px 18px 26px 16px 36px;gap:4px;align-content:start;min-width:0" style-hover="box-shadow:0 1px 2px rgba(0,0,0,.08);border-color:var(--border-primary)">
+        <span style="font-size:11px;line-height:16px;font-weight:500;color:var(--link);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.eyebrow }}</span>
         <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span>
         <span style="font-size:18px;line-height:26px;font-weight:700;letter-spacing:-.4px;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.value }}</span>
         <span style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
-        <span style="display:block;height:4px;border-radius:9999px;background:var(--bg-neutral);margin-top:6px;overflow:hidden;visibility:{{ r.barVis }}"><span style="display:block;height:4px;border-radius:9999px;width:{{ r.barW }};background:{{ r.barColor }}"></span></span>
+        <span style="margin-top:8px;justify-self:start;display:inline-flex;align-items:center;height:32px;padding:{{ r.doorPad }};border-radius:9999px;background:{{ r.doorBg }};color:{{ r.doorColor }};font-size:14px;font-weight:500;white-space:nowrap">{{ r.door }} →</span>
       </button>
     </sc-for>
   </div>
@@ -882,8 +883,8 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
 
   <sc-if value="{{ hasTailored }}" hint-placeholder-val="{{ false }}">
-    <div style="display:grid;gap:24px">
-      <h2 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">Tailored</h2>
+    <div style="display:grid;gap:24px;opacity:.4" title="Later · not in the first cut" aria-label="Later: tailored offers">
+      <h2 style="margin:0;font-size:16px;line-height:24px;font-weight:700;color:var(--text-heading)">Tailored <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--text-disabled);margin-left:8px">Later</span></h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
         <sc-if value="{{ hasAddons }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:8px">
           <h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Control add-ons per connection</h3>
@@ -921,7 +922,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
   </sc-if>
 
-  <div style="display:flex;align-items:center;gap:16px;padding:16px 24px;border-top:1px solid var(--border-secondary);color:var(--text-light)"><button onClick="{{ goBrowse }}" style="border:0;background:transparent;padding:0;color:var(--link);font-size:14px;font-weight:500;cursor:pointer">Browse the marketplace</button></div>
+  <div style="display:flex;align-items:center;gap:16px;padding:16px 24px;opacity:.4;border-top:1px solid var(--border-secondary);color:var(--text-light)"><button onClick="{{ goBrowse }}" style="border:0;background:transparent;padding:0;color:var(--link);font-size:14px;font-weight:500;cursor:pointer">Browse the marketplace</button></div>
 </section>
 </sc-if>
 
@@ -988,7 +989,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </aside>
       </sc-if>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="font-size:13px;color:var(--text-light);margin-right:8px">The estate itself and the catalog live one door away.</span><button class="fx-btn" onClick="{{ goDiscover }}">Explore the estate</button><button class="fx-btn" onClick="{{ goBrowse }}">Browse the catalog</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="font-size:13px;color:var(--text-light);margin-right:8px">The estate itself and the catalog live one door away.</span><button class="fx-btn" onClick="{{ goDiscover }}" style="opacity:.4" title="Later · not in the first cut">Explore the estate</button><button class="fx-btn" onClick="{{ goBrowse }}" style="opacity:.4" title="Later · not in the first cut">Browse the catalog</button></div>
   </div>
   </sc-if>
 

@@ -122,7 +122,7 @@ export function vals(c) {
   // ---- launch cards (Ramesh, 2026-09-09: four launch-off points; new customers start at Connect, everyone else at Observe) ----
   const violationsN = [...(est.policies || []), ...(s.customPolicies || [])].reduce((a, p) => a + (p.viol || 0), 0);
   const launchGo = { connect: go('s3', { layer: 'cloud', tab: 'connect' }), observe: go('s3', { layer: 'cloud', tab: 'observe', obPage: 'perf', obTab: 'flow' }), govern: go('s3', { layer: 'cloud', tab: 'govern' }), cost: go('s3', { layer: 'cloud', tab: 'cost' }) };
-  const rollup = X.launchCards({ est, ob, conns, totalSave, violations: violationsN, isEmpty }).map(r => ({ ...r, go: launchGo[r.key], hasSub: !!r.sub, barVis: r.bar !== null ? 'visible' : 'hidden', alarm: r.bar !== null && r.bar < 50, barColor: r.bar !== null && r.bar < 50 ? 'var(--warning)' : 'var(--cta)', barW: (r.bar || 0) + '%', hasBar: r.bar !== null, border: r.primary ? 'var(--cta)' : 'var(--border-secondary)', borderW: r.primary ? '2px' : '1px' }));
+  const rollup = X.launchCards({ est, ob, conns, totalSave, violations: violationsN, isEmpty }).map(r => ({ ...r, go: launchGo[r.key], hasSub: !!r.sub, barVis: r.bar !== null ? 'visible' : 'hidden', alarm: r.bar !== null && r.bar < 50, barColor: r.bar !== null && r.bar < 50 ? 'var(--warning)' : 'var(--cta)', barW: (r.bar || 0) + '%', hasBar: r.bar !== null, border: r.primary ? 'var(--cta)' : 'var(--border-secondary)', borderW: r.primary ? '2px' : '1px', hasEyebrow: !!r.eyebrow, doorBg: r.primary ? 'var(--cta)' : 'transparent', doorColor: r.primary ? '#fff' : 'var(--link)', doorPad: r.primary ? '0 14px' : '0', doorBorder: r.primary ? '0' : '0' }));
 
   // ---- findings ----
   const findingCard = (f) => {
@@ -807,7 +807,8 @@ function shellVals(s, set, go, est, c) {
   ].map(p => ({ ...p, bg: pillBg(p.current) }));
   const obTabNow = s.obTab || 'flow';
   const logsTab = (typeof OBTABS !== 'undefined' && OBTABS.includes('records')) ? 'records' : 'control';
-  const item = (label, ic, fn, cur) => ({ key: label, label, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)' });
+  // later: not in the first cut Ramesh asked for (2026-09-09); still reachable, drawn at 40 percent.
+  const item = (label, ic, fn, cur, later) => ({ key: label, label, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : label });
   const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
   const composeCur = ['s4', 's5', 's6'].includes(s.screen);
   const railGroups = top === 'ai'
@@ -832,10 +833,10 @@ function shellVals(s, set, go, est, c) {
     : [
         { key: 'home', hasTitle: false, title: '', items: [item('NaaS', 'home', go('s2', { layer: 'cloud' }), s.screen === 's2' || s.screen === 's0')] },
         { key: 'connect', hasTitle: true, title: 'Connect', items: [
-          item('Explore 360', 'search', go('s1'), s.screen === 's1'),
+          item('Explore 360', 'search', go('s1'), s.screen === 's1', true),
           item('Fabric', 'cable', go('s3', { layer: 'cloud', tab: 'connect' }), onS3('cloud', 'connect')),
-          item('Compose', 'plus', () => c.setState({ screen: 's4', compose: s.compose && s.compose.outcome ? s.compose : prefillCompose(est) }), composeCur),
-          item('Marketplace', 'shopping-bag', go('s7'), storeCur),
+          item('Compose', 'plus', () => c.setState({ screen: 's4', compose: s.compose && s.compose.outcome ? s.compose : prefillCompose(est) }), composeCur, true),
+          item('Marketplace', 'shopping-bag', go('s7'), storeCur, true),
         ] },
         { key: 'observe', hasTitle: true, title: 'Observe', items: [
           item('Performance & Reliability', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe') && (s.obPage || 'perf') === 'perf' && obTabNow !== logsTab),

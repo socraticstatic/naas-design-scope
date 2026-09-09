@@ -85,7 +85,11 @@ export function launchCards({ est, ob, conns, totalSave, violations, isEmpty }) 
     { key: 'observe', label: 'Observe', value: isEmpty ? 'No telemetry yet' : `${conns.degraded} of ${conns.total} connections`, sub: isEmpty ? 'starts with the first attach' : degRow ? `degraded · ${n(degRow.wl)} workloads impacted` : `healthy · ${(ob.fab || 0).toFixed(1)} Gbps on the fabric`, bar: null },
     { key: 'govern', label: 'Govern', value: isEmpty ? 'No policies yet' : n(violations), sub: isEmpty ? 'three starting points' : `policy violations across ${(est.policies || []).length} policies`, bar: null },
     { key: 'cost', label: 'Cost', value: isEmpty ? 'No egress seen yet' : totalSave ? money(totalSave) + '/mo' : money(ob.savingsMo || 0) + '/mo', sub: isEmpty ? 'priced after the scan' : totalSave ? `on the table across ${est.findings.filter(f => f.priced).length} findings` : 'already saved on the fabric', bar: null },
-  ].map(c => ({ ...c, primary: isEmpty ? c.key === 'connect' : c.key === 'observe' }));
+  ].map(c => {
+    const primary = isEmpty ? c.key === 'connect' : c.key === 'observe';
+    const door = { connect: isEmpty ? 'Connect a cloud' : pub ? `Attach the ${pub === 1 ? 'region' : pub + ' regions'}` : 'See the fabric', observe: isEmpty ? 'Open Observe' : degRow ? 'See what is impacted' : 'See the traffic', govern: isEmpty ? 'Start a policy' : violations ? 'Review the violations' : 'Review the policies', cost: isEmpty ? 'Open Cost' : 'See the savings' }[c.key];
+    return { ...c, primary, door, eyebrow: primary ? (isEmpty ? 'Start here · new to the fabric' : 'Start here · you are connected') : '' };
+  });
 }
 
 const PROTO = ['tcp/443', 'tcp/5432', 'tcp/8080', 'udp/53', 'tcp/6379', 'tcp/22'];

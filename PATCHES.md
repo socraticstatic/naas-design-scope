@@ -258,3 +258,10 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   growth, Multi-cloud paths, Latency over SLO), Flows and paths, Event stream.
 - **Health** (`naas-round2.js`): `link: 'degraded'` is amber on the hero and adds an
   incident line ("BGP flapping on DX · 0.31% drops · 22 min").
+- **Later, at 40 percent** (Micah, 12:52): what Ramesh did not focus on stays reachable but dims
+  to `opacity:.4` with the title "Later · not in the first cut": rail items Explore 360, Compose,
+  Marketplace (`item(..., later)` in `shellVals`), the Fabric health strip, the Tailored block and
+  the Browse door on the landing, and the two doors at the foot of the Connect tab.
+- **Launch cards are doors**: each carries a verb ("Attach the region", "See what is impacted",
+  "Review the violations", "See the savings"); the primary card (Observe when connected, Connect
+  when new) shows an eyebrow "Start here" and a filled button.
