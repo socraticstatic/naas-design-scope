@@ -138,7 +138,7 @@ import * as S from './naas-sites.js';
 function pathsOfSite(est, site) { const sr = P.siteRegions(est, site, 6); return { level: 'path', label: `${site.name || site.id} · paths`, rows: sr.rows.map(x => ({ key: 'path:' + x.region.region, name: `${x.region.cloud} ${x.region.region}`, access: `${site.access || 'Access'} · ${P.path(site, x.region).ms} ms · ${x.region.priv ? 'AT&T fabric' : 'public internet'}`, priv: !!x.region.priv, gbps: x.gbps, leaf: true, region: x.region.region })) }; }
 
 /** Left column of the hero for a drill trail: [] → the estate's sites; [class] → metros or named sites; [class, metro] → sites; [class, metro, site] → the site's paths. */
-export function siteDrillRows(est, trail) {
+export function siteDrillRows(est, trail, opts = {}) {
   if (!trail || !trail.length) return null;
   const tree = S.siteTree(est);
   const all = P.allSites(est);
@@ -157,12 +157,14 @@ export function siteDrillRows(est, trail) {
   if (!second) return null;
   if (second.kind === 'site') return pathsOf(all.find(x => x.name === second.name) || { ...second, cls: cls.cls, clsLabel: cls.label });
   if (trail.length === 2) {
-    const rows = second.sites.map(siteRowOf);
-    if (second.more) rows.push({ key: 'more', name: `+${second.more.toLocaleString('en-US')} more in ${second.name}`, access: `${second.sites.length} shown`, more: true, rollup: false });
+    let rows = second.sites.map(siteRowOf);
+    // A site pinned from the drawer leads the sample.
+    if (opts.pin && !rows.some(r => r.drillKey === opts.pin)) { const pinned = S.metroSites(second).find(x => x.id === opts.pin); if (pinned) rows = [siteRowOf(pinned), ...rows.slice(0, 5)]; }
+    if (second.more) rows.push({ key: 'more', name: `+${second.more.toLocaleString('en-US')} more in ${second.name}`, access: 'open the drawer ›', more: true, rollup: false, cursor: 'pointer' });
     return { level: 'site', label: `${cls.label} · ${second.name}`, rows };
   }
-  const site = all.find(x => x.id === trail[2] || x.name === trail[2]);
-  return site ? pathsOf(site) : null;
+  const site = all.find(x => x.id === trail[2] || x.name === trail[2]) || (second.kind === 'metro' ? S.metroSites(second).find(x => x.id === trail[2]) : null);
+  return site ? pathsOf({ ...site, cls: cls.cls, clsLabel: cls.label, access: site.access || second.access }) : null;
 }
 
 /** Right column of the hero for a cloud drill: [region] → its VPCs; [region, vpc] → subnets; [region, vpc, subnet] → workloads. Other regions fold into one row. */

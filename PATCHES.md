@@ -339,3 +339,21 @@ Impact · Records · Actions, with the drill trail). No verdict sentences, no ne
   Attach sits in its own corner. Connect gains a **Sources** card (what the picture is drawn
   from, plus "Add a source" → provider, access, scope, "Add and scan") which answers "where do
   I connect my current ecosystem?" for a connected customer.
+
+## 10. The drawer at the point of volume, overlays, zoom on click (2026-09-09, 16:23 to 16:50)
+- **Volume drawer** (`naas-volume.js`, `naas-sites.js` `metroSites`): behind every "+N more"
+  on the picture or the map, a right-hand drawer slides over the content with every site of
+  that metro (generated the same way the six-site sample is, so the sample is the list's head):
+  search by id, street or host; filters on the fabric / public / degraded; sorted worst first;
+  sixty at a time; checkboxes with Select all; "Attach N" as one order (Compose carries the
+  note); Attach or Impact per row; click a row to pin it to the top of the picture. State:
+  `vol`, `volQ`, `volPath`, `volState`, `volPage`, `volSel`, `volPin`, `drawerOpen`.
+- **Overlays, not columns** (Micah, 16:33): the drawer and the Observe detail panel are fixed
+  overlays over the page; the map keeps its width, the queue is visible in full, nothing is
+  boxed in a scrolling container.
+- **Zoom on click** (Micah, 16:35): the map keeps a fixed frame; the most recently opened node
+  is the zoom, its subtree takes 55 percent of the row budget, everything else compresses;
+  ribbons taper so they still attach. Below the roots an open node's siblings fold into one
+  row ("+N other metros", click to fold back). Door rows ("+N more") are fixed height.
+- Sources card on Connect (where a connected customer adds an account or inventory).
+- Still counts, not lists: the "+10 regions" rollup and a subnet's workloads past six (no data).

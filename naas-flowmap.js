@@ -92,7 +92,13 @@ export function childrenOf(node, est, inv, flows) {
 
 /** Replace every open node by its children, recursively. */
 function expand(list, open, est, inv, flows, depth = 0) {
-  return list.flatMap(nd => { const node = { ...nd, depth, group: nd.group || rootGroup(nd) }; if (open.has(node.key) && node.hasChildren) { const kids = childrenOf(node, est, inv, flows).map(k => ({ ...k, group: node.group })); return kids.length ? expand(kids, open, est, inv, flows, depth + 1) : [node]; } return [node]; });
+  // Below the roots, an open node's siblings fold into one row so the map's height stays bounded at volume (Micah, 16:23).
+  const openHere = depth > 0 ? list.filter(nd => open.has(nd.key) && nd.hasChildren) : [];
+  const fold = openHere.length ? list.filter(nd => !open.has(nd.key)) : [];
+  const keep = openHere.length ? list.filter(nd => open.has(nd.key)) : list;
+  const out = keep.flatMap(nd => { const node = { ...nd, depth, group: nd.group || rootGroup(nd) }; if (open.has(node.key) && node.hasChildren) { const kids = childrenOf(node, est, inv, flows).map(k => ({ ...k, group: node.group })); return kids.length ? expand(kids, open, est, inv, flows, depth + 1) : [node]; } return [node]; });
+  if (fold.length) { const first = openHere[0]; const kindWord = { metro: 'metros', sitename: 'sites', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', endpoint: 'endpoints' }[fold[0].kind] || 'others'; out.push({ kind: 'rollup', key: `${(fold[0].parentKey || first.key.split('/')[0])}/rollup`, name: `+${fold.length} other ${kindWord}`, sub: 'click to fold back', v: fold.reduce((a, x) => a + x.v, 0), fabV: fold.reduce((a, x) => a + x.fabV, 0), hasChildren: false, state: 'ok', depth, group: fold[0].group || rootGroup(fold[0]), parentKey: fold[0].parentKey, foldsKey: first.key }); }
+  return out;
 }
 
 /** The map. open: keys to expand. filterRegion: keep only what touches a region. t: 0..1 scrubber, null = window. */
@@ -107,22 +113,43 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const Ls = L.map(scale).map(x => x.group === 'tags' || (!x.group && rootGroup(x) === 'tags') ? { ...x, locV: x.v * LOCAL } : { ...x, locV: 0 });
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
-  const W = 900, colW = 12, minH = 14, pad = 5, headH = 18, gap = 22, top = 20, H0 = 340;
+  const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 380;
   const groups = [['sites', 'Sites · first mile'], ['tags', 'Cloud workloads by tag'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
-  const nLeft = Ls.length; const overhead = top + groups.length * (headH + gap) + (nLeft - groups.length) * pad;
-  const sc = Math.max(0.5, (H0 - overhead) / T);
-  const place = (arr, x, y0) => { let y = y0; return arr.map(a => { const tot = a.v + (a.locV || 0); const h = Math.max(minH, tot * sc); const o = { ...a, x, y, h, x2: x + colW, used: 0, tot }; y += h + pad; return o; }); };
+  // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
+  // 55 percent of the row budget and everything else compresses into the rest; ribbons taper, so they still attach.
+  const nLeft = Ls.length;
+  const zoom = opts.zoom || null;
+  const inZoom = (k) => !!zoom && (k === zoom || k.startsWith(zoom + '/'));
+  const rowsBudget = (n, nGroups) => Math.max(100, H0 - top - nGroups * (headH + gap) - Math.max(0, n - nGroups) * pad);
+  const subTot = zoom ? [...Ls, ...Rs].filter(x => inZoom(x.key) && x.kind !== 'more').reduce((a, x) => a + x.v + (x.locV || 0), 0) : 0;
+  const scBase = Math.max(0.05, rowsBudget(nLeft, groups.length) / T);
+  const zf = subTot > 0 ? Math.max(1, (rowsBudget(nLeft, groups.length) * 0.55) / (subTot * scBase)) : 1;
+  const heightsFor = (arr, budgetPx) => {
+    const nZ = arr.filter(x => inZoom(x.key) && x.kind !== 'more').length, nO = arr.filter(x => !inZoom(x.key) && x.kind !== 'more').length, nM = arr.filter(x => x.kind === 'more').length;
+    const bz = nZ ? budgetPx * 0.55 : 0, bo = budgetPx - bz - nM * 18;
+    const tz = arr.filter(x => inZoom(x.key) && x.kind !== 'more').reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1;
+    const to = arr.filter(x => !inZoom(x.key) && x.kind !== 'more').reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1;
+    const minZ = nZ ? Math.max(12, Math.min(22, Math.floor(bz / nZ))) : 12, minOh = nO ? Math.max(7, Math.min(14, Math.floor(bo / nO))) : 7;
+    let rows = arr.map(x => { const tot = x.v + (x.locV || 0); const z = inZoom(x.key) && x.kind !== 'more'; const h = x.kind === 'more' ? 18 : z ? Math.max(minZ, tot / tz * bz) : Math.max(minOh, tot / to * (nZ ? bo : budgetPx)); return { ...x, h, tot, zoomed: z }; });
+    const sum = rows.reduce((a, r) => a + r.h, 0);
+    if (sum > budgetPx && sum > 0) { const f = budgetPx / sum; rows = rows.map(r => ({ ...r, h: Math.max(7, r.h * f) })); }
+    return rows;
+  };
+  const layout = (rows, x, y0) => { let y = y0; return rows.map(r => { const o = { ...r, x, y, x2: x + colW, used: 0 }; y += o.h + pad; return o; }); };
+  const leftRows = heightsFor(Ls, rowsBudget(nLeft, groups.length));
   const heads = []; const SS = []; let y = top;
-  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const placed = place(g.nodes, 0, y + headH - 6); SS.push(...placed); y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
+  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
   const leftH = SS.length ? y - gap + 8 : top;
   heads.push({ x: W, y: top - 4, anchor: 'end', text: 'Destinations' });
-  const DD = place(Rs, W - colW, top + headH - 6);
+  const DD = layout(heightsFor(Rs, rowsBudget(Rs.length, 1)), W - colW, top + headH - 6);
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);
   const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:local', name: 'Stays in the region', v: localV, fabV: 0, priv: false, local: true, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
-  const midH = mids.reduce((a, m) => a + Math.max(minH, m.v * sc), 0) + pad * (mids.length - 1);
-  const MM = place(mids, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
+  const midBudget = rowsBudget(mids.length, 0) - 40;
+  const MMh = mids.map(m => ({ ...m, tot: m.v, h: Math.max(minH, m.v / (T || 1) * midBudget) }));
+  const midH = MMh.reduce((a, m) => a + m.h, 0) + pad * (MMh.length - 1);
+  const MM = layout(MMh, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];
   const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (a.key === 'mid:local' || b.key === 'mid:local' || b.key === 'dest:local') return 'region'; if (g === 'sites' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
   const link = (a, b, v, priv, kindOverride) => { if (v <= 0.0005) return; const sa = a.h / (a.tot || a.v || 1), sb = b.h / (b.tot || b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, local: !!kindOverride, v, from: a.key, to: b.key, state: kindOverride ? 'ok' : priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key), pattern: kindOverride || patternOf(a, b) }); };
@@ -130,7 +157,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); if (loc && s.locV) link(s, loc, s.locV, false, 'region'); });
   DD.forEach(d => { if (d.key === 'dest:local') { if (loc) link(loc, d, d.v, false, 'region'); return; } if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
   const nodes = [...SS.map(x => ({ ...x, side: 'l' })), ...MM.map(x => ({ ...x, side: 'm' })), ...DD.map(x => ({ ...x, side: 'r' }))].map(x => ({ ...x, delta: deltaOf(x.key), open: open.has(x.key) }));
-  return { W, H, heads, nodes, ribbons, total: T, fabV, localV, open: [...open] };
+  return { W, H, heads, nodes, ribbons, total: T, fabV, localV, open: [...open], zoom, zf };
 }
 function rootGroup(x) { return x.kind === 'site' || x.kind === 'metro' || x.kind === 'sitename' || x.kind === 'circuit' ? 'sites' : x.kind === 'c2c' ? 'c2c' : 'tags'; }
 

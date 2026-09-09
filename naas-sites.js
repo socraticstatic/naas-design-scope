@@ -91,6 +91,7 @@ export function siteTree(est) {
         return {
           kind: 'metro', key: `${g.cls}:${ri}:${m.metro}`, name: m.metro, count: m.count, onFabric: Math.max(0, Math.min(m.count, onFabric)),
           access: r.access, ramp: `${m.metro} PoP`, ms: 4 + (mi * 3) % 9, sites, more: Math.max(0, m.count - sites.length),
+          gen: { cls: g.cls, mi, privShare },
         };
       }));
     } else {
@@ -100,4 +101,11 @@ export function siteTree(est) {
     const onFabric = children.reduce((a, ch) => a + (ch.kind === 'metro' ? ch.onFabric : (ch.priv ? 1 : 0)), 0);
     return { kind: 'class', key: g.cls, cls: g.cls, label: g.label, icon: g.icon, unit: g.unit, plural: g.plural, count: g.count, onFabric, access: [...g.access], children };
   });
+}
+
+/** Every site in a metro, generated the same way the six-site sample is, so the sample is the list's head. */
+export function metroSites(m) {
+  if (!m || !m.gen) return (m && m.sites) || [];
+  const { cls, mi, privShare } = m.gen;
+  return Array.from({ length: m.count }, (_, i) => siteRow(cls, m.name, i + mi * 6, ((i * 7 + mi * 3) % 10) / 10 < privShare + 0.05));
 }

@@ -58,3 +58,19 @@ test('a third band carries what stays in the region, and every ribbon carries a 
   for (const [k] of PATTERNS) { const lit = patternLit(m, k); assert.ok(lit.ribbons.size >= 1, k); }
   assert.equal(patternLit(m, 'all'), null);
 });
+test('below the roots, an open node folds its siblings into one row', () => {
+  const branch = leftRoots(est, flows).find(x => x.key === 'site:Branch'); const metro = childrenOf(branch, est, inv, flows)[0];
+  const m = buildMap(est, inv, flows, { open: ['site:Branch', metro.key] });
+  const metros = m.nodes.filter(x => x.kind === 'metro'); const roll = m.nodes.find(x => x.kind === 'rollup');
+  assert.equal(metros.length, 0); assert.ok(roll && /other metros/.test(roll.name)); assert.equal(roll.foldsKey, metro.key);
+  assert.ok(m.nodes.some(x => x.kind === 'sitename'));
+  const m1 = buildMap(est, inv, flows, { open: ['site:Branch'] }); assert.ok(!m1.nodes.some(x => x.kind === 'rollup'), 'roots do not fold');
+});
+test('zoom on click: the focused subtree inflates, ribbons still attach', () => {
+  const branch = leftRoots(est, flows).find(x => x.key === 'site:Branch'); const metro = childrenOf(branch, est, inv, flows)[0];
+  const flat = buildMap(est, inv, flows, { open: ['site:Branch', metro.key] });
+  const zoomed = buildMap(est, inv, flows, { open: ['site:Branch', metro.key], zoom: metro.key });
+  const hFlat = flat.nodes.filter(x => x.kind === 'sitename').reduce((a, x) => a + x.h, 0); const hZoom = zoomed.nodes.filter(x => x.kind === 'sitename').reduce((a, x) => a + x.h, 0);
+  assert.ok(zoomed.zf > 1); assert.ok(hZoom > hFlat * 1.5, `${hZoom} vs ${hFlat}`); assert.ok(zoomed.H <= 460, 'frame holds: ' + zoomed.H);
+  assert.ok(zoomed.ribbons.every(r => r.d.startsWith('M')));
+});
