@@ -216,3 +216,10 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
 - `symmetry.mjs` (mixed control heights per row) and `gestalt.mjs` (wrapped
   or clipped heads) both read zero on every screen; run them after any
   markup change.
+
+## 17. Rail and dock geometry (2026-09-09)
+The header is pinned (sticky). The rail and the Andi dock are
+`calc(100vh - 65px)` tall from `top:65px`, so they end at the viewport
+instead of 65px below it; the rail's list is `overflow:hidden` and can
+never show a scrollbar. Under 720px tall the rail is static and scrolls
+with the page.
