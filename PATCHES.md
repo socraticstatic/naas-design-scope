@@ -287,3 +287,7 @@ Transcript: `cloud-connect/docs/meetings/2026-09-09-ramesh-storefront-review-tra
   user set); opens from the header button or any Ask Andi door. On NaaS it never leads with an
   AI Fabric finding; the home lead names the degraded connection and the four-word loop, and a
   region scope on a degraded link says what is behind it and what to do.
+- **Second re-listen** (Micah, 13:33): each pattern card's sub line answers connectivity,
+  security and cost ("4 of 5 sites on the fabric · 1 uninspected · $0.04/GB"); the bank-scale
+  estate is a demo-menu entry ("Bank scale", `?view=trust`) and drills to an ATM's paths; a
+  link-degraded region's tooltip says "BGP flapping on DX"; `HANDOFF.md` is the port note.

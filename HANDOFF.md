@@ -1,0 +1,39 @@
+# NaaS storefront: handoff for the port (2026-09-11)
+
+This is the static prototype behind https://socraticstatic.github.io/naas-design-scope/. It is what Ramesh reviewed on 2026-09-09 and what he asked for, reduced to the shape he named: one picture, four words, one loop. The shell (header, rail, title row, Andi dock) is the AI Fabric UI shell from the shared Figma file, so the port is content, not chrome.
+
+## The shape
+
+- **Home** for a connected customer is the fabric picture: sites on the left, the AT&T fabric in the middle, a lane beneath it for traffic outside the fabric (third party, internet), clouds and workloads on the right. Under it: the incidents, then four doors.
+- **Four words** in the rail and on the four doors: Connect, Observe, Govern, Cost. Nothing else is in the navigation. A new customer lands on Connect (intake and scan). A connected customer is pushed to Observe.
+- **One loop.** Every page ends with a "Next stop" row: Connect → Observe → Govern → Cost → Connect.
+- **Observe** shows both layers: the network layer in NetBond Advanced's Detailed Metrics shape (utilization in and out, current and average, up or down, BGP, drops, purchased ports), and beside it the workloads that connection impacts, with two confidence levels (AT&T-terminated: directly impacted; customer DX or ER: possible impact by account) and the resilience rule. Then the traffic flow, then five pattern cards (stays in the region, across regions, across clouds, out to the internet, coming in), each opening Logs.
+- **Drillable in place.** Left: class → metro → site → paths. Right: region → VPC → subnet → workload. The Sankey splits a site class by metro or a tag group by region. The rest of the picture never moves.
+
+## Files
+
+| File | What it is |
+|---|---|
+| `NaaS Storefront.dc.html` | Markup, dc-runtime templates (`sc-if`, `sc-for`, `{{ }}`). Sections are marked `<!-- ===== S0 … -->`. |
+| `naas-app.js` | State → template values. `shellVals` (rail, pills, titles), the hero block (`heroLayout` call, drills), `addendumVals` (Observe), `andiVals`. |
+| `naas-connections.js` | Pure derivations added for Ramesh's asks: `connections`, `impacted`, `patterns`, `records`, `resolveDest`, `launchCards`, `siteDrillRows`, `regionDrillRows`, `splitSources`. Unit tests in `tests/`. |
+| `naas-logic.js` | `heroLayout` (geometry of the picture, including the lane and `regionRows`). |
+| `naas-addendum.js` | `observe` (flows, KPIs, Sankey via `sankey3`), inventory tree. |
+| `naas-round2.js` | `health` (amber edges, incidents), scopes, endpoints. |
+| `naas-data.js` | The estates. `REG(...)` regions carry `link`, `paths`, `acct` for the connections panel. |
+| `naas-sites.js`, `naas-paths.js` | Sites by class, metro, site; site-to-region paths. |
+| `PATCHES.md` | Every change on top of the Claude Design export, dated. Section 8 is this iteration. |
+
+Run tests: `node --test 'tests/*.test.mjs'` (node 20 or newer, no install).
+
+## State keys worth knowing
+
+`screen` (`s0` intake, `s2` home, `s3` a word: `tab` in connect, observe, govern, cost), `drill` (left trail), `cloudDrill` (right trail), `obConn` (selected connection), `obTab` (`flow` or `control` = Logs), `logPattern`, `skSplit` (Sankey split key), `andiOpen` (closed unless the user opened it), `obScope`, `obWindow`.
+
+## What is real and what is mock
+
+Everything on screen derives from the seeded estates in `naas-data.js`. The derivations are honest about what the data can say: private destinations resolve to resource names through the discovery tree; public destinations stay an ip and are labeled unresolved; Shadow SaaS and new-destination insights were removed because sampled NetFlow cannot support them. When real telemetry is wired in, `connections()` expects per-connection utilization, state, BGP and drops; `impacted()` expects the region's VPCs and the cloud-to-cloud arcs.
+
+## Not in this cut
+
+Access-side utilization (ADI, AVPN interfaces) for the left side; application-layer impact; public destination resolution; the store screens (Compose, Recommend, Review, Marketplace) which still exist behind finding doors.

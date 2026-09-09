@@ -10,6 +10,7 @@ export const VIEWS = [
   { id: 'empty', label: 'New customer' },
   { id: 'partial', label: 'Growing' },
   { id: 'mature', label: 'Established' },
+  { id: 'trust', label: 'Bank scale' },
 ];
 
 export const HEADSTART = [

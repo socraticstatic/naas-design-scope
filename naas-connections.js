@@ -64,7 +64,13 @@ export function patterns(est, ob, inv) {
   const internet = bar(flows.filter(f => f.kind === 'App' && f.to !== 'object storage').map(f => ({ key: f.id, name: f.name, sub: `${f.region} · ${f.controlled ? 'AT&T egress' : 'hyperscaler exit'} · $${f.perGb.toFixed(2)}/GB`, gbps: f.gbps, priv: f.controlled, fill: f.controlled ? FAB : PUB })).sort((a, b) => b.gbps - a.gbps).slice(0, 5)).map(r => ({ ...r, v: G(r.gbps) }));
   const sites = P.allSites(est);
   const inbound = bar(sites.map(st => ({ key: st.id || st.name, name: st.name, sub: `${st.access || 'Access'} · ${st.priv ? 'private first mile' : 'public first mile'}`, gbps: +rs.reduce((a, r) => a + P.gbps(est, st, r), 0).toFixed(2), priv: !!st.priv, fill: st.priv ? FAB : PUB })).filter(x => x.gbps > 0).sort((a, b) => b.gbps - a.gbps).slice(0, 5)).map(r => ({ ...r, v: r.gbps >= 1 ? G(r.gbps) : Math.round(r.gbps * 1000) + ' Mbps' }));
-  const mk = (key, title, rows, word) => ({ key, title, rows, legend, total: rows.reduce((a, r) => a + r.gbps, 0), sub: rows.length ? `${rows.filter(r => r.priv).length} of ${rows.length} ${word} on the fabric` : 'Nothing in this window' });
+  // Each pattern answers the three questions Ramesh named (19:18): connectivity, security, cost.
+  const mk = (key, title, rows, word) => {
+    const onFab = rows.filter(r => r.priv).length, pub = rows.length - onFab;
+    const gb = rows.reduce((a, r) => a + r.gbps, 0), pubGb = rows.filter(r => !r.priv).reduce((a, r) => a + r.gbps, 0);
+    const perGb = gb ? ((pubGb * 0.09 + (gb - pubGb) * 0.02) / gb) : 0;
+    return { key, title, rows, legend, total: gb, sub: rows.length ? `${onFab} of ${rows.length} ${word} on the fabric · ${pub ? pub + ' uninspected' : 'all inspected'} · $${perGb.toFixed(2)}/GB` : 'Nothing in this window', connectivity: `${onFab} of ${rows.length} on the fabric`, security: pub ? `${pub} with no inspection point` : 'every path has an inspection point', cost: `$${perGb.toFixed(2)}/GB blended` };
+  };
   return [mk('region', 'Stays in the region', region, 'regions'), mk('regions', 'Across regions', regions, 'flows'), mk('clouds', 'Across clouds', clouds, 'paths'), mk('internet', 'Out to the internet', internet, 'flows'), mk('inbound', 'Coming in', inbound, 'sites')];
 }
 

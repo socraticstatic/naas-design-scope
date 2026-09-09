@@ -110,3 +110,4 @@ test('sankey split by metro and by region', () => {
   assert.equal(destPattern('object storage'), 'regions'); assert.equal(destPattern('Cloud regions (from sites)'), 'inbound');
 });
 test('a named top-level site drills straight to its paths', () => { const r = siteDrillRows(est, ['Ashburn DC']); assert.equal(r.level, 'path'); assert.ok(r.rows.length >= 1); });
+test('each pattern carries connectivity, security and cost', () => { for (const x of patterns(est, ob, inv)) { assert.match(x.sub, /on the fabric · .* · \$\d\.\d\d\/GB/); assert.ok(x.connectivity && x.security && x.cost); } });
