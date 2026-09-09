@@ -160,3 +160,15 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   rendered its rows in a browser; the raw `<tr>` printed once with unresolved
   values (the "/mo · /mo" row). All 13 tables are CSS tables now
   (`.dt/.dt-h/.dt-b/.dt-r/.dt-c`), and every one has rows.
+
+## 13. Audit close-out: scope everywhere, Cost cards, one palette (2026-09-09)
+- Fabric and Policies carry the same Scope bar as Traffic and Cost. Fabric's
+  lens comparison reads the scoped estate; policies filter to the scope
+  unless they apply to any cloud.
+- Cost's Egress by destination, 90-day forecast and Committed vs metered
+  are kit cards (`.fx-card`) with a title and one-line sub.
+- One state palette: on Traffic the hero's wires are fabric blue and public
+  grey like the Sankey; a red sleeve marks a path over 100 ms; the legend
+  says so. "Hide the fabric" sits in the legend row, not over the picture.
+- Observe tile "On the AT&T fabric" → "On fabric" so no label wraps past two
+  lines at 128px.

@@ -129,7 +129,7 @@ export function observe(est, steered, inv) {
     { key: 'p95', l: 'P95 Latency', v: String(p95), u: 'ms', e: '' },
     { key: 'loss', l: 'Packet Loss', v: loss.toFixed(2), u: '%', e: '' },
     { key: 'egr', l: 'Egress Spend', v: short(egressMo), u: '', e: '/mo' },
-    { key: 'fab', l: 'On the AT&T fabric', v: String(covPct), u: '%', e: '' },
+    { key: 'fab', l: 'On fabric', v: String(covPct), u: '%', e: '' },
     { key: 'sav', l: 'Savings', v: short(savingsMo), u: '', e: '/mo' },
     ...(capTotal ? [{ key: 'util', l: 'Utilization', v: String(util), u: '%', e: 'of attached capacity' }] : []),
   ];
