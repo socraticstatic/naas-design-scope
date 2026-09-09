@@ -202,3 +202,17 @@ Also fixed here: a stray `</div>` at the end of the Explore 360 section
   and its paths and scrolls to it. Rows carry `data-jump` anchors.
 - Cloud region is a real facet; a region chip narrows the cloud tree and the
   sites tree to what reaches it, visibly, and clears from the chip.
+
+## 16. Symmetry pass (2026-09-09)
+- One control height in the kit: search, select and button are 36px,
+  border-box (the search label was content-box and rendered 52px). The
+  Explore toolbar's segmented control, view tabs and expand buttons are 36.
+  Site-row action pills are 26 in both lists.
+- Export cards at 20px padding (were 16), kit cards at 24; uppercase
+  eyebrows 11px/16 with .06em everywhere (were 12 and 11 mixed).
+- Vertical rhythm: 24px from the title row to the first block, 24 after the
+  fabric strip, 24 between department blocks; the Floor's health row lost
+  its negative margin.
+- `symmetry.mjs` (mixed control heights per row) and `gestalt.mjs` (wrapped
+  or clipped heads) both read zero on every screen; run them after any
+  markup change.
