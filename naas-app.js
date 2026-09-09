@@ -118,12 +118,12 @@ export function vals(c) {
 
   // ---- rollup cards ----
   const rollup = [
-    { key: 'disc', label: 'Discovered', value: isEmpty ? 'Nothing yet' : est.workloads.toLocaleString('en-US'), sub: isEmpty ? 'Start the scan' : `assets · ${est.clouds} clouds · ${est.regions} regions`, bar: null, go: go('s1') },
-    { key: 'att', label: 'Attached', value: isEmpty ? '0 of 0' : `${est.attachedRegions} of ${est.regions}`, sub: isEmpty ? 'No private paths' : `regions · ${pct(est.attachedRegions, est.regions)}% attached`, bar: pct(est.attachedRegions, est.regions), go: go('s3', { layer: 'cloud', tab: 'connect' }) },
+    { key: 'disc', label: 'Discovered', value: isEmpty ? 'Nothing yet' : est.workloads.toLocaleString('en-US'), sub: isEmpty ? 'Start the scan' : `${est.clouds} clouds · ${est.regions} regions`, bar: null, go: go('s1') },
+    { key: 'att', label: 'Attached', value: isEmpty ? '0 of 0' : `${est.attachedRegions} of ${est.regions}`, sub: isEmpty ? 'No private paths' : `regions · ${pct(est.attachedRegions, est.regions)}%`, bar: pct(est.attachedRegions, est.regions), go: go('s3', { layer: 'cloud', tab: 'connect' }) },
     { key: 'gov', label: 'Governed', value: `${est.policiesEnforced} of ${est.policiesAuthored}`, sub: 'policies enforced', bar: pct(est.policiesEnforced, est.policiesAuthored), go: go('s3', { layer: 'cloud', tab: 'govern' }) },
-    { key: 'obs', label: 'Observed', value: `${est.observedPct}%`, sub: 'of paths under control', bar: est.observedPct, go: go('s3', { layer: 'cloud', tab: 'observe' }) },
-    { key: 'saved', label: 'Saved', value: ob.savingsMo ? fmt(ob.savingsMo) + '/mo' : 'Nothing yet', sub: totalSave ? `+${fmt(totalSave)}/mo on the table` : 'per month on the fabric', bar: null, go: go('s3', { layer: 'cloud', tab: 'cost' }) },
-    { key: 'fab', label: 'Fabric attach', value: `${est.fabricAttachPct}%`, sub: 'of sites on a private first mile', bar: est.fabricAttachPct, go: go('s3', { layer: 'transport', tab: 'connect' }) },
+    { key: 'obs', label: 'Observed', value: `${est.observedPct}%`, sub: 'of paths', bar: est.observedPct, go: go('s3', { layer: 'cloud', tab: 'observe' }) },
+    { key: 'saved', label: 'Saved', value: ob.savingsMo ? fmt(ob.savingsMo) + '/mo' : 'Nothing yet', sub: totalSave ? `+${fmt(totalSave)} on the table` : 'this month', bar: null, go: go('s3', { layer: 'cloud', tab: 'cost' }) },
+    { key: 'fab', label: 'Fabric attach', value: `${est.fabricAttachPct}%`, sub: 'of sites', bar: est.fabricAttachPct, go: go('s3', { layer: 'transport', tab: 'connect' }) },
   ].map(r => ({ ...r, hasSub: !!r.sub, barVis: r.bar !== null ? 'visible' : 'hidden', alarm: r.bar !== null && r.bar < 50, barColor: r.bar !== null && r.bar < 50 ? 'var(--warning)' : 'var(--cta)', barW: (r.bar || 0) + '%', hasBar: r.bar !== null }));
 
   // ---- findings ----
