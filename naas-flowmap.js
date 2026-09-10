@@ -48,17 +48,30 @@ export function childrenOf(node, est, inv, flows) {
     // exactly the thing the network cannot see, so this descends on its own.
     const mine = (est.sites || []).filter(x => S.accessOf(x) === node.cls);
     if (!mine.length) return [];
+    // A row that stands for many sites ("Remote sites (212)") carries no real
+    // metro; siteTree already splits those into the metros they are in, so
+    // borrow them rather than lumping 212 buildings under "Various".
+    const tree = S.siteTree(est);
     const byMetro = {};
     mine.forEach(x => {
-      const m = x.metro || 'Various';
       const count = S.countOf(x.name);
-      const g = byMetro[m] = byMetro[m] || { metro: m, count: 0, onFabric: 0, only: x };
+      const cls = S.classOf(x);
+      const kids = count > 1 ? ((tree.find(c => c.cls === cls) || {}).children || []).filter(k => k.kind === 'metro') : [];
+      if (kids.length) {
+        kids.forEach(k => {
+          const g = byMetro[k.name] = byMetro[k.name] || { metro: k.name, count: 0, onFabric: 0, only: null, cls };
+          g.count += k.count; g.onFabric += k.onFabric || 0;
+        });
+        return;
+      }
+      const m = x.metro || 'Various';
+      const g = byMetro[m] = byMetro[m] || { metro: m, count: 0, onFabric: 0, only: x, cls };
       g.count += count; g.onFabric += x.priv ? count : 0; if (g.count > count) g.only = null;
     });
     const per = PER_SITE[S.classOf(mine[0])] || 0.5;
     return Object.values(byMetro).map(g => g.only && g.count === 1
       ? { kind: 'sitename', key: `${node.key}/${g.only.name}`, cls: node.cls, siteName: g.only.name, name: g.only.name, sub: g.only.access, v: per, fabV: g.only.priv ? per : per * 0.1, hasChildren: false, state: g.only.priv ? 'ok' : 'slo', parentKey: node.key }
-      : { kind: 'metro', key: `${node.key}/${g.metro}`, cls: node.cls, metro: g.metro, name: `${g.metro} · ${n(g.count)}`, v: per * g.count, fabV: per * g.onFabric, hasChildren: true, state: g.onFabric < g.count / 2 ? 'slo' : 'ok', parentKey: node.key }
+      : { kind: 'metro', key: `${node.key}/${g.metro}`, cls: node.cls, siteCls: g.cls || S.classOf(mine[0]), metro: g.metro, count: g.count, name: `${g.metro} · ${n(g.count)}`, v: per * g.count, fabV: per * g.onFabric, hasChildren: true, state: g.onFabric < g.count / 2 ? 'slo' : 'ok', parentKey: node.key }
     ).sort((a, b) => b.v - a.v);
   }
   if (node.kind === 'metro') {

@@ -49,7 +49,26 @@ export function panelFor(sel, ctx) {
   const share = map.total ? Math.round(node.v / map.total * 100) : 0;
   const recs = records(est, inv, { flows }, 'all').filter(r => region ? (r.srcSub + ' ' + r.dstSub).includes(region) : true).slice(0, 8);
   const resolved = node.kind === 'workload' ? { name: node.resource, sub: node.ip } : node.unresolved ? { name: node.name, sub: 'unresolved · public' } : null;
-  return { kind: node.kind, title: node.name, sub: node.sub || '', trail: tr,
+  const kids = (() => {
+    if (!node.hasChildren) return null;
+    let ch = [];
+    try { ch = F.childrenOf(node, est, inv, flows) || []; } catch (e) { ch = []; }
+    ch = ch.filter(c => c.kind !== 'rollup' && c.kind !== 'more' && c.kind !== 'wlmore');
+    if (!ch.length) return null;
+    const noun = { metro: 'metros', sitename: 'sites', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', workload: 'workloads', endpoint: 'endpoints' }[ch[0].kind] || 'items';
+    const shown = ch.slice(0, 12);
+    return {
+      title: `${n(ch.length)} ${ch.length === 1 ? noun.replace(/s$/, '') : noun}${ch.length > shown.length ? ` · showing ${shown.length}` : ''}`,
+      rows: shown.map(c => ({
+        key: c.panelSel || c.wlSel || (c.kind === 'metro' ? `vol:${c.siteCls || c.cls}|${c.metro}` : '') || (c.kind === 'sitename' ? `asset:${c.siteName}` : ''),
+        name: c.kind === 'metro' ? `${n(c.count || 0) || c.metro} · ${c.metro}` : c.name,
+        sub: c.sub || `${c.v >= 1 ? c.v.toFixed(1) + ' Gbps' : Math.round(c.v * 1000) + ' Mbps'}`,
+        warn: c.state === 'slo' || c.state === 'degraded',
+        note: c.state === 'degraded' ? 'degraded' : c.state === 'slo' ? 'outside the fabric' : '',
+      })),
+    };
+  })();
+  return { kind: node.kind, title: node.name, sub: node.sub || '', trail: tr, children: kids,
     overview: [...(node.opened ? [['Opened', 'children shown in place']] : []), ['Traffic', `${node.v.toFixed(2)} Gbps`], ['On the fabric', `${node.v ? Math.round(node.fabV / node.v * 100) : 0}%`], ['Share of all traffic', `${share}%`], ['Change vs prior window', (node.delta >= 0 ? '+' : '') + node.delta + '%'], ['State', node.state === 'ok' ? 'Healthy' : node.state === 'degraded' ? 'Degraded' : 'Over SLO or public'], ...(resolved ? [['Resource', resolved.name], ['Address', resolved.sub]] : [])],
     impact: imp, records: recs, actions: [...(node.state !== 'ok' && node.fabV < node.v ? [{ key: 'steer', label: 'Steer onto the fabric' }] : []), ...(region && !(row) ? [{ key: 'attach', label: `Attach ${region}`, region }] : []), ...(row && row.hot ? [{ key: 'port', label: 'Add a port', region }] : []), { key: 'policy', label: 'Author a policy here', region }] };
 }
