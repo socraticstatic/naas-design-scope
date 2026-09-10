@@ -185,7 +185,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </header>
 <div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }};padding-right:{{ shellPadRight }};transition:padding-right .28s cubic-bezier(.22,1,.36,1)">
 <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
-<aside aria-label="{{ railTitle }} sections" data-collapsed="{{ railCollapsed }}" style="position:sticky;top:65px;align-self:start;height:calc(100vh - 65px);display:flex;flex-direction:column;padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);width:{{ railW }};box-sizing:border-box;font-size:14px;transition:width .15s;overflow:hidden">
+<aside aria-label="{{ railTitle }} sections" data-collapsed="{{ railCollapsed }}" style="position:sticky;top:var(--hdr,65px);align-self:start;height:calc(100vh - var(--hdr,65px));display:flex;flex-direction:column;padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);width:{{ railW }};box-sizing:border-box;font-size:14px;transition:width .15s;overflow:hidden">
   <div style="flex:1;min-height:0;overflow:hidden">
   <sc-for list="{{ railGroups }}" as="g" hint-placeholder-count="4">
     <sc-if value="{{ g.hasTitle }}" hint-placeholder-val="{{ true }}">
@@ -1649,7 +1649,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <!-- SCREENS -->
 </main>
     <sc-if value="{{ hasPanelOverlay }}" hint-placeholder-val="{{ false }}">
-<div class="fx-card" aria-label="Detail" style="position:fixed;top:65px;right:0;width:380px;height:calc(100vh - 65px);overflow:hidden;z-index:47;gap:0;padding:0;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);background:var(--bg-base);border:0;border-left:1px solid var(--border-secondary);border-radius:0;box-shadow:-8px 0 32px rgba(0,0,0,.14);animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);box-sizing:border-box">
+<div class="fx-card" aria-label="Detail" style="position:fixed;top:var(--hdr,65px);right:0;width:380px;height:calc(100vh - var(--hdr,65px));overflow:hidden;z-index:47;gap:0;padding:0;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);background:var(--bg-base);border:0;border-left:1px solid var(--border-secondary);border-radius:0;box-shadow:-8px 0 32px rgba(0,0,0,.14);animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);box-sizing:border-box">
   <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border-secondary);min-width:0;display:grid;gap:8px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="min-width:0"><sc-if value="{{ panel.hasList }}" hint-placeholder-val="{{ false }}"><button onClick="{{ panel.backToList }}" style="border:0;background:transparent;padding:0 0 6px;font:inherit;font-size:12px;color:var(--link);cursor:pointer">‹ Back to the list</button></sc-if><div class="fx-chips" style="font-size:11px;margin-bottom:4px"><sc-for list="{{ panel.trail }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.go }}" style="border:0;background:transparent;padding:0;font:inherit;font-size:11px;color:var(--link);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">{{ t.name }}</button><sc-if value="{{ t.notLast }}" hint-placeholder-val="{{ false }}"><span style="color:var(--text-disabled)">›</span></sc-if></sc-for></div><div style="display:flex;align-items:center;gap:8px;min-width:0"><h3 class="fx-card-title" style="min-width:0;overflow:hidden;text-overflow:ellipsis" title="{{ panel.title }}">{{ panel.title }}</h3><sc-if value="{{ panel.hasState }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 9px;border-radius:9999px;background:{{ panel.stateBg }};color:{{ panel.stateInk }};font-size:11px;font-weight:700;white-space:nowrap"><i style="width:6px;height:6px;border-radius:9999px;background:{{ panel.stateDot }};display:inline-block"></i>{{ panel.stateWord }}</span></sc-if></div><div class="fx-card-sub" title="{{ panel.sub }}">{{ panel.sub }}</div></div><div style="display:flex;align-items:center;gap:6px;flex:none"><button onClick="{{ panel.close }}" aria-label="Close" style="border:0;background:transparent;font-size:18px;line-height:1;color:var(--text-light);cursor:pointer;padding:0 2px">×</button></div></div>
         <div class="fx-chips"><sc-for list="{{ panel.tabs }}" as="tb" hint-placeholder-count="4"><button class="fx-chip" aria-pressed="{{ tb.on }}" onClick="{{ tb.go }}" style="cursor:pointer;background:{{ tb.bg }};color:{{ tb.color }};border-color:{{ tb.border }}">{{ tb.label }}</button></sc-for></div></div>
@@ -1686,7 +1686,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
     </sc-if>
 <sc-if value="{{ queueOpen }}" hint-placeholder-val="{{ false }}">
-<aside aria-label="Queue" style="position:fixed;top:65px;right:{{ drawerRight }};width:380px;height:calc(100vh - 65px);z-index:46;overflow-x:hidden;box-sizing:border-box;animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);display:grid;grid-template-rows:auto 1fr;background:var(--bg-base);border-left:1px solid var(--border-secondary);box-shadow:-8px 0 32px rgba(0,0,0,.14)">
+<aside aria-label="Queue" style="position:fixed;top:var(--hdr,65px);right:{{ drawerRight }};width:380px;height:calc(100vh - var(--hdr,65px));z-index:46;overflow-x:hidden;box-sizing:border-box;animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);display:grid;grid-template-rows:auto 1fr;background:var(--bg-base);border-left:1px solid var(--border-secondary);box-shadow:-8px 0 32px rgba(0,0,0,.14)">
   <div style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--border-secondary)"><div style="min-width:0;flex:1"><div style="font-size:15px;line-height:20px;font-weight:700;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Queue</div><div style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ queueCount }} · worst first</div></div><button onClick="{{ closeQueue }}" aria-label="Close" style="border:0;background:transparent;font-size:18px;line-height:1;color:var(--text-light);cursor:pointer;padding:2px">×</button></div>
   <div style="overflow-y:auto;overflow-x:hidden;min-width:0;padding:12px 16px;display:grid;gap:10px;align-content:start">
     <div style="display:grid">
@@ -1703,7 +1703,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </aside>
 </sc-if>
 <sc-if value="{{ hasDrawer }}" hint-placeholder-val="{{ false }}">
-<aside aria-label="Volume" style="position:fixed;top:65px;right:{{ drawerRight }};width:380px;height:calc(100vh - 65px);z-index:46;overflow-x:hidden;box-sizing:border-box;animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);display:grid;grid-template-rows:auto minmax(0,1fr) auto;border-left:1px solid var(--border-secondary);background:var(--bg-base);box-shadow:-12px 0 32px rgba(0,0,0,.16);animation:fadeIn .18s">
+<aside aria-label="Volume" style="position:fixed;top:var(--hdr,65px);right:{{ drawerRight }};width:380px;height:calc(100vh - var(--hdr,65px));z-index:46;overflow-x:hidden;box-sizing:border-box;animation:drawerIn .34s cubic-bezier(.22,1.2,.36,1);display:grid;grid-template-rows:auto minmax(0,1fr) auto;border-left:1px solid var(--border-secondary);background:var(--bg-base);box-shadow:-12px 0 32px rgba(0,0,0,.16);animation:fadeIn .18s">
   <div style="display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--border-secondary)"><div style="min-width:0;flex:1"><sc-if value="{{ drawer.canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ drawer.back }}" style="border:0;background:transparent;padding:0 0 4px;font:inherit;font-size:12px;font-weight:500;color:var(--link);cursor:pointer">‹ Back</button></sc-if><div style="font-size:15px;line-height:20px;font-weight:700;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ drawer.title }}</div><div style="font-size:12px;line-height:16px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ drawer.sub }}</div></div><button onClick="{{ drawer.close }}" aria-label="Close" style="border:0;background:transparent;font-size:18px;line-height:1;color:var(--text-light);cursor:pointer;padding:2px">×</button></div>
   <div key="{{ drawer.slideKey }}" style="overflow-y:auto;overflow-x:hidden;min-width:0;padding:12px 16px;display:grid;gap:10px;align-content:start;animation:drawerSlide .22s cubic-bezier(.2,.7,.3,1)">
     <label class="fx-search" style="width:100%"><span aria-hidden="true"></span><input value="{{ drawer.q }}" onChange="{{ drawer.setQ }}" placeholder="{{ drawer.searchHint }}" aria-label="Search the list"></input></label>
@@ -1735,7 +1735,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </aside>
 </sc-if>
 <sc-if value="{{ andiOpen }}" hint-placeholder-val="{{ true }}">
-<aside aria-label="Andi" style="position:{{ andiPos }};top:65px;right:{{ andiRight }};width:{{ andiW }};z-index:{{ andiZ }};box-shadow:{{ andiShadow }};align-self:start;height:calc(100vh - 65px);display:grid;grid-template-rows:auto minmax(0,1fr) auto;border-left:1px solid var(--border-secondary);background:var(--bg-base)">
+<aside aria-label="Andi" style="position:{{ andiPos }};top:var(--hdr,65px);right:{{ andiRight }};width:{{ andiW }};z-index:{{ andiZ }};box-shadow:{{ andiShadow }};align-self:start;height:calc(100vh - var(--hdr,65px));display:grid;grid-template-rows:auto minmax(0,1fr) auto;border-left:1px solid var(--border-secondary);background:var(--bg-base)">
   <div style="display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;border-bottom:1px solid var(--border-secondary)"><span aria-hidden="true" style="width:24px;height:24px;border-radius:9999px;background:linear-gradient(135deg,#00abeb,#0057b8);flex:none"></span><span style="font-weight:700;color:var(--text-heading)">Andi</span><span style="font-size:11px;color:var(--text-light)">reads the traffic</span><button onClick="{{ toggleAndi }}" aria-label="Hide Andi" style="margin-left:auto;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--text-light);font-size:16px;cursor:pointer;white-space:nowrap" style-hover="background:var(--bg-wash)">›</button></div>
   <div style="overflow:auto;padding:16px;display:grid;gap:14px;align-content:start">
     <sc-if value="{{ hasAndiScope }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:8px"><span style="height:24px;padding:0 10px;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:12px;line-height:24px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ andiScopeLabel }}</span><button onClick="{{ clearAndiScope }}" aria-label="Clear scope" style="border:0;background:transparent;padding:0;color:var(--text-light);font-size:14px;cursor:pointer;white-space:nowrap">×</button></div></sc-if>
@@ -1767,7 +1767,22 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { screen: 's2', view: 'mature', estateParam: null, mode: 'foryou', theme: 'light', layer: 'cloud', tab: 'connect', steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', aiTab: 'perf', aiMetric: 'tokens', breakdownOpen: false, events: [], drill: [], regionDrill: null, hoverRegion: null, hoverNode: null, bandOpen: false, picked: [], scanStep: 0, treeOrMap: 'tree', openWorkload: null, treeOpen: {}, chips: [], compose: { outcome: null, source: [], dest: [], regionTab: 'US East', metros: [], resiliency: 'Standard', control: [] }, freeText: '', order: null, submitted: false, pendingDismissed: false, browseQuery: '', browseCat: null, browseSort: 'popular', filtersOpen: false, filterProviders: [], priceCeil: 0, product: null, simulated: false, enforced: false, whyOpen: null, levelSort: 'largest', levelQuery: '', intakeOrg: '', intakeSource: 'credential', intakeProvider: 'AWS', approver: 'j.martinez@meridianlogistics.com', term: 36 }; }
-  componentDidMount() { import('./naas-app.js').then(m => { this.app = m; m.init(this); this.forceUpdate(); }).catch(e => console.error(e)); this._rs = () => this.forceUpdate(); window.addEventListener('resize', this._rs);
+  componentDidMount() { import('./naas-app.js').then(m => { this.app = m; m.init(this); this.forceUpdate(); }).catch(e => console.error(e)); // The header's height is the offset every pinned surface needs. Measured
+    // once it exists and tracked after, because a one-shot read at mount runs
+    // before the app has rendered into it — the first attempt latched 47px
+    // against a header that settles at 89, so everything pinned sat 42px too
+    // high the moment you scrolled.
+    this._hdr = () => {
+      const h = document.querySelector('header');
+      if (!h) return;
+      const px = Math.round(h.getBoundingClientRect().height);
+      if (px > 0) document.documentElement.style.setProperty('--hdr', px + 'px');
+      if (!this._ro && window.ResizeObserver) { this._ro = new ResizeObserver(() => this._hdr()); this._ro.observe(h); }
+    };
+    this._hdr();
+    this._hdrPoll = setInterval(() => this._hdr(), 250);
+    setTimeout(() => { clearInterval(this._hdrPoll); this._hdrPoll = null; }, 4000);
+    this._rs = () => { this._hdr(); this.forceUpdate(); }; window.addEventListener('resize', this._rs);
     // Dismiss-on-outside-click, without eating the click that opens one.
     //
     // Two earlier attempts failed. On pointerdown in the capture phase it
@@ -1792,8 +1807,8 @@ class Component extends DCLogic {
     document.addEventListener('click', this._away);
     document.addEventListener('keydown', this._esc);
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._rs); document.removeEventListener('click', this._away); document.removeEventListener('keydown', this._esc); }
-  componentWillUnmount() { window.removeEventListener('resize', this._rs); }
+  componentWillUnmount() { if (this._ro) this._ro.disconnect(); if (this._hdrPoll) clearInterval(this._hdrPoll); window.removeEventListener('resize', this._rs); document.removeEventListener('click', this._away); document.removeEventListener('keydown', this._esc); }
+  componentWillUnmount() { if (this._ro) this._ro.disconnect(); if (this._hdrPoll) clearInterval(this._hdrPoll); window.removeEventListener('resize', this._rs); }
   renderVals() {
     if (!this.app) return { theme: this.state.theme, sS0: true, heroVisible: true, heroCols: '300px 1fr', heroMinH: '0', heroSvgStyle: { display: 'block', width: '100%' } };
     const v = this.app.vals(this);
