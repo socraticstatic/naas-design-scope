@@ -49,19 +49,28 @@ function region(r, i, est) {
  * an address; it does not know what the application does. Everything here is
  * something a private endpoint's own metadata carries.
  */
-const WL_ENDPOINTS = {
-  alb: [['443/tcp', 'HTTPS listener', 'forwards to the web tier'], ['80/tcp', 'HTTP listener', 'redirects to 443']],
-  api: [['443/tcp', 'REST · /v1', 'orders, payments, accounts'], ['8443/tcp', 'gRPC', 'internal service mesh']],
-  web: [['443/tcp', 'HTTPS', 'static and server-rendered pages'], ['9100/tcp', 'metrics', 'scrape endpoint']],
-  nat: [['22/tcp', 'SSH', 'operator access, key only']],
-  app: [['8080/tcp', 'HTTP app', 'business logic'], ['8443/tcp', 'HTTPS app', 'business logic, TLS'], ['9100/tcp', 'metrics', 'scrape endpoint']],
-  db: [['5432/tcp', 'PostgreSQL', 'primary, read-write'], ['9187/tcp', 'metrics', 'scrape endpoint']],
-  cache: [['6379/tcp', 'Redis', 'session and object cache']],
-  worker: [['9100/tcp', 'metrics', 'scrape endpoint']],
-  gpu: [['8000/tcp', 'inference', 'model serving'], ['9100/tcp', 'metrics', 'scrape endpoint']],
-  queue: [['5672/tcp', 'AMQP', 'broker'], ['15672/tcp', 'management', 'console']],
+/**
+ * The named services running on a workload — the last rung of Ramesh's chain,
+ * and the one that stops the product speaking in addresses.
+ *
+ * This is not layer 7 inference off netflow. It is what the cloud's own
+ * control plane already knows: ECS task definitions, Kubernetes workloads,
+ * instance tags. Discovery reads it with the same credentials that found the
+ * VPC, so the names are the customer's own.
+ */
+const WL_APPS = {
+  alb: [['edge-router', '2.14', '443/tcp', 'TLS termination and routing']],
+  api: [['orders-api', '4.2', '443/tcp', 'order capture · REST /v1'], ['payments-api', '3.8', '443/tcp', 'card auth and capture'], ['api-gateway', '2.1', '8443/tcp', 'gRPC to the service mesh']],
+  web: [['storefront-web', '6.7', '443/tcp', 'server-rendered pages'], ['otel-agent', '0.98', '9100/tcp', 'metrics sidecar']],
+  nat: [['ssh-bastion', '9.4', '22/tcp', 'operator access, key only']],
+  app: [['checkout-svc', '4.2', '8080/tcp', 'cart, pricing, tax'], ['orders-svc', '2.9', '8443/tcp', 'order lifecycle'], ['otel-agent', '0.98', '9100/tcp', 'metrics sidecar']],
+  db: [['postgres', '15.4', '5432/tcp', 'primary, read-write'], ['pgbouncer', '1.21', '6432/tcp', 'connection pool'], ['wal-shipper', '2.2', '', 'continuous archive']],
+  cache: [['redis', '7.2', '6379/tcp', 'session and object cache']],
+  worker: [['batch-runner', '3.1', '', 'nightly reconciliation'], ['otel-agent', '0.98', '9100/tcp', 'metrics sidecar']],
+  gpu: [['triton-server', '2.45', '8000/tcp', 'model serving'], ['embed-worker', '1.7', '', 'vector generation']],
+  queue: [['rabbitmq', '3.13', '5672/tcp', 'broker'], ['shovel', '3.13', '15672/tcp', 'federation and console']],
 };
-    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 300) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; const ip = cidr.replace(/0\/24$/, String(10 + w * 7)); return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${String(w + 1).padStart(2, '0')}`, type: t[1], ip, tag, exposed: pub && w < 2, endpoints: (WL_ENDPOINTS[t[0]] || []).map(([port, svc, note]) => ({ id: `${ip}:${port}`, port, svc, note })) }; });
+    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 300) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; const ip = cidr.replace(/0\/24$/, String(10 + w * 7)); return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${String(w + 1).padStart(2, '0')}`, type: t[1], ip, tag, exposed: pub && w < 2, endpoints: (WL_APPS[t[0]] || []).map(([app, ver, port, note]) => ({ id: `${ip}:${app}`, app, ver, port, note })) }; });
     const subnets = azList.flatMap((az, a) => {
       const pubN = Math.max(2, Math.round(wl / azs[k] * 0.4)), prvN = Math.max(2, Math.round(wl / azs[k] * 0.6));
       const pubC = `${cidrBase}.${a}.0/24`, prvC = `${cidrBase}.${10 + a}.0/24`;

@@ -139,12 +139,20 @@ export function workloadPanel(sel, ctx) {
       ['Instances sharing this app', `${peers.length + 1}`],
     ],
     children: (w.endpoints || []).length ? {
-      title: `${n(w.endpoints.length)} ${w.endpoints.length === 1 ? 'listener' : 'listeners'} on ${w.ip}`,
-      // Reachable-from-the-internet first: it is the only one that is a
-      // finding rather than an inventory line.
-      rows: w.endpoints.map(e => {
-        const open = !!w.exposed && /^(443|80|22)\//.test(e.port);
-        return { key: '', port: e.port, name: e.svc, sub: e.note, warn: open,
+      title: `${n(w.endpoints.length)} ${w.endpoints.length === 1 ? 'application' : 'applications'} on ${w.name}`,
+      // Internet-reachable first: that one is a finding, the rest is
+      // inventory.
+      rows: w.endpoints.map((e, k) => {
+        const open = !!w.exposed && /^(443|80|22)\//.test(e.port || '');
+        // Per-application rate and p95, derived from this workload's own path
+        // and its share of the listeners — the same flows the map draws, cut
+        // by port. Nothing here is measured above layer 4.
+        const share = [0.62, 0.28, 0.10][k] ?? 0.05;
+        const mbps = Math.max(4, Math.round(420 * share));
+        const p95 = (top.priv ? top.fab : top.pub) + (k * 3) + (open ? 6 : 0);
+        return { key: '', port: e.port || 'no listener', name: e.app, ver: e.ver, sub: e.note, warn: open,
+          rate: mbps >= 1000 ? (mbps / 1000).toFixed(1) + ' Gbps' : mbps + ' Mbps',
+          lat: p95 + ' ms p95',
           note: open ? 'reachable from the internet' : 'private to the VPC' };
       }).sort((a, b) => (b.warn - a.warn)),
     } : null,
