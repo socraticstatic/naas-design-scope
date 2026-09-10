@@ -23,7 +23,7 @@ function stateOfRegion(est, name) { const r = regionOf(est, name); if (!r) retur
 /** Root nodes on the left: site classes, workload groups by tag, cloud-to-cloud regions. */
 export function leftRoots(est, flows) {
   const sg = {};
-  (est.sites || []).forEach(s => { const cls = S.classOf(s); const c = S.CLASS[cls]; const count = S.countOf(s.name); const v = (PER_SITE[cls] || 0.5) * count; const g = sg[cls] = sg[cls] || { kind: 'site', key: 'site:' + cls, cls, unit: c.unit, plural: c.plural, count: 0, v: 0, fabV: 0 }; g.count += count; g.v += v; g.fabV += s.priv ? v : v * 0.1; });
+  (est.sites || []).forEach(s => { const cls = S.accessOf(s); const c = S.ACCESS_CLASS[cls]; const count = S.countOf(s.name); const v = (PER_SITE[S.classOf(s)] || 0.5) * count; const g = sg[cls] = sg[cls] || { kind: 'site', key: 'site:' + cls, cls, unit: c.unit, plural: c.plural, count: 0, v: 0, fabV: 0 }; g.count += count; g.v += v; g.fabV += s.priv ? v : v * 0.1; });
   const sites = Object.values(sg).map(g => ({ ...g, name: `${n(g.count)} ${g.count === 1 ? g.unit : g.plural}`, group: 'sites', hasChildren: true, state: 'ok' })).sort((a, b) => b.v - a.v);
   const tg = {}; flows.filter(f => f.kind === 'App').forEach(f => { const g = tg[f.from] = tg[f.from] || { kind: 'tag', key: 'tag:' + f.from, name: f.from, v: 0, fabV: 0, regions: new Set() }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; g.regions.add(f.region); });
   const tags = Object.values(tg).map(g => ({ ...g, group: 'tags', hasChildren: true, state: [...g.regions].map(r => stateOfRegion(est, r.split(' ')[1] || r)).find(x => x !== 'ok') || 'ok' })).sort((a, b) => b.v - a.v);
@@ -43,11 +43,23 @@ export function rightRoots(est, flows) {
 export function childrenOf(node, est, inv, flows) {
   const parts = node.key.split('/');
   if (node.kind === 'site') {
-    const cls = S.siteTree(est).find(c => c.cls === node.cls); if (!cls) return [];
-    const per = PER_SITE[node.cls] || 0.5;
-    return cls.children.map(ch => ch.kind === 'metro'
-      ? { kind: 'metro', key: `${node.key}/${ch.name}`, cls: node.cls, metro: ch.name, name: `${ch.name} · ${n(ch.count)}`, v: per * ch.count, fabV: per * ch.onFabric, hasChildren: true, state: ch.onFabric < ch.count / 2 ? 'slo' : 'ok', parentKey: node.key }
-      : { kind: 'sitename', key: `${node.key}/${ch.name}`, cls: node.cls, siteName: ch.name, name: ch.name, v: per, fabV: ch.priv ? per : per * 0.1, hasChildren: true, state: ch.priv ? 'ok' : 'slo', parentKey: node.key }).sort((a, b) => b.v - a.v);
+    // Children of a first-mile group are the sites on it, by metro where a
+    // metro holds more than one. siteTree groups by building class, which is
+    // exactly the thing the network cannot see, so this descends on its own.
+    const mine = (est.sites || []).filter(x => S.accessOf(x) === node.cls);
+    if (!mine.length) return [];
+    const byMetro = {};
+    mine.forEach(x => {
+      const m = x.metro || 'Various';
+      const count = S.countOf(x.name);
+      const g = byMetro[m] = byMetro[m] || { metro: m, count: 0, onFabric: 0, only: x };
+      g.count += count; g.onFabric += x.priv ? count : 0; if (g.count > count) g.only = null;
+    });
+    const per = PER_SITE[S.classOf(mine[0])] || 0.5;
+    return Object.values(byMetro).map(g => g.only && g.count === 1
+      ? { kind: 'sitename', key: `${node.key}/${g.only.name}`, cls: node.cls, siteName: g.only.name, name: g.only.name, sub: g.only.access, v: per, fabV: g.only.priv ? per : per * 0.1, hasChildren: true, state: g.only.priv ? 'ok' : 'slo', parentKey: node.key }
+      : { kind: 'metro', key: `${node.key}/${g.metro}`, cls: node.cls, metro: g.metro, name: `${g.metro} · ${n(g.count)}`, v: per * g.count, fabV: per * g.onFabric, hasChildren: true, state: g.onFabric < g.count / 2 ? 'slo' : 'ok', parentKey: node.key }
+    ).sort((a, b) => b.v - a.v);
   }
   if (node.kind === 'metro') {
     const cls = S.siteTree(est).find(c => c.cls === node.cls); const m = cls && cls.children.find(ch => ch.kind === 'metro' && ch.name === node.metro); if (!m) return [];
@@ -67,17 +79,17 @@ export function childrenOf(node, est, inv, flows) {
   if (node.kind === 'tagregion') {
     const rname = node.regionName.split(' ')[1] || node.regionName; const ir = invRegion(inv, rname); if (!ir) return [];
     const sum = ir.vpcs.reduce((a, v) => a + v.wl, 0) || 1; const fabShare = node.v ? node.fabV / node.v : 0;
-    return ir.vpcs.map(v => ({ kind: 'vpc', key: `${node.key}/${v.id}`, tag: node.tag, regionName: rname, vpcId: v.id, name: v.name, sub: `${n(v.wl)} workloads · ${v.purpose}`, v: node.v * v.wl / sum, fabV: node.v * v.wl / sum * (v.priv ? Math.max(fabShare, 0.9) : Math.min(fabShare, 0.1)), hasChildren: true, state: v.priv ? stateOfRegion(est, rname) : 'slo', parentKey: node.key }));
+    return ir.vpcs.map(v => ({ kind: 'vpc', key: `${node.key}/${v.id}`, panelSel: `vpc:${rname}|${v.id}`, tag: node.tag, regionName: rname, vpcId: v.id, name: v.name, sub: `${v.purpose} · ${n(v.wl)} workloads`, v: node.v * v.wl / sum, fabV: node.v * v.wl / sum * (v.priv ? Math.max(fabShare, 0.9) : Math.min(fabShare, 0.1)), hasChildren: true, state: v.priv ? stateOfRegion(est, rname) : 'slo', parentKey: node.key }));
   }
   if (node.kind === 'vpc') {
     const ir = invRegion(inv, node.regionName); const vpc = ir && ir.vpcs.find(v => v.id === node.vpcId); if (!vpc) return [];
     const sum = vpc.subnets.reduce((a, s) => a + s.wl, 0) || 1; const fabShare = node.v ? node.fabV / node.v : 0;
-    return vpc.subnets.map(sn => ({ kind: 'subnet', key: `${node.key}/${sn.id}`, regionName: node.regionName, vpcId: node.vpcId, subnetId: sn.id, name: `${sn.name} · ${sn.cidr}`, sub: `${sn.az} · ${n(sn.wl)} workloads`, v: node.v * sn.wl / sum, fabV: node.v * sn.wl / sum * (sn.pub ? Math.min(fabShare, 0.2) : fabShare), hasChildren: true, state: sn.pub ? 'slo' : stateOfRegion(est, node.regionName), parentKey: node.key }));
+    return vpc.subnets.map(sn => ({ kind: 'subnet', key: `${node.key}/${sn.id}`, panelSel: `sn:${node.regionName}|${node.vpcId}|${sn.id}`, regionName: node.regionName, vpcId: node.vpcId, subnetId: sn.id, name: sn.name, sub: `${sn.cidr} · ${sn.az} · ${n(sn.wl)} workloads`, v: node.v * sn.wl / sum, fabV: node.v * sn.wl / sum * (sn.pub ? Math.min(fabShare, 0.2) : fabShare), hasChildren: true, state: sn.pub ? 'slo' : stateOfRegion(est, node.regionName), parentKey: node.key }));
   }
   if (node.kind === 'subnet') {
     const ir = invRegion(inv, node.regionName); const vpc = ir && ir.vpcs.find(v => v.id === node.vpcId); const sn = vpc && vpc.subnets.find(x => x.id === node.subnetId); if (!sn) return [];
     const all = sn.workloads || []; const ws = all.slice(0, 6); const each = node.v / Math.max(1, all.length); const fabShare = node.v ? node.fabV / node.v : 0;
-    const rows = ws.map(w => ({ kind: 'workload', key: `${node.key}/${String(w.id).replace(/\//g, '_')}`, regionName: node.regionName, wlSel: `wl:${node.regionName}|${node.vpcId}|${w.id}`, name: w.name, sub: `${w.ip} · ${w.type} · ${w.tag || 'untagged'}`, ip: w.ip, resource: `${w.tag || vpc.name}/${w.name}`, v: each, fabV: each * (w.exposed ? Math.min(fabShare, 0.1) : fabShare), hasChildren: false, state: w.exposed ? 'slo' : 'ok', parentKey: node.key }));
+    const rows = ws.map(w => ({ kind: 'workload', key: `${node.key}/${String(w.id).replace(/\//g, '_')}`, regionName: node.regionName, wlSel: `wl:${node.regionName}|${node.vpcId}|${w.id}`, panelSel: `wl:${node.regionName}|${node.vpcId}|${w.id}`, name: `${w.tag || vpc.name}/${w.name}`, sub: `${w.type} · ${(w.endpoints || []).map(e => e.app).slice(0, 2).join(', ') || w.ip}`, ip: w.ip, resource: `${w.tag || vpc.name}/${w.name}`, v: each, fabV: each * (w.exposed ? Math.min(fabShare, 0.1) : fabShare), hasChildren: false, state: w.exposed ? 'slo' : 'ok', parentKey: node.key }));
     // The map samples six and hands the rest to the drawer, exactly as the
     // site side already does with its 'more' node. Same door, other column.
     if (all.length > rows.length) rows.push({ kind: 'wlmore', key: `${node.key}/wlmore`, regionName: node.regionName, vpcId: node.vpcId, subnetId: node.subnetId, name: `See all ${all.length} workloads`, sub: 'every app in this subnet', v: each * (all.length - rows.length), fabV: each * (all.length - rows.length) * fabShare, hasChildren: false, state: 'ok', parentKey: node.key });
@@ -186,7 +198,13 @@ export function litFor(map, key) {
 }
 
 /** The five patterns Ramesh named (19:04), in his order. */
-export const PATTERNS = [['region', 'In the region'], ['regions', 'Across regions'], ['clouds', 'Across clouds'], ['internet', 'To the internet'], ['inbound', 'Coming in']];
+export const PATTERNS = [
+  ['region', 'In the region', 'Traffic that starts and ends inside one cloud region. It never crosses a region boundary, so it costs nothing in egress.'],
+  ['regions', 'Across regions', 'Traffic between two regions of the SAME cloud — us-east-1 to us-west-2. It leaves a region, so the hyperscaler bills egress on it.'],
+  ['clouds', 'Across clouds', 'Traffic between DIFFERENT clouds — AWS to Azure. Billed egress at both ends unless it rides the AT&T fabric.'],
+  ['internet', 'To the internet', 'Traffic leaving your estate for the public internet or SaaS. The most expensive path per GB and the least visible.'],
+  ['inbound', 'Coming in', 'Traffic arriving from your sites and users into the cloud. Usually free to receive; the first mile decides how fast it is.'],
+];
 /** Ribbon indexes and node keys a pattern lights. Mid nodes light when any of their ribbons do. */
 export function patternLit(map, pattern) {
   if (!pattern || pattern === 'all') return null;

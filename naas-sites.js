@@ -27,13 +27,13 @@ export const CLASS = {
   Campus: { label: 'Campuses', icon: 'home', prefix: 'CAM', unit: 'campus', plural: 'campuses' },
   Office: { label: 'Offices', icon: 'home', prefix: 'OFF', unit: 'office', plural: 'offices' },
   Plant: { label: 'Plants', icon: 'gear', prefix: 'PLT', unit: 'plant', plural: 'plants' },
-  Branch: { label: 'Branches', icon: 'hub', prefix: 'BR', unit: 'branch', plural: 'branches' },
-  Edge: { label: 'ATMs and kiosks', icon: 'smart-meter', prefix: 'ATM', unit: 'ATM', plural: 'ATMs' },
+  Branch: { label: 'Remote sites', icon: 'hub', prefix: 'RS', unit: 'remote site', plural: 'remote sites' },
+  Edge: { label: 'Edge devices', icon: 'smart-meter', prefix: 'EDG', unit: 'edge device', plural: 'edge devices' },
   Field: { label: 'Field (wireless)', icon: 'cable', prefix: 'FLD', unit: 'field site', plural: 'field sites' },
 };
 /** A site's class, from its declared class first and its name and access when the data is loose. */
 export function classOf(st) {
-  if (/atm|kiosk/i.test(st.name)) return 'Edge';
+  if (/atm|kiosk|edge device/i.test(st.name)) return 'Edge';
   if (/field|wireless/i.test(st.name) || /mobility/i.test(st.access || '')) return 'Field';
   return CLASS[st.cls] ? st.cls : 'Branch';
 }
@@ -108,4 +108,37 @@ export function metroSites(m) {
   if (!m || !m.gen) return (m && m.sites) || [];
   const { cls, mi, privShare } = m.gen;
   return Array.from({ length: m.count }, (_, i) => siteRow(cls, m.name, i + mi * 6, ((i * 7 + mi * 3) % 10) / 10 < privShare + 0.05));
+}
+
+/**
+ * How a site attaches, which is the only thing the network can actually say
+ * about it. Ramesh, on the site classes: "we dont have ATM category so it
+ * will just be sites - i dont think we may be able to tell datacenter or
+ * campus either."
+ *
+ * He is right, and it changes the model rather than the words. A network
+ * product does not know what a building is for. It knows how the building
+ * attaches: AVPN, ASE, ADI, business fiber, SD-WAN, mobility. That is the
+ * honest grouping, and the one an architect can act on.
+ */
+export const ACCESS_CLASS = {
+  avpn:     { label: 'AVPN (MPLS VPN)',     unit: 'site on AVPN',   plural: 'sites on AVPN' },
+  ase:      { label: 'Switched Ethernet',   unit: 'site on ASE',    plural: 'sites on ASE' },
+  adi:      { label: 'Dedicated Internet',  unit: 'site on ADI',    plural: 'sites on ADI' },
+  abf:      { label: 'Business Fiber',      unit: 'site on fiber',  plural: 'sites on fiber' },
+  sdwan:    { label: 'SD-WAN',              unit: 'SD-WAN site',    plural: 'SD-WAN sites' },
+  mobility: { label: 'Mobility first mile', unit: 'wireless site',  plural: 'wireless sites' },
+  other:    { label: 'Other first mile',    unit: 'site',           plural: 'sites' },
+};
+
+/** A site's first mile, read from its access string. */
+export function accessOf(st) {
+  const a = String(st.access || '').toLowerCase();
+  if (/sd-wan|sdwan/.test(a)) return 'sdwan';
+  if (/mobility|wireless/.test(a)) return 'mobility';
+  if (/avpn|mpls/.test(a)) return 'avpn';
+  if (/ase|switched ethernet/.test(a)) return 'ase';
+  if (/adi|dedicated internet/.test(a)) return 'adi';
+  if (/abf|business fiber/.test(a)) return 'abf';
+  return 'other';
 }

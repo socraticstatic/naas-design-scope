@@ -34,7 +34,7 @@ export const ESTATES = {
       { name: 'Dallas DC1', cls: 'Data center', access: 'AVPN (MPLS VPN)', priv: true, metro: 'Dallas' },
       { name: 'Atlanta DC2', cls: 'Data center', access: 'ADI (Dedicated Internet)', priv: false, metro: 'Atlanta' },
       { name: 'Chicago HQ', cls: 'Campus', access: 'ABF (Business Fiber)', priv: true, metro: 'Chicago' },
-      { name: 'Branches (38)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various' },
+      { name: 'Remote sites (38)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various' },
       { name: 'Denver plant', cls: 'Plant', access: 'ADI (Dedicated Internet)', priv: false, metro: 'Denver' },
     ],
     regionsList: [
@@ -51,7 +51,7 @@ export const ESTATES = {
     policies: [
       { name: 'PCI private path', match: 'tag PCI', req: 'Private path required', matched: 34, viol: 11, state: 'enforced' },
       { name: 'Internet-facing inspection', match: 'tag Internet-facing', req: 'Inline security inspection', matched: 19, viol: 7, state: 'enforced' },
-      { name: 'Finance segmentation', match: 'branch Finance', req: 'Segment intra-tag only', matched: 26, viol: 0, state: 'enforced' },
+      { name: 'Finance segmentation', match: 'remote-site Finance', req: 'Segment intra-tag only', matched: 26, viol: 0, state: 'enforced' },
       { name: 'Prod no direct internet', match: 'tag Prod', req: 'No direct internet path', matched: 133, viol: 0, state: 'enforced' },
       { name: 'GPU latency SLO', match: 'tag GPU', req: 'Latency SLO 15 ms', matched: 41, viol: 18, state: 'simulated' },
       { name: 'EU residency', match: 'region eu-*', req: 'Private path required', matched: 89, viol: 89, state: 'authored' },
@@ -80,7 +80,7 @@ export const ESTATES = {
       { name: 'San Jose DC', cls: 'Data center', access: 'AVPN (MPLS VPN)', priv: true, metro: 'San Jose' },
       { name: 'Frankfurt DC', cls: 'Data center', access: 'ASE (Switched Ethernet)', priv: true, metro: 'Frankfurt' },
       { name: 'Austin campus', cls: 'Campus', access: 'ABF (Business Fiber)', priv: true, metro: 'Austin' },
-      { name: 'Branches (212)', cls: 'Branch', access: 'SD-WAN over AVPN', priv: true, metro: 'Various' },
+      { name: 'Remote sites (212)', cls: 'Branch', access: 'SD-WAN over AVPN', priv: true, metro: 'Various' },
       { name: 'Field (wireless)', cls: 'Mobility', access: 'Mobility first mile', priv: true, metro: 'Various' },
       { name: 'Singapore DC', cls: 'Data center', access: 'ADI (Dedicated Internet)', priv: false, metro: 'Singapore' },
     ],
@@ -99,7 +99,7 @@ export const ESTATES = {
     policies: [
       { name: 'PCI private path', match: 'tag PCI', req: 'Private path required', matched: 122, viol: 0, state: 'enforced' },
       { name: 'Internet-facing inspection', match: 'tag Internet-facing', req: 'Inline security inspection', matched: 61, viol: 0, state: 'enforced' },
-      { name: 'Finance segmentation', match: 'branch Finance', req: 'Segment intra-tag only', matched: 228, viol: 0, state: 'enforced' },
+      { name: 'Finance segmentation', match: 'remote-site Finance', req: 'Segment intra-tag only', matched: 228, viol: 0, state: 'enforced' },
       { name: 'Prod no direct internet', match: 'tag Prod', req: 'No direct internet path', matched: 478, viol: 52, state: 'enforced' },
       { name: 'GPU latency SLO', match: 'tag GPU', req: 'Latency SLO 15 ms', matched: 174, viol: 0, state: 'enforced' },
       { name: 'APAC residency', match: 'region ap-*', req: 'Private path required', matched: 52, viol: 52, state: 'simulated' },
@@ -134,14 +134,14 @@ export const ESTATES = {
     },
   },
   trust: {
-    id: 'trust', name: 'Meridian Trust', stage: 'partial', clouds: 3, regions: 14, workloads: 2860, sitesCount: 4120, privatePct: 52, attachedRegions: 8, policiesEnforced: 9, policiesAuthored: 15, observedPct: 58, savedMo: 148000, fabricAttachPct: 61, tags: 42,
+    id: 'trust', name: 'Meridian Networks', stage: 'partial', clouds: 3, regions: 14, workloads: 2860, sitesCount: 4120, privatePct: 52, attachedRegions: 8, policiesEnforced: 9, policiesAuthored: 15, observedPct: 58, savedMo: 148000, fabricAttachPct: 61, tags: 42,
     sites: [
       { name: 'Data centers (6)', cls: 'Data center', access: 'AVPN (MPLS VPN)', priv: true, metro: 'Various', rollup: true },
       { name: 'Regional hubs (24)', cls: 'Hub', access: 'AVPN (MPLS VPN)', priv: true, metro: 'Various', rollup: true },
-      { name: 'Branches, East (1,640)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various', rollup: true },
-      { name: 'Branches, Central (1,210)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various', rollup: true },
-      { name: 'Branches, West (1,180)', cls: 'Branch', access: 'SD-WAN', priv: true, metro: 'Various', rollup: true },
-      { name: 'ATMs and kiosks (48)', cls: 'Edge', access: 'Mobility first mile', priv: false, metro: 'Various', rollup: true },
+      { name: 'Remote sites, East (1,640)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various', rollup: true },
+      { name: 'Remote sites, Central (1,210)', cls: 'Branch', access: 'SD-WAN', priv: false, metro: 'Various', rollup: true },
+      { name: 'Remote sites, West (1,180)', cls: 'Branch', access: 'SD-WAN', priv: true, metro: 'Various', rollup: true },
+      { name: 'Edge devices (48)', cls: 'Edge', access: 'Mobility first mile', priv: false, metro: 'Various', rollup: true },
       { name: 'Trading floors (12)', cls: 'Campus', access: 'ASE (Switched Ethernet)', priv: true, metro: 'Various', rollup: true },
     ],
     regionsList: [
@@ -157,8 +157,8 @@ export const ESTATES = {
     policies: [
       { name: 'PCI private path', match: 'tag PCI', req: 'Private path required', matched: 1232, viol: 96, state: 'enforced' },
       { name: 'Internet-facing inspection', match: 'tag Internet-facing', req: 'Inline security inspection', matched: 380, viol: 140, state: 'enforced' },
-      { name: 'Finance segmentation', match: 'branch Finance', req: 'Segment intra-tag only', matched: 770, viol: 0, state: 'enforced' },
-      { name: 'Branch no direct internet', match: 'tag Branch', req: 'No direct internet path', matched: 4030, viol: 2850, state: 'simulated' },
+      { name: 'Finance segmentation', match: 'remote-site Finance', req: 'Segment intra-tag only', matched: 770, viol: 0, state: 'enforced' },
+      { name: 'Remote sites, no direct internet', match: 'tag RemoteSite', req: 'No direct internet path', matched: 4030, viol: 2850, state: 'simulated' },
     ],
     buckets: [
       { id: 'gpu', name: 'GPU inference egress', cloud: 'GCP', today: 84000, fabric: 31000 },
