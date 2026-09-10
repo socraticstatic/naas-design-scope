@@ -1049,6 +1049,7 @@ function shellVals(s, set, go, est, c) {
     observe: [
       ['sec-health', 'Health right now'],
       ['sec-flow', 'Live flow map'],
+      ['sec-changed', 'What changed'],
       ['sec-logs', 'Logs'],
     ],
     govern: [
