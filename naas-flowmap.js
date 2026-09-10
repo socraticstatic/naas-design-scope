@@ -158,7 +158,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
-  const groups = [['sites', 'First mile · from sites'], ['tags', 'First mile · from cloud workloads'], ['c2c', 'First mile · cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
+  const groups = [['sites', 'From sites'], ['tags', 'From cloud workloads'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
   // 55 percent of the row budget and everything else compresses into the rest; ribbons taper, so they still attach.
@@ -182,11 +182,14 @@ export function buildMap(est, inv, flows0, opts = {}) {
   };
   const layout = (rows, x, y0) => { let y = y0; return rows.map(r => { const o = { ...r, x, y, x2: x + colW, used: 0 }; y += o.h + pad; return o; }); };
   const leftRows = heightsFor(Ls, rowsBudget(nLeft, groups.length));
-  const heads = []; const SS = []; let y = top;
-  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
+  const heads = []; const SS = []; let y = top + 20;
+  // One column head for the left band, then a quieter head per group inside
+  // it. Emitting three equal heads made the left band read as three columns.
+  heads.push({ x: 0, y: top - 4, anchor: 'start', kind: 'col', text: 'First mile' });
+  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', kind: 'group', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
   const leftH = SS.length ? y - gap + 8 : top;
-  heads.push({ x: W, y: top - 4, anchor: 'end', text: 'Destinations' });
-  heads.push({ x: W / 2, y: top - 4, anchor: 'middle', text: 'Mid mile' });
+  heads.push({ x: W, y: top - 4, anchor: 'end', kind: 'col', text: 'Destinations' });
+  heads.push({ x: W / 2, y: top - 4, anchor: 'middle', kind: 'col', text: 'Mid mile' });
   const DD = layout(heightsFor(Rs, rowsBudget(Rs.length, 1)), W - colW, top + headH - 6);
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);

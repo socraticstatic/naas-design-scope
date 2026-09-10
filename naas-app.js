@@ -1034,7 +1034,13 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     // The rule leads into the heading on the right-hand column and trails it
     // on the left, so it always points at the column and never reads as a
     // strike through the word.
-    ruleBefore: h.anchor === 'end', ruleAfter: h.anchor === 'start' }));
+    ruleBefore: h.anchor === 'end' && h.kind === 'col', ruleAfter: h.anchor === 'start' && h.kind === 'col',
+    // A column head names one of the three bands; a group head names a slice
+    // of the left one. Same size and weight made the eye count five columns.
+    fw: h.kind === 'col' ? 700 : 600,
+    fs: h.kind === 'col' ? '11px' : '10px',
+    ink: h.kind === 'col' ? 'var(--text-body)' : 'var(--text-disabled)',
+    ruleOn: h.kind === 'col' }));
   const trailKey = (mapSel && !mapSel.startsWith('cx-') && mapSel.includes('/')) ? mapSel : mapZoom;
   const mapTrail = trailKey ? F.trail(trailKey, est0, inv, ob.flows).map((t, i, a) => ({ ...t, key: 'tr' + i, go: () => set({ mapSel: t.key, mapOpen: closeBranch(mapOpen, t.key).concat(i < a.length - 1 ? [t.key] : []) }), last: i === a.length - 1, notLast: i < a.length - 1 })) : [];
   const climb = () => { if (!mapSel || mapSel.startsWith('cx-')) { set({ mapSel: null }); return; } const parent = mapSel.includes('/') ? mapSel.slice(0, mapSel.lastIndexOf('/')) : null; set({ mapOpen: closeBranch(mapOpen, parent || mapSel), mapSel: parent }); };
@@ -1135,7 +1141,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const anomalyRows = R.anomalies(est0, ob).map((a, i) => ({
     key: a.key, kind: 'Event', when: a.when, head: a.head, why: a.cause, did: a.did, hasDid: !!a.did, act: a.can,
     tone: a.sev === 'amber' ? 'var(--warning)' : 'var(--link)',
-    toneBg: a.sev === 'amber' ? (dark ? 'rgba(255,162,94,.14)' : '#fff6ec') : (dark ? 'rgba(102,200,240,.12)' : '#eef4fc'),
+    toneBg: 'var(--bg-base)',
     cta: a.region ? 'Open it on the map' : 'Open Cost',
     go: a.region
       ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow', mapRegion: a.region, panelTab: 'overview' }); }
@@ -1149,7 +1155,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
            growth: 'Steer object storage onto the fabric and the curve flattens.',
            multi: 'Put the cloud-to-cloud pairs on the fabric and stop paying egress twice.',
            idle: 'Consolidate the under-used ports at renewal.' }[x.key] || '',
-    tone: 'var(--link)', toneBg: (dark ? 'rgba(102,200,240,.12)' : '#eef4fc'),
+    tone: 'var(--link)', toneBg: 'var(--bg-base)',
     cta: { talkers: 'Open the map', newdest: 'Open Logs', shadow: 'Open Govern', growth: 'Open Cost', multi: 'Open Cost', idle: 'Open Cost' }[x.key] || 'Open Cost',
     go: { talkers: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); },
           newdest: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ explain: { label: 'Destinations not seen before', value: x.head.replace(/[^0-9]/g, '') + ' new', sub: 'Traffic to destinations that were absent from the prior 30 days.', cut: 'Records leaving the cloud.', pattern: 'internet', parts: [] }, scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1 }); },
