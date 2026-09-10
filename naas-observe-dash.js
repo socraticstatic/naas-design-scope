@@ -38,6 +38,8 @@ export function panelFor(sel, ctx) {
   // An opened node is replaced by its children on the map; its trail still knows it.
   if (sel.startsWith('asset:')) return sitePanel(sel.slice(6), ctx);
   if (sel.startsWith('wl:')) return workloadPanel(sel, ctx);
+  if (sel.startsWith('vpc:')) return vpcPanel(sel, ctx);
+  if (sel.startsWith('sn:')) return subnetPanel(sel, ctx);
   const tr = F.trail(sel, est, inv, flows);
   const node = map.nodes.find(x => x.key === sel) || (tr.length && tr[tr.length - 1].key === sel ? { ...tr[tr.length - 1].node, delta: F.deltaOf(sel), opened: true } : null); if (!node) return null;
   if (node.kind === 'sitename' && node.siteName) { const sp = sitePanel(node.siteName, ctx); if (sp) return { ...sp, trail: tr.map(t => ({ key: t.key, name: t.name })) }; }
@@ -114,7 +116,13 @@ export function workloadPanel(sel, ctx) {
     kind: 'workload',
     title: w.name,
     sub: `${w.type} · ${app} · ${top.cloud} ${top.region}`,
-    trail: [top.cloud, top.region, vpc.name, sn.name, w.name].map((nm, i) => ({ key: 'wt' + i, name: nm })),
+    trail: [
+      { key: 'cx-' + top.region, name: top.cloud },
+      { key: 'cx-' + top.region, name: top.region },
+      { key: `vpc:${region}|${vpc.id}`, name: vpc.name },
+      { key: `sn:${region}|${vpc.id}|${sn.id}`, name: sn.name },
+      { key: sel, name: w.name },
+    ],
     overview: [
       ['Resource', `${app}/${w.name}`],
       ['Address', w.ip],
@@ -130,12 +138,122 @@ export function workloadPanel(sel, ctx) {
       ['First seen', w.since === 0 ? 'today' : w.since === 1 ? '1 day ago' : `${w.since} days ago`],
       ['Instances sharing this app', `${peers.length + 1}`],
     ],
+    children: (w.endpoints || []).length ? {
+      title: `${n(w.endpoints.length)} ${w.endpoints.length === 1 ? 'listener' : 'listeners'} on ${w.ip}`,
+      // Reachable-from-the-internet first: it is the only one that is a
+      // finding rather than an inventory line.
+      rows: w.endpoints.map(e => {
+        const open = !!w.exposed && /^(443|80|22)\//.test(e.port);
+        return { key: '', port: e.port, name: e.svc, sub: e.note, warn: open,
+          note: open ? 'reachable from the internet' : 'private to the VPC' };
+      }).sort((a, b) => (b.warn - a.warn)),
+    } : null,
     paths: [{ key: 'p0', region: `${top.cloud} ${top.region}`, ms, gbps: 0.04, priv: !!top.priv, via: top.priv ? (top.ramp || 'NetBond') : 'hyperscaler edge', state: w.exposed ? 'warn' : 'ok', worst: w.exposed ? 'reachable from the internet' : 'clean' }],
     talks, impact: null, records: recs,
     actions: [
       ...(w.exposed ? [{ key: 'attach', label: `Isolate ${w.name}`, site: `${w.name} · ${w.ip}` }] : []),
       { key: 'policy', label: `Author a policy for ${app}`, region },
       { key: 'logs', label: 'All records for this workload', region },
+    ],
+  };
+}
+
+/**
+ * The levels between a region and a workload — a VPC and a subnet — had no
+ * detail of their own, so the workload panel's trail was decorative: its hops
+ * carried made-up keys, clicking one selected nothing, and the drawer closed.
+ * Climbing a trail should move you up a level, not throw the level away.
+ *
+ * Selectors: vpc:<region>|<vpcId> and sn:<region>|<vpcId>|<subnetId>.
+ */
+function placeCtx(sel, ctx, want) {
+  const { est, inv } = ctx;
+  const parts = sel.slice(sel.indexOf(':') + 1).split('|');
+  const [region, vpcId, snId] = parts;
+  const reg = inv.flatMap(c => c.regions).find(r => r.region === region);
+  const top = est.regionsList.find(r => r.region === region);
+  if (!reg || !top) return null;
+  const vpc = reg.vpcs.find(v => v.id === vpcId);
+  if (!vpc) return null;
+  const sn = want === 'sn' ? vpc.subnets.find(x => x.id === snId) : null;
+  if (want === 'sn' && !sn) return null;
+  return { top, reg, vpc, sn, region, vpcId, snId };
+}
+
+/** The trail every one of these panels shares, cloud first, each hop live. */
+function placeTrail(c, depth) {
+  const t = [
+    { key: 'cx-' + c.top.region, name: c.top.cloud },
+    { key: 'cx-' + c.top.region, name: c.top.region },
+    { key: `vpc:${c.region}|${c.vpc.id}`, name: c.vpc.name },
+  ];
+  if (depth >= 3 && c.sn) t.push({ key: `sn:${c.region}|${c.vpc.id}|${c.sn.id}`, name: c.sn.name });
+  return t;
+}
+
+export function vpcPanel(sel, ctx) {
+  const c = placeCtx(sel, ctx, 'vpc'); if (!c) return null;
+  const { top, vpc } = c;
+  const wls = vpc.subnets.flatMap(x => x.workloads || []);
+  const exposed = wls.filter(w => w.exposed).length;
+  const apps = [...new Set(wls.map(w => w.tag || 'untagged'))];
+  const azs = [...new Set(vpc.subnets.map(x => x.az))];
+  return {
+    kind: 'vpc', title: vpc.name,
+    sub: `${vpc.purpose || 'workload'} · ${top.cloud} ${top.region}`,
+    trail: placeTrail(c, 2),
+    overview: [
+      ['Resource', vpc.name],
+      ['Purpose', vpc.purpose || 'workload'],
+      ['VPC / VNet', `${vpc.subnets.length} ${vpc.subnets.length === 1 ? 'subnet' : 'subnets'} across ${azs.length} ${azs.length === 1 ? 'zone' : 'zones'}`],
+      ['Availability zone', azs.join(', ')],
+      ['Traffic', `${n(wls.length)} workloads`],
+      ['Instances sharing this app', `${n(apps.length)} ${apps.length === 1 ? 'app' : 'apps'}: ${apps.slice(0, 3).join(', ')}`],
+      ['Reachability', exposed ? `${n(exposed)} exposed to the internet` : 'All private'],
+      ['Path', top.priv ? `AT&T fabric · ${top.ramp || 'NetBond'}` : 'Public internet'],
+      ['Latency to the on-ramp', `${top.priv ? top.fab : top.pub} ms`],
+    ],
+    children: { title: `${n(vpc.subnets.length)} ${vpc.subnets.length === 1 ? 'subnet' : 'subnets'}`, rows: vpc.subnets.map(x => {
+      const ws = x.workloads || [], ex = ws.filter(y => y.exposed).length;
+      return { key: `sn:${c.region}|${vpc.id}|${x.id}`, name: x.name, sub: `${x.cidr} · ${x.az} · ${n(ws.length)} workloads`, warn: ex > 0, note: ex ? `${n(ex)} exposed` : '' };
+    }) },
+    paths: [], talks: [], impact: null, records: [],
+    actions: [
+      ...(exposed ? [{ key: 'attach', label: `Isolate ${n(exposed)} exposed`, site: vpc.name }] : []),
+      { key: 'policy', label: `Author a policy for ${vpc.name}`, region: c.region },
+      { key: 'logs', label: 'All records for this VPC', region: c.region },
+    ],
+  };
+}
+
+export function subnetPanel(sel, ctx) {
+  const c = placeCtx(sel, ctx, 'sn'); if (!c) return null;
+  const { top, vpc, sn } = c;
+  const wls = sn.workloads || [];
+  const exposed = wls.filter(w => w.exposed).length;
+  const apps = [...new Set(wls.map(w => w.tag || 'untagged'))];
+  return {
+    kind: 'subnet', title: sn.name,
+    sub: `${sn.cidr} · ${sn.az} · ${vpc.name}`,
+    trail: placeTrail(c, 3),
+    overview: [
+      ['Resource', `${vpc.name}/${sn.name}`],
+      ['Address', sn.cidr],
+      ['Availability zone', sn.az],
+      ['VPC / VNet', vpc.name],
+      ['Traffic', `${n(wls.length)} workloads`],
+      ['Instances sharing this app', apps.join(', ')],
+      ['Reachability', sn.pub ? (exposed ? `Public subnet · ${n(exposed)} exposed` : 'Public subnet') : 'Private subnet'],
+      ['Path', top.priv ? `AT&T fabric · ${top.ramp || 'NetBond'}` : 'Public internet'],
+    ],
+    children: { title: `${n(wls.length)} ${wls.length === 1 ? 'workload' : 'workloads'}`, rows: wls.slice(0, 40).map(y => ({
+      key: `wl:${c.region}|${vpc.id}|${y.id}`, name: y.name, sub: `${y.ip} · ${y.type} · ${y.tag || 'untagged'}`, warn: !!y.exposed, note: y.exposed ? 'exposed' : '',
+    })) },
+    paths: [], talks: [], impact: null, records: [],
+    actions: [
+      ...(exposed ? [{ key: 'attach', label: `Isolate ${n(exposed)} exposed`, site: sn.name }] : []),
+      { key: 'policy', label: `Author a policy for ${sn.name}`, region: c.region },
+      { key: 'logs', label: 'All records for this subnet', region: c.region },
     ],
   };
 }

@@ -41,7 +41,27 @@ function region(r, i, est) {
     const priv = r.priv && k < 2;
     const azList = Array.from({ length: azs[k] }, (_, a) => r.region + 'abc'[a]);
     const WL_TYPES = { pub: [['alb', 'Load balancer'], ['api', 'API gateway'], ['web', 'Web tier'], ['nat', 'Bastion']], prv: [['app', 'App server'], ['db', 'Database'], ['cache', 'Cache'], ['worker', 'Batch worker'], ['gpu', 'GPU inference'], ['queue', 'Message queue']] };
-    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 300) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${String(w + 1).padStart(2, '0')}`, type: t[1], ip: cidr.replace(/0\/24$/, String(10 + w * 7)), tag, exposed: pub && w < 2 }; });
+/**
+ * What is listening on a workload — the rung below the instance, and the one
+ * Ramesh names last in cloud → region → VPC → subnet → endpoint → resource.
+ *
+ * Ports and listeners, not layer 7. A network product knows what is bound to
+ * an address; it does not know what the application does. Everything here is
+ * something a private endpoint's own metadata carries.
+ */
+const WL_ENDPOINTS = {
+  alb: [['443/tcp', 'HTTPS listener', 'forwards to the web tier'], ['80/tcp', 'HTTP listener', 'redirects to 443']],
+  api: [['443/tcp', 'REST · /v1', 'orders, payments, accounts'], ['8443/tcp', 'gRPC', 'internal service mesh']],
+  web: [['443/tcp', 'HTTPS', 'static and server-rendered pages'], ['9100/tcp', 'metrics', 'scrape endpoint']],
+  nat: [['22/tcp', 'SSH', 'operator access, key only']],
+  app: [['8080/tcp', 'HTTP app', 'business logic'], ['8443/tcp', 'HTTPS app', 'business logic, TLS'], ['9100/tcp', 'metrics', 'scrape endpoint']],
+  db: [['5432/tcp', 'PostgreSQL', 'primary, read-write'], ['9187/tcp', 'metrics', 'scrape endpoint']],
+  cache: [['6379/tcp', 'Redis', 'session and object cache']],
+  worker: [['9100/tcp', 'metrics', 'scrape endpoint']],
+  gpu: [['8000/tcp', 'inference', 'model serving'], ['9100/tcp', 'metrics', 'scrape endpoint']],
+  queue: [['5672/tcp', 'AMQP', 'broker'], ['15672/tcp', 'management', 'console']],
+};
+    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 300) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; const ip = cidr.replace(/0\/24$/, String(10 + w * 7)); return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${String(w + 1).padStart(2, '0')}`, type: t[1], ip, tag, exposed: pub && w < 2, endpoints: (WL_ENDPOINTS[t[0]] || []).map(([port, svc, note]) => ({ id: `${ip}:${port}`, port, svc, note })) }; });
     const subnets = azList.flatMap((az, a) => {
       const pubN = Math.max(2, Math.round(wl / azs[k] * 0.4)), prvN = Math.max(2, Math.round(wl / azs[k] * 0.6));
       const pubC = `${cidrBase}.${a}.0/24`, prvC = `${cidrBase}.${10 + a}.0/24`;
