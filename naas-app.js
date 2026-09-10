@@ -1389,14 +1389,14 @@ function shellVals(s, set, go, est, c) {
       ['sec-starting', 'Templates', 'grid'],
     ],
     cost: [
+      // Five links, five rows. Eight links for three screens meant four of them
+      // landed 25px apart on the two halves of the same grid row, and two
+      // pointed at bare anchors with no heading on them.
       ['sec-arbitrage', 'Savings', 'bill'],
-      ['sec-egress', 'By destination', 'cloud'],
-      ['sec-firstmile', 'By first mile', 'cable'],
+      ['sec-egress', 'Egress', 'cloud'],
       ['sec-forecast', 'Forecast', 'pie-chart'],
-      ['sec-commit', 'Commitments', 'checklist'],
-      ['sec-charges', 'Charges', 'bill'],
-      ['sec-buckets', 'By bucket', 'grid'],
-      ['sec-steer', 'Steering', 'router'],
+      ['sec-charges', 'AT&T charges', 'bill'],
+      ['sec-buckets', 'Steer to save', 'router'],
     ],
   };
   const activeSec = s.activeSec || '';
