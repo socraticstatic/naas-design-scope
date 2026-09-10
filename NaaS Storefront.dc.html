@@ -183,7 +183,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
   </div>
 </header>
-<div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }}">
+<div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }};padding-right:{{ shellPadRight }};transition:padding-right .28s cubic-bezier(.22,1,.36,1)">
 <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
 <aside aria-label="{{ railTitle }} sections" data-collapsed="{{ railCollapsed }}" style="position:sticky;top:65px;align-self:start;height:calc(100vh - 65px);display:flex;flex-direction:column;padding:16px 12px;border-right:1px solid var(--border-secondary);background:var(--bg-base);width:{{ railW }};box-sizing:border-box;font-size:14px;transition:width .15s;overflow:hidden">
   <div style="flex:1;min-height:0;overflow:hidden">
@@ -277,7 +277,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div style="display:flex;align-items:center;gap:16px;padding:10px 16px;margin-bottom:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px"><span aria-hidden="true" style="width:16px;height:16px;flex:none;background:url('{{ iconFabric }}') center / contain no-repeat"></span><span style="flex:1;min-width:0;font-size:14px;line-height:20px;letter-spacing:-.4px;color:var(--text-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ heroStripText }}</span><button class="fx-btn" onClick="{{ toggleHero }}">Show the fabric</button></div>
 </sc-if>
 <sc-if value="{{ heroVisible }}" hint-placeholder-val="{{ true }}">
-<div style="display:grid;grid-template-columns:1fr;gap:24px;align-items:stretch">
+<div style="display:grid;grid-template-columns:1fr;gap:24px;align-items:stretch;margin-bottom:24px">
 <div style="position:relative;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;padding:10px 24px 12px;display:flex;align-items:stretch;min-height:{{ heroMinH }}">
 
 <div style="display:grid;gap:8px;width:100%;min-width:0">
@@ -1826,6 +1826,15 @@ class Component extends DCLogic {
     v.categories = (v.categories || []).map(c => { const ic = CAT_ICON[c.id] || 'grid'; const linkable = ['cloud', 'bill', 'check-shield', 'high-meter'].includes(ic); return { ...c, icon: ic, iconSrc: c.on ? 'brand/icons-dark/' + ic + '.svg' : linkable ? (dark ? 'brand/icons-linkdark/' : 'brand/icons-link/') + ic + '.svg' : (dark ? 'brand/icons-dark/' : 'brand/icons-light/') + ic + '.svg' }; });
     v.scanSteps = (v.scanSteps || []).map((st, i) => ({ ...st, icon: SCAN_ICON[i], iconSrc: v.iconDir + '/' + SCAN_ICON[i] + '.svg' }));
     v.heroRegions = v.heroRegions.map(r => ({ ...r, markSrc: r.ghost || r.rollup ? null : PROVIDER_MARK(r.cloud) }));
+    // The right-hand surfaces push the page rather than cover it. Two can be
+    // open at once (a list and the thing you opened from it), so the shell
+    // gives back exactly as much width as they take. hasDrawer and queueOpen
+    // are mutually exclusive: one list surface at a time.
+    {
+      const list = (v.hasDrawer || v.queueOpen) ? 380 : 0;
+      const detail = v.hasPanelOverlay ? 380 : 0;
+      v.shellPadRight = (list + detail) + 'px';
+    }
     const withMark = (p) => ({ ...p, markSrc: PROVIDER_MARK(p.provider) || (v.iconLink + '/' + (CAT_ICON[p.cat] || 'cloud') + '.svg') });
     ['catalogRow', 'mostChosen', 'results'].forEach(k => { if (v[k]) v[k] = v[k].map(withMark); });
     if (v.curated) v.curated = v.curated.map(row => ({ ...row, items: row.items.map(withMark) }));
