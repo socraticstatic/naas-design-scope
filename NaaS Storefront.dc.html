@@ -283,7 +283,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div style="display:flex;align-items:center;gap:16px;padding:10px 16px;margin-bottom:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px"><span aria-hidden="true" style="width:16px;height:16px;flex:none;background:url('{{ iconFabric }}') center / contain no-repeat"></span><span style="flex:1;min-width:0;font-size:14px;line-height:20px;letter-spacing:-.4px;color:var(--text-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ heroStripText }}</span><button class="fx-btn" onClick="{{ toggleHero }}">Show the fabric</button></div>
 </sc-if>
 <sc-if value="{{ heroVisible }}" hint-placeholder-val="{{ true }}">
-<div id="sec-fabric" style="display:grid;grid-template-columns:1fr;gap:12px;align-items:stretch;margin-bottom:24px"><div style="display:grid;gap:1px;margin-bottom:10px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">The fabric</h3><div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;line-height:16px;color:var(--text-light)"><sc-for list="{{ fabricHealth }}" as="fh" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><i style="width:7px;height:7px;border-radius:9999px;background:{{ fh.dot }};flex:none"></i>{{ fh.text }}</span></sc-for></div></div>
+<div id="sec-fabric" style="display:grid;grid-template-columns:1fr;gap:12px;align-items:stretch;margin-bottom:24px"><div style="display:grid;gap:1px;margin-bottom:10px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">What you have</h3><div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:12px;line-height:16px;color:var(--text-light)"><sc-for list="{{ fabricHealth }}" as="fh" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><i style="width:7px;height:7px;border-radius:9999px;background:{{ fh.dot }};flex:none"></i>{{ fh.text }}</span></sc-for></div></div>
 <div style="position:relative;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;padding:10px 24px 12px;display:flex;align-items:stretch;min-height:{{ heroMinH }}">
 
 <div style="display:grid;gap:8px;width:100%;min-width:0">
@@ -908,7 +908,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <div style="display:grid;gap:32px;margin-top:24px">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goDiscover }}">Explore the estate</button></div>
     <div id="sec-accounts" class="fx-card" aria-label="Sources" style="gap:10px;padding:16px 24px">
-      <div class="fx-card-head"><div><h3 class="fx-card-title">Your accounts</h3><div class="fx-card-sub">{{ sourcesSub }}</div></div><button class="fx-btn" onClick="{{ toggleAddSource }}" style="height:32px">{{ addSourceLabel }}</button></div>
+      <div class="fx-card-head"><div><h3 class="fx-card-title">Connected accounts</h3><div class="fx-card-sub">{{ sourcesSub }}</div></div><button class="fx-btn" onClick="{{ toggleAddSource }}" style="height:32px">{{ addSourceLabel }}</button></div>
       <sc-if value="{{ addSourceOpen }}" hint-placeholder-val="{{ false }}">
       <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end;padding:12px;border:1px solid var(--border-secondary);border-radius:12px;background:var(--bg-wash)">
         <label class="fx-filter" style="display:grid;gap:4px"><span class="fx-label">Source</span><select class="fx-select" value="{{ addSourceKind }}" onChange="{{ setAddSourceKind }}" style="width:100%"><option>AWS account</option><option>Azure subscription</option><option>Google Cloud project</option><option>Oracle tenancy</option><option>NetBond inventory</option><option>AVPN sites</option></select></label>
@@ -917,16 +917,62 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
         <button class="fx-btn" onClick="{{ addSource }}" style="height:36px;background:var(--cta);color:#fff;border-color:var(--cta);justify-content:center">Add and scan</button>
       </div>
       </sc-if>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
-        <sc-for list="{{ sources }}" as="sr" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--border-secondary);border-radius:10px;font-size:12px;line-height:16px"><i style="width:8px;height:8px;border-radius:9999px;background:{{ sr.dot }};display:inline-block"></i><span style="min-width:0"><span style="display:block;font-weight:500;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sr.name }}</span><span style="display:block;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sr.sub }}</span></span><span style="font-size:11px;color:var(--text-light);white-space:nowrap">{{ sr.state }}</span></div></sc-for>
+      <div class="dt" style="width:100%;font-size:12px">
+        <div class="dt-h"><div class="dt-r" style="border-bottom:1px solid var(--border-secondary)">
+          <div class="dt-c dt-th" style="width:30%;text-align:left;padding:6px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Account</div>
+          <div class="dt-c dt-th" style="width:20%;text-align:left;padding:6px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Credential</div>
+          <div class="dt-c dt-th" style="width:20%;text-align:left;padding:6px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Scope</div>
+          <div class="dt-c dt-th" style="width:14%;text-align:left;padding:6px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Last scan</div>
+          <div class="dt-c dt-th" style="width:16%;text-align:left;padding:6px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Manage</div>
+        </div></div>
+        <div class="dt-b"><sc-for list="{{ sources }}" as="sr" hint-placeholder-count="4">
+          <div class="dt-r" style="border-bottom:1px solid var(--border-secondary)">
+            <div class="dt-c" style="padding:8px 10px;vertical-align:middle"><span style="display:flex;align-items:center;gap:8px;min-width:0"><i style="width:8px;height:8px;border-radius:9999px;background:{{ sr.dot }};flex:none"></i><span style="font-weight:600;color:var(--text-heading);overflow-wrap:anywhere">{{ sr.name }}</span></span></div>
+            <div class="dt-c" style="padding:8px 10px;vertical-align:middle;color:var(--text-body);overflow-wrap:anywhere">{{ sr.cred }}</div>
+            <div class="dt-c" style="padding:8px 10px;vertical-align:middle;color:var(--text-light);overflow-wrap:anywhere">{{ sr.scope }}</div>
+            <div class="dt-c" style="padding:8px 10px;vertical-align:middle;color:var(--text-light);white-space:nowrap">{{ sr.seen }}</div>
+            <div class="dt-c" style="padding:8px 10px;vertical-align:middle"><span style="display:flex;gap:10px;white-space:nowrap"><button onClick="{{ sr.rescan }}" style="border:0;background:transparent;padding:0;color:var(--link);font:inherit;font-size:12px;font-weight:600;cursor:pointer">Re-scan</button><button onClick="{{ sr.edit }}" style="border:0;background:transparent;padding:0;color:var(--link);font:inherit;font-size:12px;font-weight:600;cursor:pointer">Edit access</button></span></div>
+          </div>
+        </sc-for></div>
       </div>
     </div>
 
+    <sc-if value="{{ hasGap }}" hint-placeholder-val="{{ true }}">
+    <div id="sec-gap" class="fx-card" style="gap:12px;padding:16px 24px">
+      <div class="fx-card-head"><div><h3 class="fx-card-title">Not connected yet</h3><div class="fx-card-sub">{{ gapSummary }}</div></div><button class="fx-btn" onClick="{{ toggleAddSource }}" style="flex:none;height:28px;padding:0 12px;font-size:12px">Connect something else</button></div>
+      <div style="display:grid">
+        <sc-for list="{{ gapRows }}" as="gp" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--border-secondary);min-width:0">
+            <div style="min-width:0;display:grid;gap:3px">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading);overflow-wrap:anywhere">{{ gp.name }}</span><sc-for list="{{ gp.tags }}" as="tg" hint-placeholder-count="2"><span style="flex:none;padding:1px 7px;border-radius:9999px;background:var(--bg-wash);color:var(--text-light);font-size:10px;font-weight:700;white-space:nowrap">{{ tg.label }}</span></sc-for></div>
+              <div style="font-size:12px;line-height:16px;color:var(--text-light);overflow-wrap:anywhere">{{ gp.sub }}</div>
+              <div style="font-size:12px;line-height:16px;color:var(--text-body);overflow-wrap:anywhere"><b style="font-weight:600;color:var(--link)">{{ gp.best }}</b> · {{ gp.bestWhy }}</div>
+              <div style="font-size:11px;line-height:15px;color:var(--text-disabled);overflow-wrap:anywhere">{{ gp.alt }}</div>
+            </div>
+            <button onClick="{{ gp.go }}" style="flex:none;height:32px;padding:0 16px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Connect this</button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
     <sc-if value="{{ isCloudLayer }}" hint-placeholder-val="{{ true }}">
     <div id="sec-paths" style="display:grid;gap:16px">
       <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
-        <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">Choose a path</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">Three ways to reach a cloud region. {{ pathsSub }}</div></div>
+        <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)"><span style="color:var(--text-disabled);font-weight:600">Step 1 · </span>Choose a path</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">How the traffic gets to the cloud. {{ pathsSub }}</div></div>
         <div role="tablist" aria-label="Emphasise a column" style="margin-left:auto;display:flex;flex-wrap:wrap;gap:4px"><span style="align-self:center;font-size:11px;color:var(--text-disabled);white-space:nowrap">Colour the picture by</span><sc-for list="{{ lenses }}" as="l" hint-placeholder-count="4"><button role="tab" aria-selected="{{ l.on }}" onClick="{{ l.go }}" style="height:26px;padding:0 10px;border:1px solid {{ l.ub }};border-radius:9999px;background:transparent;color:{{ l.uc }};font-size:12px;font-weight:{{ l.uw }};cursor:pointer;white-space:nowrap">{{ l.label }}</button></sc-for></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+        <sc-for list="{{ pathRows }}" as="pt" hint-placeholder-count="3">
+          <div style="display:grid;gap:8px;align-content:start;padding:16px;border:1px solid {{ pt.border }};border-radius:16px;background:{{ pt.bg }};min-width:0">
+            <span aria-hidden="true" style="width:28px;height:4px;border-radius:9999px;background:{{ pt.tone }}"></span>
+            <div style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading);text-wrap:pretty">{{ pt.name }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ pt.tagRows }}" as="tg" hint-placeholder-count="3"><span style="padding:1px 7px;border-radius:9999px;background:var(--bg-wash);color:var(--text-light);font-size:10px;font-weight:700;white-space:nowrap">{{ tg.label }}</span></sc-for></div>
+            <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty">{{ pt.what }}</div>
+            <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty"><b style="font-weight:700;color:var(--success)">Good for</b> · {{ pt.good }}</div>
+            <div style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty"><b style="font-weight:700;color:var(--warning)">Tradeoff</b> · {{ pt.cost }}</div>
+            <button onClick="{{ pt.pick }}" style="justify-self:start;margin-top:2px;height:30px;padding:0 16px;border:1px solid {{ pt.pickBorder }};border-radius:9999px;background:{{ pt.pickBg }};color:{{ pt.pickInk }};font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">{{ pt.pickLabel }}</button>
+          </div>
+        </sc-for>
       </div>
       <div style="overflow-x:auto;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px">
         <div class="dt" style="width:100%;min-width:820px;border-collapse:collapse;table-layout:fixed;font-size:13px">
@@ -944,10 +990,41 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
           </sc-for></div>
         </div>
       </div>
+      <div style="font-size:11px;line-height:16px;color:var(--text-disabled);text-wrap:pretty">The table compares the middle mile. An SD-WAN overlay rides whichever of these your sites already have — it changes the edge, not the middle, so its numbers follow the row underneath it.</div>
+    </div>
+    </sc-if>
+    <sc-if value="{{ isCloudLayer }}" hint-placeholder-val="{{ true }}">
+    <div id="sec-buy" style="display:grid;gap:16px">
+      <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)"><span style="color:var(--text-disabled);font-weight:600">Step 2 · </span>Two ways to buy it</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">Same path either way. The difference is who owns the port.</div></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+        <sc-for list="{{ buyRows }}" as="by" hint-placeholder-count="2">
+          <div style="display:grid;gap:8px;align-content:start;padding:20px;border:1px solid {{ by.border }};border-radius:16px;background:{{ by.bg }};min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:15px;line-height:21px;font-weight:700;color:var(--text-heading)">{{ by.name }}</span><span style="padding:1px 8px;border-radius:9999px;background:var(--bg-wash);color:var(--text-light);font-size:10px;font-weight:700;white-space:nowrap">{{ by.badge }}</span></div>
+            <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty">{{ by.what }}</div>
+            <div style="display:grid;gap:4px;margin-top:2px"><sc-for list="{{ by.getRows }}" as="gt" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px;font-size:12px;line-height:17px;color:var(--text-body)"><span aria-hidden="true" style="color:var(--success);font-weight:700">✓</span><span style="text-wrap:pretty">{{ gt.text }}</span></div></sc-for></div>
+            <div style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty">{{ by.fit }}</div>
+            <button onClick="{{ by.pick }}" style="justify-self:start;margin-top:2px;height:30px;padding:0 16px;border:1px solid {{ by.pickBorder }};border-radius:9999px;background:{{ by.pickBg }};color:{{ by.pickInk }};font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">{{ by.pickLabel }}</button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div id="sec-prov" style="display:grid;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)"><span style="color:var(--text-disabled);font-weight:600">Step 3 · </span>What happens after you order</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">{{ provSub }}</div></div>
+        <button onClick="{{ startOrder }}" style="margin-left:auto;flex:none;height:32px;padding:0 18px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Start an order</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <sc-for list="{{ provSteps }}" as="pv" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;padding:14px 16px;border:1px solid var(--border-secondary);border-radius:12px;background:var(--bg-base);min-width:0">
+            <span aria-hidden="true" style="width:24px;height:24px;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ pv.n }}</span>
+            <span style="display:grid;gap:2px;min-width:0"><span style="font-size:13px;line-height:18px;font-weight:700;color:var(--text-heading)">{{ pv.t }}</span><span style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty">{{ pv.d }}</span></span>
+          </div>
+        </sc-for>
+      </div>
     </div>
     </sc-if>
     <div style="display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:24px;align-items:start">
-<div id="sec-attach" style="display:grid;gap:24px"><div style="display:grid;gap:1px;margin-bottom:2px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">What to attach</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">What is still exposed, and the products that close it.</div></div>
+<div id="sec-attach" style="display:grid;gap:24px"><div style="display:grid;gap:1px;margin-bottom:2px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">What to order</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">The AT&amp;T products that close the gaps above.</div></div>
         <sc-if value="{{ hasConnectFindings }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:6px"><sc-for list="{{ connectFindings }}" as="f" hint-placeholder-count="1"><button onClick="{{ f.askAndi }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;color:var(--text-heading);font:inherit;font-size:14px;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--border-active)"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="font-weight:700;text-wrap:pretty">{{ f.head }}</span></span><span style="display:flex;align-items:center;gap:12px;white-space:nowrap"><span style="font-size:12px;font-weight:700;color:var(--success)">{{ f.saveLine }}</span><span style="font-size:12px;color:var(--link);font-weight:500">Ask Andi →</span></span></button></sc-for></div></sc-if>
         <sc-if value="{{ hasConnectOthers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:16px;align-items:center;padding:12px 16px;border-radius:8px;background:var(--bg-wash);font-size:13px;color:var(--text-body)">Other findings in this layer close elsewhere:<sc-for list="{{ connectOthers }}" as="o" hint-placeholder-count="0"><button onClick="{{ o.go }}" style="border:0;background:transparent;padding:0;color:var(--link);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">{{ o.label }} →</button></sc-for></div></sc-if>
         <sc-if value="{{ noConnectFindings }}" hint-placeholder-val="{{ false }}">

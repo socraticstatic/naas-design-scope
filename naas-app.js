@@ -766,6 +766,92 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   };
   const degRow = conns.rows.find(r => r.degraded);
   const nextStop = degRow ? { title: 'Next stop: Govern', text: `${degRow.wl.toLocaleString('en-US')} workloads behind ${degRow.cloud} ${degRow.region} ${degRow.paths >= 2 ? 'have a second path but no policy that requires one' : 'ride a single path with no policy that requires a second'}. Author the policy, simulate it, then enforce it.`, cta: 'Open Govern', go: go('s3', { layer: 'cloud', tab: 'govern' }) } : { title: 'Next stop: Govern', text: 'Every connection is up. Set a latency SLO for the tags that still cross the public internet, then enforce it.', cta: 'Open Govern', go: go('s3', { layer: 'cloud', tab: 'govern' }) };
+  // The gap, itemised. The page could show what you have and what the three
+  // paths cost, but never "these eleven things are not connected, here is
+  // each one and what it would take". That is the middle rung a customer
+  // actually stands on between discovering and ordering.
+  const gapRegions = est.regionsList.filter(r => !r.priv).map(r => ({
+    key: 'gr-' + r.region, kind: 'region', name: `${r.cloud} ${r.region}`,
+    sub: `${(r.wl || 0).toLocaleString('en-US')} workloads · ${r.pub} ms on the public path · ${(r.tags || []).slice(0, 3).join(', ') || 'no tags'}`,
+    tags: (r.tags || []).slice(0, 3).map(t => ({ key: t, label: t })),
+    hasTags: (r.tags || []).length > 0,
+    best: 'NetBond on the AT&T fabric', bestWhy: `${r.fab} ms · $0.02/GB · from 10 business days`,
+    alt: 'or Direct Connect / ExpressRoute · 4 to 8 weeks, you run the routers',
+    go: composeFor(go, r),
+  }));
+  const gapSites = (est.sites || []).filter(x => !x.priv).map(x => ({
+    key: 'gs-' + x.name, kind: 'site', name: x.name,
+    sub: `${x.access || 'first mile'} · ${x.metro || 'various'} · public first mile`,
+    tags: [], hasTags: false,
+    best: 'Attach the first mile to the fabric', bestWhy: 'AVPN or ASE, same-day on existing access',
+    alt: 'or keep the internet path with inline inspection',
+    go: composeFor(go, x),
+  }));
+  const gapRows = [...gapRegions, ...gapSites];
+  const gapSummary = gapRows.length
+    ? `${gapRows.length} ${gapRows.length === 1 ? 'thing is' : 'things are'} still on the public internet — ${gapRegions.length} cloud ${gapRegions.length === 1 ? 'region' : 'regions'}, ${gapSites.length} ${gapSites.length === 1 ? 'site' : 'sites'}.`
+    : 'Everything discovered is on the AT&T fabric.';
+  // Connect, as three decisions in the order a customer makes them:
+  // which path, how to buy it, what happens after the order is placed.
+  const pathPick = s.pathPick || 'fabric';
+  const buyPick = s.buyPick || 'hosted';
+  const PATH_STEPS = [
+    { id: 'fabric', name: 'Private fabric (NetBond)', tone: '#0057b8',
+      what: 'AT&T NetBond into the cloud on-ramp. Private layer 3, never on the public internet.',
+      tags: ['Private', 'Any cloud', 'AT&T managed'],
+      good: 'Deterministic latency, one SLA end to end, $0.02/GB egress, every cloud off the same port.',
+      cost: 'Capacity is committed up front. From 10 business days to stand up.' },
+    { id: 'sdwan', name: 'SD-WAN overlay', tone: '#00a8e0',
+      what: 'Your SD-WAN extended to the cloud gateway. Encrypted overlay over the access you already have.',
+      tags: ['Encrypted', 'Any transport', 'Days not weeks'],
+      good: 'Live on existing access, steers around brownouts on its own, no new circuit to order.',
+      cost: 'The middle mile is shared transport, so it is best effort. $0.04/GB blended.' },
+    { id: 'native', name: 'Hyperscaler-native interconnect', tone: '#5d6f80',
+      what: 'Direct Connect, ExpressRoute or Cloud Interconnect straight into one cloud.',
+      tags: ['Private', 'One cloud', 'You operate'],
+      good: 'Lowest per-GB rate inside that one cloud, with no middle party.',
+      cost: 'One cloud per circuit, 4 to 8 weeks, and you own the routers, the LOA and the ticket.' },
+  ];
+  const pathRows = PATH_STEPS.map(p => {
+    const on = p.id === pathPick;
+    return { ...p, key: p.id, on, tagRows: p.tags.map(t => ({ key: t, label: t })),
+      border: on ? 'var(--cta)' : 'var(--border-secondary)', bg: on ? 'var(--bg-accent)' : 'var(--bg-base)',
+      pickLabel: on ? 'Chosen' : 'Choose', pickBg: on ? 'var(--cta)' : 'transparent', pickInk: on ? '#fff' : 'var(--link)',
+      pickBorder: on ? 'var(--cta)' : 'var(--border-primary)',
+      pick: () => set({ pathPick: p.id }) };
+  });
+  const pathChosen = PATH_STEPS.find(p => p.id === pathPick) || PATH_STEPS[0];
+  const BUY_OPTS = [
+    { id: 'hosted', name: 'Hosted private', badge: 'Most chosen',
+      what: 'AT&T owns the port, the edge router and the cross-connect. You buy capacity, not hardware.',
+      gets: ['One monthly rate per Mbps, one bill, one SLA', 'Change capacity in the portal, no truck roll', 'AT&T holds the ticket end to end'],
+      fit: 'Best when you would rather not run edge routers.' },
+    { id: 'byoc', name: 'Bring your own circuit', badge: 'BYOC',
+      what: 'You keep the access and the LOA-CFA. AT&T rides it and manages the overlay only.',
+      gets: ['Lower monthly, because the port is already yours', 'Reuse access that is in place and depreciated', 'You keep the hardware and the first-line ticket'],
+      fit: 'Best when the circuit is already there and paid for.' },
+  ];
+  const buyRows = BUY_OPTS.map(b => {
+    const on = b.id === buyPick;
+    return { ...b, key: b.id, on, getRows: b.gets.map((g, i) => ({ key: b.id + i, text: g })),
+      border: on ? 'var(--cta)' : 'var(--border-secondary)', bg: on ? 'var(--bg-accent)' : 'var(--bg-base)',
+      pickLabel: on ? 'Chosen' : 'Choose', pickBg: on ? 'var(--cta)' : 'transparent', pickInk: on ? '#fff' : 'var(--link)',
+      pickBorder: on ? 'var(--cta)' : 'var(--border-primary)',
+      pick: () => set({ buyPick: b.id }) };
+  });
+  const buyChosen = BUY_OPTS.find(b => b.id === buyPick) || BUY_OPTS[0];
+  const buildText = { fabric: 'AT&T provisions both ends and gives you a build ticket with a date. From 10 business days.', sdwan: 'AT&T pushes the overlay to your edge devices. Days, not weeks.', native: 'You order the port and book the cross-connect; the cloud side is yours. 4 to 8 weeks.' }[pathPick];
+  const provSteps = [
+    { key: 'p1', n: '1', t: 'Pick what to connect', d: 'Choose a region, a VPC or a site from what discovery already found. Nothing to type in.' },
+    { key: 'p2', n: '2', t: 'Size it', d: 'Capacity arrives pre-filled from the traffic Observe already measured. Burst above it is allowed.' },
+    { key: 'p3', n: '3', t: 'Order', d: buyPick === 'hosted' ? 'One order. AT&T generates the LOA and books the cross-connect.' : 'One order against your circuit. You send the LOA-CFA, we ride the access.' },
+    { key: 'p4', n: '4', t: 'Build', d: buildText },
+    { key: 'p5', n: '5', t: 'Turn-up', d: 'BGP comes up, routes advertise, and we run test traffic before you cut over.' },
+    { key: 'p6', n: '6', t: 'Policy on day one', d: 'The tags you already govern apply to the new path the moment it carries traffic.' },
+  ];
+  const provSub = `${pathChosen.name} · ${buyChosen.name}`;
+  const startOrder = () => { c.setState({ screen: 's4', compose: { ...prefillCompose(est), path: pathPick, buy: buyPick } }); syncHash('s4', s.layer, s.tab); };
+  const stepVals = { pathRows, buyRows, provSteps, provSub, startOrder, pathChosenName: pathChosen.name, buyChosenName: buyChosen.name };
   const connectNext = { title: 'Next stop: Observe', text: isEmpty ? 'Once the first region is attached, telemetry starts and Observe shows what the fabric carries.' : `${conns.total} ${conns.total === 1 ? 'connection carries' : 'connections carry'} ${(ob.fab || 0).toFixed(1)} Gbps on the fabric. See which one is degraded and what it impacts.`, cta: 'Open Observe', go: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); } };
   const governNext = { title: 'Next stop: Cost', text: isEmpty ? 'Policies price themselves once traffic is seen.' : `Every policy that requires a private path moves egress off the hyperscaler rate. ${totalSave ? fmt(totalSave) + '/mo is on the table.' : 'See what the fabric already saves.'}`, cta: 'Open Cost', go: go('s3', { layer: 'cloud', tab: 'cost' }) };
   const costNext = { title: 'Next stop: Connect', text: isEmpty ? 'Attach the first region to start saving.' : `${est.regionsList.filter(r => !r.priv).length} ${est.regionsList.filter(r => !r.priv).length === 1 ? 'region still rides the public internet. Attaching it' : 'regions still ride the public internet. Attaching them'} is where the savings above come from.`, cta: 'Open Connect', go: go('s3', { layer: 'cloud', tab: 'connect' }) };
@@ -874,13 +960,18 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     mapFilterToggleWord: mapFiltersOpen ? 'Hide' : 'Show', mapZoomLabel: map.zoom ? `zoomed ×${map.zf.toFixed(1)}` : '', hasMapZoom: !!map.zoom, mapSub: `${map.total.toFixed(1)} Gbps · ${map.total ? Math.round(map.fabV / map.total * 100) : 0}% on the AT&T fabric · ${map.total ? Math.round((map.localV || 0) / map.total * 100) : 0}% stays in the region${mapRegion ? ' · filtered to ' + mapRegion : ''}${mapT != null ? ' · ' + Math.round(24 - mapT * 24) + 'h ago' : ' · last 24h'}`, mapTrail, hasMapTrail: mapTrail.length > 0, mapUp: climb, canClimb: !!mapSel, mapKey, modes, hasMapRegion: !!mapRegion, mapRegion: mapRegion || '', clearMapRegion: () => set({ mapRegion: null }), mapT: mapT == null ? 100 : Math.round(mapT * 100), setMapT: (e) => set({ mapT: +e.target.value / 100 }), mapPlaying: !!s.mapPlay, playLabel: s.mapPlay ? '❚❚' : '▶', playMap, resetMapT: () => set({ mapT: null }), replayOpen: !!s.replayOpen, toggleReplay: () => set({ replayOpen: !s.replayOpen, mapPlay: false, mapT: s.replayOpen ? null : s.mapT }), wholeWindow: () => set({ mapT: null, mapPlay: false }), gaugeRows, hasGauges: gaugeRows.length > 0, panel, hasPanel: !!panel, hasPanelOverlay: !!panel, drawerRight: panel ? '380px' : '0px', noPanel: !panel, dashCols: 'minmax(0,1fr)', mapJumpOpen: !!s.mapJumpOpen, mapJumpQ: s.mapJumpQ || '', setMapJumpQ: (e) => set({ mapJumpQ: e.target.value }), mapJumpKey: (e) => { if (e.key === 'Enter') jumpTo(s.mapJumpQ); if (e.key === 'Escape') set({ mapJumpOpen: false }); }, openJump: () => set({ mapJumpOpen: !s.mapJumpOpen }), pins: (s.mapPins || []).map(k => ({ key: k, name: (map.nodes.find(x => x.key === k) || { name: k }).name, v: ((map.nodes.find(x => x.key === k) || { v: 0 }).v).toFixed(1) + ' Gbps', unpin: () => set({ mapPins: (s.mapPins || []).filter(x => x !== k) }) })), hasPins: (s.mapPins || []).length > 0 };
   // Sources (Micah, 14:33: "where can I connect to my current ecosystem?"): what feeds the picture, and the door to add more.
   const byCloud = {}; est0.regionsList.forEach(r => { const c = byCloud[r.cloud] = byCloud[r.cloud] || { regions: 0, acct: null }; c.regions++; if (r.acct && !c.acct) c.acct = r.acct; });
-  const sources = [
-    ...Object.entries(byCloud).map(([cloud, c]) => ({ key: 'src:' + cloud, name: `${cloud} ${c.acct ? c.acct : 'account'}`, sub: `${c.regions} ${c.regions === 1 ? 'region' : 'regions'} · read-only · daily refresh`, state: 'connected', dot: 'var(--success)' })),
-    ...(conns.total ? [{ key: 'src:netbond', name: 'NetBond inventory', sub: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'} · live`, state: 'connected', dot: 'var(--success)' }] : []),
-    ...(est0.sites.length ? [{ key: 'src:sites', name: 'AVPN and access sites', sub: `${(est0.sitesCount || est0.sites.length).toLocaleString('en-US')} sites · from AT&T inventory`, state: 'connected', dot: 'var(--success)' }] : []),
-    ...((s.addedSources || []).map((k, i) => ({ key: 'src:new' + i, name: k, sub: 'added · queued for the next scan', state: 'scanning', dot: 'var(--warning)' }))),
+  const rescanNow = () => { try { window.__naasLoaded = Date.now(); } catch (e) {} set({ scanStep: 0 }); };
+  const scanAgo = (k) => ['4 min ago', '18 min ago', '1 h ago', '3 h ago'][k % 4];
+  const rawSources = [
+    ...Object.entries(byCloud).map(([cloud, c], i) => ({ key: 'src:' + cloud, name: `${cloud} ${c.acct ? c.acct : 'account'}`, kind: cloud, cred: cloud === 'Azure' ? 'Service principal' : cloud === 'Google Cloud' ? 'Service account' : 'Cross-account role', scope: `Read-only · ${c.regions} ${c.regions === 1 ? 'region' : 'regions'}`, seen: scanAgo(i), sub: `${c.regions} ${c.regions === 1 ? 'region' : 'regions'} · read-only · daily refresh`, state: 'Connected', dot: 'var(--success)' })),
+    ...(conns.total ? [{ key: 'src:netbond', name: 'NetBond inventory', kind: 'AT&T', cred: 'AT&T inventory', scope: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'}`, seen: 'live', sub: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'} · live`, state: 'Connected', dot: 'var(--success)' }] : []),
+    ...(est0.sites.length ? [{ key: 'src:sites', name: 'AVPN and access sites', kind: 'AT&T', cred: 'AT&T inventory', scope: `${(est0.sitesCount || est0.sites.length).toLocaleString('en-US')} sites`, seen: 'live', sub: `${(est0.sitesCount || est0.sites.length).toLocaleString('en-US')} sites · from AT&T inventory`, state: 'Connected', dot: 'var(--success)' }] : []),
+    ...((s.addedSources || []).map((k, i) => ({ key: 'src:new' + i, name: k, kind: k, cred: 'Pending', scope: 'Read-only, all regions', seen: 'never', sub: 'added · queued for the next scan', state: 'Scanning', dot: 'var(--warning)' }))),
   ];
-  const obX = { sources, sourcesSub: `${sources.length} connected · what the picture is drawn from`, addSourceOpen: !!s.addSourceOpen, toggleAddSource: () => set({ addSourceOpen: !s.addSourceOpen }), addSourceLabel: s.addSourceOpen ? 'Close' : 'Add a source', addSourceKind: s.addSourceKind || 'AWS account', setAddSourceKind: (e) => set({ addSourceKind: e.target.value }), addSource: () => set({ addedSources: [...(s.addedSources || []), s.addSourceKind || 'AWS account'], addSourceOpen: false }), ...dash, nextStop, connectNext, governNext, costNext, obIsPerf: obPage === 'perf', obIsSec: false, obIsLogs: obTab === 'control', obTiles, connRows, hasConns: conns.rows.length > 0, connHead: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'}`, connSub: conns.degraded ? `${conns.degraded} degraded · ${conns.rows.filter(r => r.state === 'Saturating').length} saturating` : conns.rows.some(r => r.state === 'Saturating') ? `${conns.rows.filter(r => r.state === 'Saturating').length} saturating · none degraded` : 'all up', impact, patternCards, logChips, logPattern, flowRecords, flowRecordCount: `${flowRecords.length} records`, logsPatternLabel: (logChips.find(ch => ch.on) || {}).label || 'All', goGovern: go('s3', { layer: 'cloud', tab: 'govern' }), goPerf: () => set({ obPage: 'perf', obTab: 'flow' }), closeLogs: () => set({ obTab: 'flow' }) };
+  const sources = rawSources.map(r => ({ ...r, rescan: rescanNow, edit: () => set({ addSourceOpen: true, addSourceKind: r.kind }), remove: () => set({ addedSources: (s.addedSources || []).filter(x => 'src:new' + (s.addedSources || []).indexOf(x) !== r.key) }), canRemove: r.key.startsWith('src:new') }));
+  const credScanned = sources.filter(x => x.state === 'Connected').length;
+  const gapVals = { gapRows, hasGap: gapRows.length > 0, noGap: gapRows.length === 0, gapSummary, gapCount: String(gapRows.length) };
+  const obX = { sources, sourcesSub: `${credScanned} of ${sources.length} credentials scanning · everything above is drawn from these`, addSourceOpen: !!s.addSourceOpen, toggleAddSource: () => set({ addSourceOpen: !s.addSourceOpen }), addSourceLabel: s.addSourceOpen ? 'Close' : 'Add a source', addSourceKind: s.addSourceKind || 'AWS account', setAddSourceKind: (e) => set({ addSourceKind: e.target.value }), addSource: () => set({ addedSources: [...(s.addedSources || []), s.addSourceKind || 'AWS account'], addSourceOpen: false }), ...dash, nextStop, connectNext, governNext, costNext, obIsPerf: obPage === 'perf', obIsSec: false, obIsLogs: obTab === 'control', obTiles, connRows, hasConns: conns.rows.length > 0, connHead: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'}`, connSub: conns.degraded ? `${conns.degraded} degraded · ${conns.rows.filter(r => r.state === 'Saturating').length} saturating` : conns.rows.some(r => r.state === 'Saturating') ? `${conns.rows.filter(r => r.state === 'Saturating').length} saturating · none degraded` : 'all up', impact, patternCards, logChips, logPattern, flowRecords, flowRecordCount: `${flowRecords.length} records`, logsPatternLabel: (logChips.find(ch => ch.on) || {}).label || 'All', goGovern: go('s3', { layer: 'cloud', tab: 'govern' }), goPerf: () => set({ obPage: 'perf', obTab: 'flow' }), closeLogs: () => set({ obTab: 'flow' }) };
   // AI Fabric insights
   const ai = A.aiInsights(est, s.aiMetric || 'tokens');
   const aiTab = s.aiTab || 'perf';
@@ -949,7 +1040,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     utilRows: (ob.utilRows || []).map(u => { const hot = u.pct >= 80; const r = est0.regionsList.find(x => x.region === u.region) || { region: u.region, wl: 0 }; return { ...u, key: u.id, label: `${u.cloud} ${u.region}`, sub: `${u.ramp} · ${u.ports} × 10 Gbps`, w: u.pct + '%', v: `${u.gbps} Gbps`, pctF: u.pct + '%', fill: hot ? '#ff8500' : '#009fdb', doorLabel: hot ? 'Add a port →' : 'Ask Andi →', doorColor: hot ? 'var(--warning)' : 'var(--link)', go: hot ? composeFor(go, r) : () => set({ andiScope: { kind: 'region', id: u.region, label: `${u.cloud} ${u.region}` }, andiOpen: true }) }; }),
     obStrip: (() => { const rows = ob.utilRows || []; const hot = rows.filter(u => u.pct >= 80 && !(connRow && connRow.region === u.region && connRow.degraded)); const blind = ob.blind || []; const parts = []; const deg = conns.rows.find(r => r.degraded); if (deg) parts.push(`${deg.cloud} ${deg.region} is degraded on ${deg.ramp}: BGP flapping, ${deg.drops} drops, ${deg.wl.toLocaleString('en-US')} workloads behind it.`); if (hot.length) parts.push(`${hot.map(u => `${u.cloud} ${u.region}`).join(', ')} ${hot.length === 1 ? 'runs' : 'run'} above 80% of ${hot.length === 1 ? 'its' : 'their'} ports.`); if (blind.length) parts.push(`${blind.length} ${blind.length === 1 ? 'region sends' : 'regions send'} no flow logs, so ${ob.pub.toFixed(1)} Gbps is unseen.`); if (ob.worst && !blind.length) parts.push(`${ob.worst.name} is the slowest public flow at ${ob.worst.latency} ms.`); const first = hot[0] ? est0.regionsList.find(x => x.region === hot[0].region) : blind[0]; return { has: parts.length > 0, title: 'Act on it', text: parts.join(' ') + (hot.length ? ' Add a port before it saturates.' : blind.length ? ' Attach it to bring the traffic under control.' : ''), cta: hot.length ? `Add a port on ${hot[0].region}` : blind.length ? `Attach ${blind[0].region}` : 'Steer worst offender', go: first ? composeFor(go, first) : (ob.worst ? () => set({ steered: [...(s.steered || []), ob.worst.id] }) : () => {}) }; })(), hasUtil: (ob.utilRows || []).length > 0, utilLine: `${ob.util}% of ${ob.capGbps} Gbps in use · ${(ob.utilRows || []).length} ${(ob.utilRows || []).length === 1 ? 'connection' : 'connections'}`, utilHot: (ob.utilRows || []).filter(u => u.pct >= 80).length, goCapacity: go('s4'), anomalies: R.anomalies(R.applyScope(est0, obScope), ob).map(a => ({ ...a, dot: a.sev === 'amber' ? 'var(--warning)' : 'var(--link)', go: a.region ? () => set({ obScope: 'cloud:' + (est0.regionsList.find(r => r.region === a.region) || {}).cloud }) : () => {} })), hasAnomalies: R.anomalies(R.applyScope(est0, obScope), ob).length > 0, insights: R.insights(R.applyScope(est0, obScope), ob), hasInsights: !isEmpty, iw: iwVals(R.insightWidgets(R.applyScope(est0, obScope), ob, winDaysOf(s)), s, set, go, winLabelOf(s)) || {}, hasIw: !!R.insightWidgets(R.applyScope(est0, obScope), ob, winDaysOf(s)),
     obVerdict: ob.verdict, obCoverage: ob.coverage, obKpis: ob.kpis.map(k => ({ ...k, hasUnit: !!k.u, hasE: !!k.e })), obTabs, obIsFlow: obTab === 'flow', trend, hasTrend: !!trend,
-    ...logVals,
+    ...logVals, ...gapVals, ...stepVals,
     skVB: `0 0 ${sk.W} ${sk.H}`, skNodes, skHeads, skRibbons, goLogs: () => toLogs({ logPattern: 'all' }), skSub: ob.subVerdict, skFoot: `All flows · ${ob.flows.filter(f => f.kind === 'App').length} app flows, ${ob.flows.filter(f => f.kind !== 'App').length} cloud-to-cloud. Sites roll up by class; the records table lists cloud flows only.`,
     records, recordCount: `${records.length} groups`, groupBy, setGroupBy: (e) => set({ groupBy: e.target.value }), groupOptions: ['None', 'Source', 'Destination', 'Path', 'Action'].map(o => ({ key: o, label: o })),
     briefing: ob.briefing, briefPills, briefQs, paths, pathsSummary: ob.pathsSummary, restoreAll: () => set({ steered: [] }), hasSteered: steered.length > 0,
@@ -1097,31 +1188,34 @@ function shellVals(s, set, go, est, c) {
    */
   const SECTIONS = {
     connect: [
-      ['sec-fabric', 'The fabric'],
-      ['sec-accounts', 'Your accounts'],
-      ['sec-paths', 'Choose a path'],
-      ['sec-attach', 'What to attach'],
-      ['@discover', 'Everything you have'],
+      ['sec-fabric', 'Fabric'],
+      ['@discover', 'Explore 360'],
+      ['sec-accounts', 'Accounts'],
+      ['sec-gap', 'Off fabric'],
+      ['sec-paths', 'Paths'],
+      ['sec-buy', 'Buy'],
+      ['sec-prov', 'Provision'],
+      ['sec-attach', 'Products'],
     ],
     observe: [
-      ['sec-health', 'Health right now'],
-      ['sec-flow', 'Live flow map'],
-      ['sec-changed', 'What changed'],
+      ['sec-health', 'Health'],
+      ['sec-flow', 'Flow map'],
+      ['sec-changed', 'Changes'],
       ['sec-logs', 'Logs'],
     ],
     govern: [
       ['sec-policies', 'Policies'],
-      ['sec-starting', 'Starting points'],
+      ['sec-starting', 'Templates'],
     ],
     cost: [
-      ['sec-arbitrage', 'Where the money is'],
-      ['sec-egress', 'Egress by destination'],
-      ['sec-firstmile', 'Egress by first mile'],
-      ['sec-forecast', '90-day forecast'],
-      ['sec-commit', 'Committed vs metered'],
-      ['sec-charges', 'AT&T charges'],
-      ['sec-buckets', 'Savings by bucket'],
-      ['sec-steer', 'Steer to save'],
+      ['sec-arbitrage', 'Savings'],
+      ['sec-egress', 'By destination'],
+      ['sec-firstmile', 'By first mile'],
+      ['sec-forecast', 'Forecast'],
+      ['sec-commit', 'Commitments'],
+      ['sec-charges', 'Charges'],
+      ['sec-buckets', 'By bucket'],
+      ['sec-steer', 'Steering'],
     ],
   };
   const activeSec = s.activeSec || '';
@@ -1154,16 +1248,16 @@ function shellVals(s, set, go, est, c) {
     : [
         // Four words, one loop (Ramesh, 23:09; Micah, 13:23): Connect → Observe → Govern → Cost → Connect. Home is the fabric picture.
         { key: 'main', hasTitle: false, title: '', items: [
-          item('Connect', 'cable', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, s.screen === 's0' || s.screen === 's1' || s.screen === 's2' || onS3('cloud', 'connect'), false, 'Connect credentials, see what you have'),
-          item('Observe', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe'), false, 'Live traffic and the resources on it'),
-          item('Govern', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern'), false, 'Set policy on what you found'),
-          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost'), false, "What you spend, what you'd keep"),
+          item('Discover', 'search', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, s.screen === 's0' || s.screen === 's1' || s.screen === 's2' || onS3('cloud', 'connect'), false, 'What you have'),
+          item('Observe', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe'), false, 'Live traffic'),
+          item('Govern', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern'), false, 'Policy and posture'),
+          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost'), false, 'Spend and savings'),
         ] },
       ];
   const aiTitle = { sec: 'Security & Governance', sav: 'Cost', perf: 'Performance & Reliability' }[s.aiTab || 'perf'];
   const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
-    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Connect', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Connect'))
-    : 'Connect';
+    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Discover', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Discover'))
+    : 'Discover';
   const loadedAt = (typeof window !== 'undefined' && window.__naasLoaded) || Date.now();
   const agoMin = Math.max(0, Math.round((Date.now() - loadedAt) / 60000));
   const updatedAgo = agoMin < 1 ? 'just now' : agoMin < 60 ? `${agoMin}m ago` : `${Math.round(agoMin / 60)}h ago`;
