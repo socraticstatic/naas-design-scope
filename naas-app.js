@@ -1290,7 +1290,19 @@ function wizardVals(s, est, cp, setC, outcome, constraint, summary, set, c) {
     authoring: !!au, openAuthor: openAuthor(), closeAuthor: () => set({ authoring: null }), aMatch: A_MATCH.map(v => aCard('match', v, true)), aScope: A_SCOPE.map(v => aCard('scope', v, true)), aReq: D.COMPOSE_CHIPS.control.map(v => aCard('req', v, false)),
     aSent: { match: au && au.match || 'something', scope: au && au.scope || 'somewhere', req: au && au.req && au.req.length ? au.req.map(x => x.toLowerCase()).join(' and ') : '…', matchOn: !!(au && au.match), scopeOn: !!(au && au.scope), reqOn: !!(au && au.req && au.req.length) },
     aSimulate: commit('simulated'), aEnforce: commit('enforced'), aReady, aBg: aReady ? 'var(--cta)' : 'var(--bg-neutral)', aColor: aReady ? '#fff' : 'var(--text-disabled)',
-    polRows: (s.layer === 'cloud' ? [...layerPolicies(s, est, s.obScope || 'all'), ...(s.customPolicies || [])] : layerPolicies(s, est, s.obScope || 'all')).map((p, i) => ({ ...p, key: 'pr' + i, sent: polSentence(p), dot: p.state === 'enforced' ? 'var(--success)' : p.state === 'simulated' ? 'var(--warning)' : 'var(--text-disabled)', violColor: p.viol ? 'var(--error)' : 'var(--text-light)', hasViol: p.viol > 0, violLabel: p.viol ? `${p.viol} violations` : 'no violations', matchedLabel: `${p.matched} matched` })),
+    polRows: (s.layer === 'cloud' ? [...layerPolicies(s, est, s.obScope || 'all'), ...(s.customPolicies || [])] : layerPolicies(s, est, s.obScope || 'all')).map((p, i) => ({ ...p, key: 'pr' + i, sent: polSentence(p), dot: p.state === 'enforced' ? 'var(--success)' : p.state === 'simulated' ? 'var(--warning)' : 'var(--text-disabled)', violColor: p.viol ? 'var(--error)' : 'var(--text-light)', hasViol: p.viol > 0, violLabel: p.viol ? `${p.viol} violations` : 'no violations', matchedLabel: `${p.matched} matched`,
+      // A violation you cannot act on is a number on a wall. Every violating
+      // policy opens the workloads breaking it, on the map, filtered to them.
+      act: p.viol ? (p.state === 'simulated' ? 'Enforce' : 'See what is breaking it') : (p.state === 'simulated' ? 'Enforce' : ''),
+      hasAct: !!(p.viol || p.state === 'simulated'),
+      // wizardVals has no `go` in scope, so this navigates through the
+      // component the same way go() does. Calling go() here failed silently.
+      actGo: p.viol
+        ? () => { c.setState({ screen: 's3', layer: 'cloud', tab: 'observe', obPage: 'perf', obTab: 'flow', mapMode: 'slo', panelTab: 'impact', drill: [], cloudDrill: [], fabDrill: [] }); syncHash('s3', 'cloud', 'observe'); window.scrollTo(0, 0); }
+        : () => set({ authoring: { match: p.match, scope: 'any cloud', req: [p.req] } }),
+      actBg: p.viol ? 'var(--cta)' : 'transparent',
+      actInk: p.viol ? '#fff' : 'var(--link)',
+      actBorder: p.viol ? 'var(--cta)' : 'var(--border-primary)' })),
     examplePolicies: [{ key: 'a', t: 'Tag PCI forces a private path', m: 'tag PCI', r: 'Private path required', go: openAuthor('tag PCI', 'Private path required') }, { key: 'b', t: 'Internet-facing gets inspected', m: 'tag Internet-facing', r: 'Inline inspection', go: openAuthor('tag Internet-facing', 'Inline inspection') }, { key: 'c', t: 'Finance stays segmented', m: 'branch Finance', r: 'Segment by tag', go: openAuthor('branch Finance', 'Segment by tag') }],
   };
 }
@@ -1412,6 +1424,7 @@ function shellVals(s, set, go, est, c) {
         // per verb over the very rows the sub-nav already carried. Nothing
         // moves, nothing is added, nothing is dropped.
         const TABS = [['connect', 'Discover'], ['observe', 'Observe'], ['govern', 'Govern'], ['cost', 'Cost']];
+        const TAB_ICON2 = { connect: 'search', observe: 'high-meter', govern: 'check-shield', cost: 'bill' };
         const row = (tab, id, label, ic) => {
           const isNav = id.startsWith('@');
           const cur = isNav ? s.screen === 's1' : (onS3('cloud', tab) && activeSec === id);
@@ -1421,7 +1434,18 @@ function shellVals(s, set, go, est, c) {
           { key: 'home', hasTitle: false, title: '', items: [
             item('NaaS', 'home', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, false),
           ] },
-          ...TABS.map(([tab, title]) => ({ key: tab, hasTitle: true, title, items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) })),
+          // Only the page you are on opens its sections. Every group open at
+          // once ran the rail 137px past its own height with overflow:hidden,
+          // so 'AT&T charges' and 'Steer to save' could not be reached at all
+          // from Govern. A closed group is one row that takes you to its page.
+          ...TABS.map(([tab, title]) => {
+            const here = onS3('cloud', tab) || (tab === 'connect' && (s.screen === 's0' || s.screen === 's1' || s.screen === 's2'));
+            if (here) return { key: tab, hasTitle: true, title, items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) };
+            const go1 = tab === 'observe'
+              ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }
+              : go('s3', { layer: 'cloud', tab });
+            return { key: tab, hasTitle: false, title: '', items: [item(title, TAB_ICON2[tab], go1, false)] };
+          }),
         ];
       })();
   const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
