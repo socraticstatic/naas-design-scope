@@ -24,6 +24,19 @@ const TIERS = ['Start here', 'Recommended', 'Full control'];
 const PERSONA_PRODUCT = { 'Steer this bucket on the fabric': 'steer', 'Steer every internet bucket': 'steer', 'Hosted VPC with AT&T egress for the region': 'hosted-vpc', 'Cloud to Cloud for the pair': 'c2c', 'Multi-region, multi-cloud routing': 'c2c', 'Neocloud reach via Equinix Fabric': 'neocloud', 'Hosted VPC in us-east-1 with the policy enforced': 'hosted-vpc', 'Hosted VPC in us-west-2 with the policy enforced': 'hosted-vpc', 'Hosted VPC plus inline inspection': 'hosted-vpc', 'NGFW (Palo Alto) in path': 'ngfw', 'Hosted VPC with the vSRX pair and AT&T egress': 'hosted-vpc', 'Advanced Network Monitoring for the estate': 'monitoring', 'Advanced Network Monitoring for APAC': 'monitoring', 'Managed NOC with path telemetry': 'noc', 'AWS Interconnect Last Mile, maximum resiliency': 'lmcc', 'Add a second ADI circuit': 'adi', '14-day AI traffic assessment': 'ai-assess', 'Add the providers to AI Fabric': 'ai-gov', 'Virtual keys with team limits': 'ai-gov', 'Connection Hub in Atlanta': 'hub', 'Connection Hubs in Atlanta and Chicago': 'hub', "Segmentation across the region's hosted VNet": 'hosted-vnet' };
 
 export function init(c) {
+  // The hash was read once at boot, so a link to #s3/cloud/cost only worked on
+  // a cold load - pasting it into an open tab changed the URL and nothing else.
+  if (!window.__naasHashWired) {
+    window.__naasHashWired = true;
+    window.addEventListener('hashchange', () => {
+      const h = (location.hash || '').replace('#', '').split('/');
+      const p = {};
+      if (SCREENS[h[0]]) p.screen = h[0];
+      if (h[1] && D.LAYERS.find(l => l.id === h[1])) p.layer = h[1];
+      if (h[2] && TABS.includes(h[2])) p.tab = h[2];
+      if (Object.keys(p).length) c.setState(p);
+    });
+  }
   try { const h = localStorage.getItem('naas.headOpen'); if (h === 'false') c.setState({ headOpen: false }); } catch (e) {}
   try { const h = localStorage.getItem('naas.hero'); if (h) c.setState({ heroOpen: JSON.parse(h) }); } catch (e) {}
   window.__naasLoaded = window.__naasLoaded || Date.now();
@@ -248,7 +261,11 @@ export function vals(c) {
   const policies = [...layerPolicies(s, est, obScope), ...(s.layer === 'cloud' ? (s.customPolicies || []) : [])].map(p => ({ ...p, key: p.name, dot: p.state === 'enforced' ? 'var(--success)' : p.state === 'simulated' ? 'var(--warning)' : 'var(--text-disabled)', violColor: p.viol ? 'var(--error)' : 'var(--text-body)', matched: p.matched.toLocaleString('en-US'), viol: p.viol.toLocaleString('en-US') }));
   const pciViol = (est.findings.find(f => f.kind === 'pci') || {}).head;
   const governVerdict = isEmpty ? 'No policies yet. Three starting points below.' : `${est.policiesEnforced} policies enforced. ${pciViol || (est.policiesAuthored - est.policiesEnforced) + ' authored but not enforced.'}`;
-  const buckets = layerBuckets(s, est).map(b => ({ ...b, key: b.id, todayF: fmt(b.today), fabricF: fmt(b.fabric), savedF: b.today > b.fabric ? fmt(b.today - b.fabric) : 'On the fabric', saved: b.today - b.fabric, action: b.today > b.fabric ? 'Steer this bucket' : 'Already steered', canSteer: b.today > b.fabric, steer: () => steerBucket(c, b, est), arb: `${fmt(b.today)}/mo today on ${b.cloud} · ${fmt(b.fabric)}/mo on the fabric · save ${fmt(b.today - b.fabric)}/mo` }));
+  const buckets = layerBuckets(s, est).map(b => ({ ...b, key: b.id, todayF: fmt(b.today), fabricF: fmt(b.fabric),
+    explainGo: explainNav(c, { label: b.name || b.id, value: fmt(b.today) + '/mo',
+      sub: `${fmt(b.today)}/mo on the hyperscaler against ${fmt(b.fabric)}/mo on the fabric.`,
+      cut: 'The flow records in this bucket.',
+      pattern: /internet|saas/i.test(b.name || '') ? 'internet' : /cross-cloud|inter/i.test(b.name || '') ? 'clouds' : /gpu|inference/i.test(b.name || '') ? 'internet' : null, parts: [] }), savedF: b.today > b.fabric ? fmt(b.today - b.fabric) : 'On the fabric', saved: b.today - b.fabric, action: b.today > b.fabric ? 'Steer this bucket' : 'Already steered', canSteer: b.today > b.fabric, steer: () => steerBucket(c, b, est), arb: `${fmt(b.today)}/mo today on ${b.cloud} · ${fmt(b.fabric)}/mo on the fabric · save ${fmt(b.today - b.fabric)}/mo` }));
   const steerable = buckets.filter(b => b.canSteer);
   const bTotal = buckets.reduce((a, b) => a + b.today, 0), bFab = buckets.reduce((a, b) => a + b.fabric, 0);
   const costVerdict = isEmpty ? 'No egress seen yet.' : totalSave ? `${fmt(totalSave)}/mo on the table across ${est.findings.filter(f => f.priced).length} priced findings. ${fmt(ob.savingsMo)}/mo already saved on the fabric.` : steerable.length ? `${fmt(steerable.reduce((a, b) => a + b.today, 0))}/mo leaves through public egress that the fabric would carry for ${fmt(steerable.reduce((a, b) => a + b.fabric, 0))}.` : 'Every bucket is already on the fabric.';
@@ -408,7 +425,7 @@ export function vals(c) {
     hasSim: !!s.simulated || (s.customPolicies || []).some(p => p.state === 'simulated'),
     governVerdict, governFindings: deptFindings('govern'), policies, hasPolicies: policies.length > 0, examplePolicies0: [{ key: 'a', t: 'Tag PCI forces a private path', m: 'tag PCI', r: 'Private path required' }, { key: 'b', t: 'Tag Internet-facing gets NGFW plus AT&T egress', m: 'tag Internet-facing', r: 'Inline security inspection' }, { key: 'c', t: 'Branch Finance reaches only finance-tagged workloads', m: 'branch Finance', r: 'Segment intra-tag only' }], authorPolicy: go('s4', { compose: { ...cp, outcome: 'u1', control: ['Private path required'], source: ['Data center'], dest: ['Clouds'] } }), simulate: () => set({ simulated: true, enforced: false }), enforce: () => set({ enforced: true }), undo: () => set({ simulated: false, enforced: false }), simulated: s.simulated, enforced: s.enforced, canEnforce: s.simulated && !s.enforced, simulateText: s.enforced ? 'Enforced. Paths rerouted onto the fabric.' : s.simulated ? `Simulated: ${pciViol ? pciViol.split(' ')[0] : 0} paths reroute onto the fabric, 2 flows denied. Drawn dashed until enforced.` : 'Simulate shows what changes before enforce is enabled.', enforceBg: s.simulated && !s.enforced ? 'var(--cta)' : 'var(--bg-neutral)', enforceColor: s.simulated && !s.enforced ? '#fff' : 'var(--text-disabled)',
     kpis, hasKpis: kpis.length > 0, sankeyNodes, sankeyRibbons, sankeyW: sk ? sk.W : 900, sankeyH: sk ? sk.H : 260, sankeyVB: `0 0 ${sk ? sk.W : 900} ${sk ? sk.H : 260}`, flows, observeFindings: deptFindings('observe'), seeSavings: () => { set({ tab: 'cost' }); syncHash('s3', s.layer, 'cost'); }, observeVerdict: isEmpty ? 'No telemetry yet. It starts with the first attach.' : `${est.observedPct}% of paths send telemetry. ${flows.filter(f => f.deny).length} flows denied in the last minute by the vSRX pair.`, chipScope,
-    ...costVals(s, set, R.applyScope(est, obScope), ob, go),
+    ...costVals(s, set, R.applyScope(est, obScope), ob, go, c),
     costVerdict, buckets, steerRecs: steerable, costFindings: deptFindings('cost'), hasBuckets: buckets.length > 0, bTotalF: fmt(bTotal), bFabF: fmt(bFab), bSaveF: fmt(bTotal - bFab),
     // compose
     ...wizardVals(s, est, cp, setC, outcome, constraint, summary, set, c),
@@ -423,6 +440,30 @@ export function vals(c) {
     // discover
     allRegions: est.regionsList, scanSteps, scanLine: s.scanStep < 4 ? `${scanSteps[Math.min(3, s.scanStep)].label} · ${Math.min(4, s.scanStep + 1)} of 4` : '', scanDone: s.scanStep >= 4, scanning: s.scanStep < 4, discoverVerdict, discoverKpis, estateChips, treeOrMap: s.treeOrMap, isTree: s.treeOrMap === 'tree', isMap: s.treeOrMap === 'map', treeBg: s.treeOrMap === 'tree' ? 'var(--bg-accent)' : 'transparent', treeColor: s.treeOrMap === 'tree' ? 'var(--link)' : 'var(--text-body)', mapBg: s.treeOrMap === 'map' ? 'var(--bg-accent)' : 'transparent', mapColor: s.treeOrMap === 'map' ? 'var(--link)' : 'var(--text-body)', showTree: () => set({ treeOrMap: 'tree' }), showMap: () => set({ treeOrMap: 'map' }), tree, mapRows, mapSites, mapH, mapVB: `0 0 1000 ${mapH}`, bigEstate, sitesCountLabel: est.sitesCount ? `${est.sitesCount.toLocaleString('en-US')} sites, grouped` : `${est.sites.length} sites`, chain, chainPolicies, hasChain: !!ow, chainRegion: ow ? `${ow.cloud} ${ow.region}` : '', closeChain: () => set({ openWorkload: null }),
     ...addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0),
+  };
+}
+
+/**
+ * The explain contract, shared by every page.
+ *
+ * Ramesh: from an aggregate figure, cut further, all the way down to the
+ * individual logs. Any figure anywhere calls this with the cut that produced
+ * it; it lands on Observe's Logs, which names the figure, decomposes it one
+ * level, and shows only the records that carry it.
+ *
+ * `pattern` and `path` are the record's own fields, so the cut is exact and
+ * never an approximation of the number above it. A figure the records cannot
+ * answer passes no cut and says so in `cut` instead of pretending.
+ */
+function explainNav(c, ex) {
+  return () => {
+    c.setState({
+      screen: 's3', layer: 'cloud', tab: 'observe', obPage: 'perf', obTab: 'flow', logTab: 'flow',
+      explain: ex, logQ: '', logPath: 'all', logAct: 'all',
+      scrollToSec: 'sec-logs', scrollNonce: (c.state.scrollNonce || 0) + 1,
+      drill: [], cloudDrill: [], fabDrill: [],
+    });
+    syncHash('s3', 'cloud', 'observe');
   };
 }
 
@@ -1009,10 +1050,23 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const crossed = fabAll + pubAll;
   const firstMileRows = map.nodes.filter(n => n.side === 'l' && (n.group || '') === 'sites').map(n => ({
     key: 'fm-' + n.key, label: n.name, gbps: (n.tot || n.v).toFixed(1),
+    explainGo: explainNav(c, { label: n.name, value: (n.tot || n.v).toFixed(1) + ' Gbps',
+      sub: 'What this first mile carries into the fabric.', cut: 'Records that come in from sites.',
+      pattern: 'inbound', parts: [] }),
     share: Math.round((n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100) + '%',
     w: Math.max(3, (n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100).toFixed(2) + '%',
   }));
+  const fabParts = [
+    { label: 'AT&T fabric', value: fabAll.toFixed(1) + ' Gbps', share: Math.round(fabAll / (crossed || 1) * 100) + '%', w: Math.max(3, fabAll / (crossed || 1) * 100).toFixed(2) + '%' },
+    { label: 'Outside the fabric', value: pubAll.toFixed(1) + ' Gbps', share: Math.round(pubAll / (crossed || 1) * 100) + '%', w: Math.max(3, pubAll / (crossed || 1) * 100).toFixed(2) + '%' },
+  ];
   const mixVals = {
+    explainFabric: explainNav(c, { label: 'On the AT&T fabric', value: fabAll.toFixed(1) + ' Gbps',
+      sub: `${Math.round(fabAll / (crossed || 1) * 100)}% of everything that crosses a mid mile.`,
+      cut: 'Records that took a private path.', path: 'private', parts: fabParts }),
+    explainOutside: explainNav(c, { label: 'Outside the AT&T fabric', value: pubAll.toFixed(1) + ' Gbps',
+      sub: `${Math.round(pubAll / (crossed || 1) * 100)}% of everything that crosses a mid mile.`,
+      cut: 'Records that left on the public path.', path: 'public', parts: fabParts }),
     mixRows, hasMix: mixRows.length > 0,
     firstMileRows, hasFirstMile: firstMileRows.length > 0,
     fabBig: `${Math.round(fabAll / (crossed || 1) * 100)}%`,
@@ -1135,9 +1189,12 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     wl: { door: 'See where they run', act: () => { if (bigVpc) openWorkloads(bigVpc.region, bigVpc.vpcId, null); } },
     apps: { door: 'See what is running', act: () => { if (bigVpc) openWorkloads(bigVpc.region, bigVpc.vpcId, null); } },
     exp: { door: 'Isolate the exposed', act: () => { if (expVpc) { openWorkloads(expVpc.region, expVpc.vpcId, null); set({ volState: 'exposed' }); } } },
-    thr: { door: 'Open the busiest source' },
+    thr: { door: 'Explain the throughput', act: explainNav(c, { label: 'Throughput', value: (ob.total || 0).toFixed(1) + ' Gbps',
+      sub: 'Measured from the flow records in this window.', cut: 'Every record the estate carried.', parts: [] }) },
     p95: { door: 'Find the worst path' },
-    fab: { door: 'See what stays public' },
+    fab: { door: 'Explain what stays public', act: explainNav(c, { label: 'Not on the AT&T fabric', value: (100 - Math.round((ob.fab || 0) / (ob.total || 1) * 100)) + '%',
+      sub: 'The share of measured traffic that did not take a private path.',
+      cut: 'Records that left on the public path.', path: 'public', parts: [] }) },
     loss: { door: 'Find the worst path' },
     util: { door: 'Open the hottest connection' },
   };
@@ -1565,7 +1622,7 @@ function connectVals(s, set, est, go, ob) {
   return { lenses, lens, lensQ, lensVerdict: R.lensVerdict(est, lens), matrix, pathsSub, matrixHeads: R.LENSES.map(l => ({ key: l.id, label: l.label, hi: l.id === lens, color: l.id === lens ? 'var(--link)' : 'var(--text-light)' })), lensRegions, hasLensRegions: rs.length > 0, isCloudLayer: s.layer === 'cloud', notCloudLayer: s.layer !== 'cloud' };
 }
 function egressBaseFor(est, ob) { const bucketToday = (est.buckets || []).reduce((a, b) => a + b.today, 0); return bucketToday || ob.egressMo || 0; }
-function costVals(s, set, est, ob, go) {
+function costVals(s, set, est, ob, go, c) {
   const base = egressBaseFor(est, ob);
   const bT = (est.buckets || []).reduce((a, b) => a + b.today, 0), bF = (est.buckets || []).reduce((a, b) => a + b.fabric, 0);
   const targetSave = bT > bF ? bT - bF : 0;
@@ -1596,7 +1653,10 @@ function costVals(s, set, est, ob, go) {
   const wSum = siteCls.reduce((a, c) => a + c.w, 0) || 1;
   const siteRows = siteCls.map(c => { const today = Math.round(base * c.w / wSum); const fabPart = Math.round(today * c.onFabric / Math.max(1, c.count)); return { key: c.key, label: c.label, sub: `${c.count.toLocaleString('en-US')} ${c.count === 1 ? c.unit : c.plural} · ${c.onFabric.toLocaleString('en-US')} on the fabric`, today, fabPart, pubPart: today - fabPart }; }).sort((a, b) => b.today - a.today);
   const siteMax = Math.max(1, ...siteRows.map(r => r.today));
-  const bySite = siteRows.map(r => ({ ...r, todayF: fmt(r.today), wFab: Math.round(r.fabPart / siteMax * 100) + '%', wPub: Math.round(r.pubPart / siteMax * 100) + '%', doorLabel: r.pubPart > 0 ? 'Drill →' : 'Drill →', go: go('s1', { siteOpen: { [r.key]: true }, treeOrMap: 'tree' }) }));
+  const bySite = siteRows.map(r => ({ ...r, todayF: fmt(r.today), wFab: Math.round(r.fabPart / siteMax * 100) + '%', wPub: Math.round(r.pubPart / siteMax * 100) + '%', doorLabel: r.pubPart > 0 ? 'Drill →' : 'Drill →',
+    explainGo: explainNav(c, { label: r.label || r.key, value: fmt(r.today) + '/mo',
+      sub: 'What this first mile costs a month in egress.', cut: 'The records that come in from these sites.',
+      pattern: 'inbound', parts: [] }), go: go('s1', { siteOpen: { [r.key]: true }, treeOrMap: 'tree' }) }));
   const attNet = (ob.savingsMo || 0) - attTotal;
   const pubSite = siteRows.filter(r => r.pubPart > 0).sort((a, b) => b.pubPart - a.pubPart)[0];
   const top = arb[0];
@@ -1604,8 +1664,19 @@ function costVals(s, set, est, ob, go) {
   return { attCharges, hasAttCharges: attCharges.length > 0, attTotalF: fmt(attTotal), attNetF: (attNet >= 0 ? '+' : '−') + fmt(Math.abs(attNet)), attNetLabel: attNet >= 0 ? 'Net saving after charges' : 'Net cost after savings', attNetColor: attNet >= 0 ? 'var(--success)' : 'var(--warning)', attNote: `${fmt(attTotal)}/mo · carries ${fmt(ob.savingsMo || 0)}/mo of savings`, goMarketplace: go('s7'),
     costStrip: { has: !!(top || pubSite), title: 'Act on it', text: [pubSite ? `${fmt(pubSite.pubPart)}/mo of egress still leaves ${pubSite.label.toLowerCase()} on a public first mile.` : '', top ? `Attaching ${top.region} moves ${top.wl} workloads to $0.02/GB and saves ${fmt(top.saveN)}/mo, the largest single move on the table.` : 'Every region is attached; the remaining lever is the commit table below.'].filter(Boolean).join(' '), cta: top ? `Attach ${top.region}` : 'Drill sites', go: top ? go('s4', { compose: { outcome: 'u1', source: ['Data center'], dest: ['Clouds'], regionTab: 'US East', metros: ['Ashburn'], resiliency: 'Standard', control: ['Private path required'], step: 5, prefilled: true, prefillRegion: top.region, prefillWl: top.wl } }) : go('s1') },
     bySite, hasBySite: bySite.length > 0, bySiteTotalF: fmt(bySiteTotal), bySiteNote: `${fmt(siteRows.reduce((a, r) => a + r.pubPart, 0))}/mo still on a public first mile`, goSites: go('s1'),
-    arbitrage: arb.map(a => ({ ...a, fabW: Math.round(a.saveN / 0.07 * 0.02 / maxNow * 100) + '%', premW: Math.round(a.saveN / maxNow * 100) + '%', enter: () => set({ hoverNode: 'reg' + a.regionId }), leave: () => set({ hoverNode: null }), attach: go('s4', { compose: { outcome: 'u1', source: ['Data center'], dest: ['Clouds'], regionTab: 'US East', metros: ['Ashburn'], resiliency: 'Standard', control: ['Private path required'], step: 5, prefilled: true, prefillRegion: a.region, prefillWl: a.wl } }) })), hasArbitrage: arb.length > 0, arbTotal: fmt(arb.reduce((a, r) => a + r.saveN, 0)), arbTotalYr: fmt(arb.reduce((a, r) => a + r.saveN, 0) * 12),
-    destClasses: R.destClasses(ob, base, targetSave).map((d, i) => ({ ...d, op: [1, 0.75, 0.5, 0.3][i] || 0.3 })), forecast: fc, fcVB: `0 0 ${fc.W} ${fc.H}`, commitments: R.commitments(est, base).map(cm => ({ ...cm, short: /^Commit/.test(cm.verdict) ? 'Commit' : 'Stay metered' })), hasCommitments: R.commitments(est, base).length > 0 };
+    arbitrage: arb.map(a => ({ ...a, fabW: Math.round(a.saveN / 0.07 * 0.02 / maxNow * 100) + '%', premW: Math.round(a.saveN / maxNow * 100) + '%',
+      explainGo: explainNav(c, { label: `${a.cloud || ''} ${a.region || a.label || ''}`.trim() + ' — what it would save', value: a.saveF || fmt(a.saveN) + '/mo',
+        sub: 'The premium this region pays for leaving on the public path.',
+        cut: 'The records this region sent on the public path.', path: 'public', parts: [] }), enter: () => set({ hoverNode: 'reg' + a.regionId }), leave: () => set({ hoverNode: null }), attach: go('s4', { compose: { outcome: 'u1', source: ['Data center'], dest: ['Clouds'], regionTab: 'US East', metros: ['Ashburn'], resiliency: 'Standard', control: ['Private path required'], step: 5, prefilled: true, prefillRegion: a.region, prefillWl: a.wl } }) })), hasArbitrage: arb.length > 0, arbTotal: fmt(arb.reduce((a, r) => a + r.saveN, 0)), arbTotalYr: fmt(arb.reduce((a, r) => a + r.saveN, 0) * 12),
+    // Cost figures reach the same records. A dollar figure is bytes times a
+    // rate, so it explains through the flows that carried the bytes.
+    destClasses: R.destClasses(ob, base, targetSave).map((d, i) => ({ ...d, op: [1, 0.75, 0.5, 0.3][i] || 0.3,
+      explainGo: explainNav(c, { label: d.label, value: d.nowF || ('$' + (d.now || 0).toLocaleString('en-US') + '/mo'),
+        sub: `${d.gbF} GB a month at ${d.hyperF} on the hyperscaler against ${d.fabricF} on the fabric.`,
+        cut: 'The flow records that carried those bytes.',
+        pattern: { ai: 'internet', obj: 'regions', inet: 'internet', x: 'clouds' }[d.key], parts: [] }) })), forecast: fc, fcVB: `0 0 ${fc.W} ${fc.H}`, commitments: R.commitments(est, base).map(cm => ({ ...cm, short: /^Commit/.test(cm.verdict) ? 'Commit' : 'Stay metered',
+      explainGo: explainNav(c, { label: (cm.label || cm.region || 'On-ramp') + ' — metered volume', value: cm.gbF ? cm.gbF + ' GB/mo' : '',
+        sub: 'The bytes the metered bill is charging for.', cut: 'The records this region carried.', parts: [] }) })), hasCommitments: R.commitments(est, base).length > 0 };
 }
 function tagTree(inv, tree, chip) {
   const groups = {};
