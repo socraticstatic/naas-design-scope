@@ -63,7 +63,7 @@ export function edgePath(e) {
   return `M${e.x1},${e.y1} C${mx},${e.y1} ${mx},${e.y2} ${e.x2},${e.y2}`;
 }
 export function arcPath(a) {
-  return `M1160,${a.y1} C1215,${a.y1} 1215,${a.y2} 1160,${a.y2}`;
+  return `M1220,${a.y1} C1246,${a.y1} 1246,${a.y2} 1220,${a.y2}`;
 }
 
 const STATES = { East: ['Georgia', 'Florida', 'North Carolina', 'Virginia', 'New York', 'Pennsylvania', 'New Jersey', 'Massachusetts'], Central: ['Texas', 'Illinois', 'Ohio', 'Missouri', 'Minnesota', 'Michigan', 'Tennessee', 'Oklahoma'], West: ['California', 'Washington', 'Arizona', 'Colorado', 'Oregon', 'Nevada', 'Utah'] };

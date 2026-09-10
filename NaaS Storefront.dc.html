@@ -141,7 +141,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg-wash);color:var(--text-body);font-size:14px;line-height:20px">
 
 
-<header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:32px;height:{{ strataCardH }}px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
+<header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:32px;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
   <div style="position:relative">
     <!-- Stacked wordmark, as drawn on the AI Fabric UI main-header. The click still opens the layer elevator. -->
     <button onClick="{{ toggleElevator }}" aria-haspopup="menu" aria-expanded="{{ elevatorOpen }}" aria-label="AT&amp;T AI-grade network, layers" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:4px 8px;margin:0 -8px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;white-space:nowrap;line-height:1" style-focus="outline:2px solid var(--border-active);outline-offset:1px"><span style="font-size:10px;line-height:12px;font-weight:700;letter-spacing:.02em;color:#009fdb">AT&amp;T</span><span style="display:flex;align-items:center;gap:6px;font-size:22px;line-height:24px;letter-spacing:-.03em;color:var(--text-heading)"><span><span style="font-weight:500">AI-grade </span><span style="font-weight:700">network</span></span><span aria-hidden="true" style="display:inline-block;font-size:12px;color:var(--text-light);font-weight:400;transform:{{ chevronRot }};transition:transform .15s">⌄</span></span></button>
@@ -287,13 +287,13 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div style="position:relative;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;padding:10px 24px 12px;display:flex;align-items:stretch;min-height:{{ heroMinH }}">
 
 <div style="display:grid;gap:8px;width:100%;min-width:0">
-<svg viewBox="{{ heroVB }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Fabric picture" style="{{ heroSvgStyle }}">
+<svg viewBox="{{ heroVB }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Fabric picture" onMouseLeave="{{ clearHover }}" style="{{ heroSvgStyle }}">
   <defs>
     <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e2a4d"></stop><stop offset="1" stop-color="#00235a"></stop></linearGradient>
   </defs>
-  <foreignObject x="24" y="0" width="460" height="18"><button onClick="{{ sitesUp }}" title="Up one level" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ sitesHeadColor }};font-size:13px;line-height:18px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit">{{ sitesHead }}</button></foreignObject>
-  <foreignObject x="980" y="0" width="{{ cloudsHeadW }}" height="18"><button onClick="{{ cloudsUp }}" title="{{ cloudsHead }}" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ cloudsHeadColor }};font-size:{{ cloudsHeadSize }};line-height:18px;letter-spacing:{{ cloudsHeadTrack }};text-transform:{{ cloudsHeadCase }};font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit">{{ cloudsHead }}</button></foreignObject>
-  <sc-if value="{{ showWorkloadsHead }}" hint-placeholder-val="{{ true }}"><text x="1230" y="14" style="fill:var(--text-disabled);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:500">Workloads</text></sc-if>
+  <foreignObject x="24" y="0" width="460" height="18"><button onClick="{{ sitesUp }}" title="Up one level" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ sitesHeadColor }};font-size:11px;line-height:18px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit">{{ sitesHead }}</button></foreignObject>
+  <foreignObject x="980" y="0" width="{{ cloudsHeadW }}" height="18"><button onClick="{{ cloudsUp }}" title="{{ cloudsHead }}" style="display:block;width:100%;border:0;background:transparent;padding:0;margin:0;text-align:left;color:{{ cloudsHeadColor }};font-size:{{ cloudsHeadSize }};line-height:18px;letter-spacing:{{ cloudsHeadTrack }};text-transform:{{ cloudsHeadCase }};font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit">{{ cloudsHead }}</button></foreignObject>
+  <sc-if value="{{ showWorkloadsHead }}" hint-placeholder-val="{{ true }}"><foreignObject x="1252" y="0" width="136" height="18"><div style="color:var(--text-light);font-size:11px;line-height:18px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;white-space:nowrap">Workloads</div></foreignObject></sc-if>
 
   <sc-for list="{{ heroEdges }}" as="e" hint-placeholder-count="6">
     <g opacity="{{ e.op }}" style="transition:opacity .2s">
@@ -330,16 +330,16 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <!-- band -->
   <g>
     <rect x="{{ bandX }}" y="{{ bandY }}" width="{{ bandW }}" height="{{ bandH }}" rx="16" fill="{{ bandFill }}" style="stroke:var(--band-stroke);animation:bandBreathe 2.4s ease-out 1"></rect>
-    <foreignObject x="{{ bandLabelX }}" y="0" width="{{ bandW }}" height="18"><button onClick="{{ toggleBand }}" aria-label="Expand the fabric band" style="display:block;width:100%;border:0;background:transparent;padding:0;color:var(--link);font-size:13px;line-height:18px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;text-align:center;cursor:pointer;white-space:nowrap">{{ bandLabel }}</button></foreignObject>
+    <foreignObject x="{{ bandLabelX }}" y="0" width="{{ bandW }}" height="18"><button onClick="{{ toggleBand }}" aria-label="Expand the fabric band" style="display:block;width:100%;border:0;background:transparent;padding:0;color:var(--link);font-size:11px;line-height:18px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;text-align:center;cursor:pointer;white-space:nowrap">{{ bandLabel }}</button></foreignObject>
     <sc-if value="{{ fabClosed }}" hint-placeholder-val="{{ true }}">
     <sc-for list="{{ strata }}" as="s" hint-placeholder-count="4">
       <g onClick="{{ s.open }}" role="button" aria-label="{{ s.label }}" opacity="{{ s.op }}" style="cursor:pointer;transition:opacity .2s"><title>Open the fabric: facilities, ports, circuits</title>
         <rect x="572" y="{{ s.ry }}" width="216" height="{{ strataCardH }}" rx="8" fill="{{ s.fill }}" style="stroke:var(--border-secondary)"></rect>
         <foreignObject x="572" y="{{ s.ry }}" width="216" height="{{ strataCardH }}" style="pointer-events:none">
-          <div style="box-sizing:border-box;height:{{ strataCardH }}px;padding:5px 14px;display:grid;grid-template-rows:18px 14px 1fr;gap:1px;align-items:start">
+          <div style="box-sizing:border-box;height:{{ strataCardH }}px;padding:10px 14px;display:grid;grid-template-rows:auto auto auto;gap:6px;align-content:center">
             <div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:{{ s.labelColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><sc-if value="{{ s.iconSrc }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display:inline-block;width:18px;height:18px;flex:none;background:url('{{ s.iconSrc }}') center / contain no-repeat"></span></sc-if>{{ s.label }}</div>
             <div style="font-size:11px;line-height:14px;color:{{ s.subColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.short }}</div>
-            <div style="display:flex;justify-content:space-between;align-items:end;align-self:end;height:20px"><span style="font-size:12px;line-height:20px;color:{{ s.subColor }}">{{ s.live }}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;height:20px"><span style="font-size:12px;line-height:20px;color:{{ s.subColor }}">{{ s.live }}</span>
               <sc-if value="{{ s.hasFindings }}" hint-placeholder-val="{{ false }}"><span style="height:20px;padding:0 8px;border-radius:9999px;background:var(--warning);color:#fff;font-size:12px;line-height:20px;font-weight:500;white-space:nowrap">{{ s.fcount }}</span></sc-if>
             </div>
           </div>
@@ -390,7 +390,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <sc-for list="{{ heroSites }}" as="s" hint-placeholder-count="5">
     <g onClick="{{ s.click }}" onMouseEnter="{{ s.enter }}" onMouseLeave="{{ s.leave }}" opacity="{{ s.op }}" style="cursor:{{ s.cursor }};transition:opacity .2s">
       <rect x="24" y="{{ s.y }}" width="200" height="36" rx="8" style="fill:var(--bg-base);stroke:var(--border-primary)" stroke-dasharray="{{ s.dash }}"></rect>
-      <foreignObject x="24" y="{{ s.y }}" width="200" height="36" style="pointer-events:none"><div style="padding:4px 76px 4px 12px;font-size:13px;line-height:15px;font-weight:500;color:{{ s.color }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative">{{ s.name }}<div style="font-size:13px;line-height:13px;font-weight:400;color:var(--text-light)">{{ s.access }}</div><span style="position:absolute;right:8px;top:9px;display:inline-flex;align-items:center;gap:4px;font-size:14px;line-height:16px;font-weight:700;color:var(--link)"><sc-if value="{{ s.hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ s.act }}" style="pointer-events:auto;border:0;background:var(--cta);color:#fff;border-radius:9999px;height:18px;padding:0 7px;font:inherit;font-size:10px;font-weight:700;cursor:pointer;line-height:18px">{{ s.action }}</button></sc-if>{{ s.caret }}</span></div></foreignObject>
+      <foreignObject x="24" y="{{ s.y }}" width="200" height="36" style="pointer-events:none"><div style="padding:4px 12px;font-size:13px;line-height:15px;font-weight:500;color:{{ s.color }};white-space:nowrap;position:relative"><span style="display:block;width:{{ s.textW }};overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span><div style="width:{{ s.textW }};font-size:13px;line-height:13px;font-weight:400;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.access }}</div><span style="position:absolute;right:8px;top:9px;display:inline-flex;align-items:center;gap:4px;font-size:14px;line-height:16px;font-weight:700;color:var(--link)"><sc-if value="{{ s.hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ s.act }}" style="pointer-events:auto;border:0;background:var(--cta);color:#fff;border-radius:9999px;height:18px;padding:0 7px;font:inherit;font-size:10px;font-weight:700;cursor:pointer;line-height:18px">{{ s.action }}</button></sc-if>{{ s.caret }}</span></div></foreignObject>
     </g>
   </sc-for>
 
@@ -414,8 +414,8 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <sc-for list="{{ heroWorkloads }}" as="w" hint-placeholder-count="0">
     <g opacity="{{ w.op }}" onClick="{{ w.click }}" style="transition:opacity .2s;cursor:{{ w.cursor }}"><title>Open this region</title>
       <line x1="1180" y1="{{ w.ly }}" x2="1230" y2="{{ w.ly }}" style="stroke:var(--border-primary)"></line>
-      <rect x="1230" y="{{ w.y }}" width="150" height="22" rx="11" style="fill:var(--bg-accent)"></rect>
-      <foreignObject x="1230" y="{{ w.y }}" width="150" height="22" style="pointer-events:none"><div style="font-size:13px;line-height:22px;font-weight:500;color:var(--link);text-align:center">{{ w.n }}</div></foreignObject>
+      <rect x="1252" y="{{ w.y }}" width="136" height="22" rx="11" style="fill:var(--bg-accent)"></rect>
+      <foreignObject x="1252" y="{{ w.y }}" width="136" height="22" style="pointer-events:none"><div style="font-size:13px;line-height:22px;font-weight:500;color:var(--link);text-align:center">{{ w.n }}</div></foreignObject>
     </g>
   </sc-for>
 </svg>
@@ -427,9 +427,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </div>
 </sc-if>
 </div>
-<sc-if value="{{ hasPerf }}" hint-placeholder-val="{{ false }}">
-  <div role="tooltip" style="position:absolute;left:{{ perfCard.left }};top:{{ perfCard.top }};max-width:210px;padding:6px 10px;background:var(--text-heading);color:var(--bg-base);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;font-size:11px;line-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="font-weight:700">{{ perfCard.region }}</span> · {{ perfCard.msLine }}</div>
-</sc-if>
+
 <sc-if value="{{ regionDrilled }}" hint-placeholder-val="{{ false }}">
   <button onClick="{{ clearRegionDrill }}" style="position:absolute;right:16px;bottom:12px;height:28px;padding:0 12px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);color:var(--link);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">Roll workloads back up</button>
 </sc-if>
