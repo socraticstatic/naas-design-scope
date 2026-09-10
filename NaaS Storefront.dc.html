@@ -422,12 +422,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 </sc-if>
 </div>
 <sc-if value="{{ hasPerf }}" hint-placeholder-val="{{ false }}">
-  <div role="tooltip" style="position:absolute;left:{{ perfCard.left }};top:{{ perfCard.top }};width:220px;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);pointer-events:none">
-    <div style="font-weight:700;color:var(--text-heading)">{{ perfCard.region }}</div>
-    <div style="font-size:14px;color:var(--text-body)">{{ perfCard.pub }} · {{ perfCard.fab }}</div>
-    <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text-light)"><span style="width:8px;height:8px;border-radius:9999px;background:{{ perfCard.relFill }}"></span>{{ perfCard.rel }}</div>
-    <div style="font-size:14px;color:var(--link);font-weight:500;margin-top:4px">Open Observe</div>
-  </div>
+  <div role="tooltip" style="position:absolute;left:{{ perfCard.left }};top:{{ perfCard.top }};max-width:210px;padding:6px 10px;background:var(--text-heading);color:var(--bg-base);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;font-size:11px;line-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="font-weight:700">{{ perfCard.region }}</span> · {{ perfCard.msLine }}</div>
 </sc-if>
 <sc-if value="{{ regionDrilled }}" hint-placeholder-val="{{ false }}">
   <button onClick="{{ clearRegionDrill }}" style="position:absolute;right:16px;bottom:12px;height:28px;padding:0 12px;border:1px solid var(--border-secondary);border-radius:9999px;background:var(--bg-base);color:var(--link);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">Roll workloads back up</button>
@@ -1773,17 +1768,31 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { screen: 's2', view: 'mature', estateParam: null, mode: 'foryou', theme: 'light', layer: 'cloud', tab: 'connect', steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', aiTab: 'perf', aiMetric: 'tokens', breakdownOpen: false, events: [], drill: [], regionDrill: null, hoverRegion: null, hoverNode: null, bandOpen: false, picked: [], scanStep: 0, treeOrMap: 'tree', openWorkload: null, treeOpen: {}, chips: [], compose: { outcome: null, source: [], dest: [], regionTab: 'US East', metros: [], resiliency: 'Standard', control: [] }, freeText: '', order: null, submitted: false, pendingDismissed: false, browseQuery: '', browseCat: null, browseSort: 'popular', filtersOpen: false, filterProviders: [], priceCeil: 0, product: null, simulated: false, enforced: false, whyOpen: null, levelSort: 'largest', levelQuery: '', intakeOrg: '', intakeSource: 'credential', intakeProvider: 'AWS', approver: 'j.martinez@meridianlogistics.com', term: 36 }; }
   componentDidMount() { import('./naas-app.js').then(m => { this.app = m; m.init(this); this.forceUpdate(); }).catch(e => console.error(e)); this._rs = () => this.forceUpdate(); window.addEventListener('resize', this._rs);
+    // Dismiss-on-outside-click, without eating the click that opens one.
+    //
+    // Two earlier attempts failed. On pointerdown in the capture phase it
+    // fired before the row's own handler, re-rendering the tree so the click
+    // landed on nothing. Comparing state across a setTimeout(0) raced
+    // React's commit: the snapshot still read "closed", so the dismissal
+    // closed the very surface the click had just opened.
+    //
+    // The rule that cannot race: a click on a CONTROL never dismisses, a
+    // click on background does. Controls are what open, close and navigate;
+    // background is the page itself.
     this._away = (e) => {
       const s = this.state;
       if (!s.drawerOpen && !s.queueOpen && !s.mapSel) return;
-      if (e.target.closest('[aria-label="Volume"],[aria-label="Queue"],[aria-label="Detail"]')) return;
+      const t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest('[aria-label="Volume"],[aria-label="Queue"],[aria-label="Detail"]')) return;
+      if (t.closest('button,a,input,select,textarea,label,[role="button"],[role="tab"],[role="option"],svg')) return;
       this.setState({ drawerOpen: false, vol: null, volSel: [], volPin: null, queueOpen: false, mapSel: null });
     };
     this._esc = (e) => { if (e.key === 'Escape') this.setState({ drawerOpen: false, vol: null, queueOpen: false, mapSel: null }); };
-    document.addEventListener('pointerdown', this._away, true);
+    document.addEventListener('click', this._away);
     document.addEventListener('keydown', this._esc);
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._rs); document.removeEventListener('pointerdown', this._away, true); document.removeEventListener('keydown', this._esc); }
+  componentWillUnmount() { window.removeEventListener('resize', this._rs); document.removeEventListener('click', this._away); document.removeEventListener('keydown', this._esc); }
   componentWillUnmount() { window.removeEventListener('resize', this._rs); }
   renderVals() {
     if (!this.app) return { theme: this.state.theme, sS0: true, heroVisible: true, heroCols: '300px 1fr', heroMinH: '0', heroSvgStyle: { display: 'block', width: '100%' } };
