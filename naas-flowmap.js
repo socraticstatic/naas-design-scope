@@ -57,14 +57,14 @@ export function childrenOf(node, est, inv, flows) {
     });
     const per = PER_SITE[S.classOf(mine[0])] || 0.5;
     return Object.values(byMetro).map(g => g.only && g.count === 1
-      ? { kind: 'sitename', key: `${node.key}/${g.only.name}`, cls: node.cls, siteName: g.only.name, name: g.only.name, sub: g.only.access, v: per, fabV: g.only.priv ? per : per * 0.1, hasChildren: true, state: g.only.priv ? 'ok' : 'slo', parentKey: node.key }
+      ? { kind: 'sitename', key: `${node.key}/${g.only.name}`, cls: node.cls, siteName: g.only.name, name: g.only.name, sub: g.only.access, v: per, fabV: g.only.priv ? per : per * 0.1, hasChildren: false, state: g.only.priv ? 'ok' : 'slo', parentKey: node.key }
       : { kind: 'metro', key: `${node.key}/${g.metro}`, cls: node.cls, metro: g.metro, name: `${g.metro} · ${n(g.count)}`, v: per * g.count, fabV: per * g.onFabric, hasChildren: true, state: g.onFabric < g.count / 2 ? 'slo' : 'ok', parentKey: node.key }
     ).sort((a, b) => b.v - a.v);
   }
   if (node.kind === 'metro') {
     const cls = S.siteTree(est).find(c => c.cls === node.cls); const m = cls && cls.children.find(ch => ch.kind === 'metro' && ch.name === node.metro); if (!m) return [];
     const per = PER_SITE[node.cls] || 0.5;
-    const rows = m.sites.map(x => ({ kind: 'sitename', key: `${node.key}/${x.id}`, cls: node.cls, siteName: x.id, name: x.id, sub: x.address, v: per, fabV: x.priv ? per : per * 0.1, hasChildren: true, state: x.priv ? 'ok' : 'slo', parentKey: node.key }));
+    const rows = m.sites.map(x => ({ kind: 'sitename', key: `${node.key}/${x.id}`, cls: node.cls, siteName: x.id, name: x.id, sub: x.address, v: per, fabV: x.priv ? per : per * 0.1, hasChildren: false, state: x.priv ? 'ok' : 'slo', parentKey: node.key }));
     if (m.more) rows.push({ kind: 'more', key: `${node.key}/more`, name: `+${n(m.more)} more`, v: per * m.more, fabV: per * Math.max(0, m.onFabric - m.sites.filter(x => x.priv).length), hasChildren: false, state: 'ok', parentKey: node.key });
     return rows;
   }
@@ -109,11 +109,19 @@ export function childrenOf(node, est, inv, flows) {
 /** Replace every open node by its children, recursively. */
 function expand(list, open, est, inv, flows, depth = 0) {
   // Below the roots, an open node's siblings fold into one row so the map's height stays bounded at volume (Micah, 16:23).
+  const CAP = 6;
   const openHere = depth > 0 ? list.filter(nd => open.has(nd.key) && nd.hasChildren) : [];
-  const fold = openHere.length ? list.filter(nd => !open.has(nd.key)) : [];
-  const keep = openHere.length ? list.filter(nd => open.has(nd.key)) : list;
+  let fold = openHere.length ? list.filter(nd => !open.has(nd.key)) : [];
+  let keep = openHere.length ? list.filter(nd => open.has(nd.key)) : list;
+  // Nothing open at this level: keep the largest few and fold the tail, so a
+  // level with thirty rows is readable before you have touched anything.
+  if (!openHere.length && keep.length > CAP) {
+    const ranked = keep.slice().sort((a, b) => b.v - a.v);
+    keep = ranked.slice(0, CAP);
+    fold = ranked.slice(CAP);
+  }
   const out = keep.flatMap(nd => { const node = { ...nd, depth, group: nd.group || rootGroup(nd) }; if (open.has(node.key) && node.hasChildren) { const kids = childrenOf(node, est, inv, flows).map(k => ({ ...k, group: node.group })); return kids.length ? expand(kids, open, est, inv, flows, depth + 1) : [node]; } return [node]; });
-  if (fold.length) { const first = openHere[0]; const kindWord = { metro: 'metros', sitename: 'sites', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', endpoint: 'endpoints' }[fold[0].kind] || 'others'; out.push({ kind: 'rollup', key: `${(fold[0].parentKey || first.key.split('/')[0])}/rollup`, name: `+${fold.length} other ${kindWord}`, sub: 'click to fold back', v: fold.reduce((a, x) => a + x.v, 0), fabV: fold.reduce((a, x) => a + x.fabV, 0), hasChildren: false, state: 'ok', depth, group: fold[0].group || rootGroup(fold[0]), parentKey: fold[0].parentKey, foldsKey: first.key }); }
+  if (fold.length) { const first = openHere[0] || keep[0] || fold[0]; const kindWord = { metro: 'metros', sitename: 'sites', site: 'first miles', tag: 'workload tags', c2c: 'cloud pairs', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', workload: 'workloads', endpoint: 'endpoints', dest: 'destinations' }[fold[0].kind] || ''; out.push({ kind: 'rollup', key: `${(fold[0].parentKey || (first && first.key ? first.key.split('/')[0] : 'lvl' + depth))}/rollup`, name: kindWord ? `+${fold.length} other ${kindWord}` : `+${fold.length} others`, sub: 'click to fold back', v: fold.reduce((a, x) => a + x.v, 0), fabV: fold.reduce((a, x) => a + x.fabV, 0), hasChildren: false, state: 'ok', depth, group: fold[0].group || rootGroup(fold[0]), parentKey: fold[0].parentKey, foldsKey: first && first.key ? first.key : null, tailOnly: !openHere.length }); }
   return out;
 }
 
@@ -129,7 +137,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const Ls = L.map(scale).map(x => x.group === 'tags' || (!x.group && rootGroup(x) === 'tags') ? { ...x, locV: x.v * LOCAL } : { ...x, locV: 0 });
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
-  const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 380;
+  const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
   const groups = [['sites', 'Sites · first mile'], ['tags', 'Cloud workloads by tag'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
