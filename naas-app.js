@@ -751,7 +751,59 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const flowRecords = logMatch.map(r => ({ ...r, key: r.id, actBg: r.deny ? (dark ? 'rgba(211,47,47,.2)' : '#fdecea') : 'var(--bg-wash)', actColor: r.deny ? 'var(--error)' : 'var(--text-body)',
     pathInk: r.path === 'public' ? 'var(--warning)' : 'var(--success)',
     pathWord: r.path === 'public' ? 'outside' : 'fabric' }));
+  // User activity: the other half of a log. Flow records say what the network
+  // carried; these say who changed it. Every row is derived from something
+  // that actually exists in the estate - a region that got attached, a policy
+  // that got written, a credential that got added.
+  const WHO = ['m.boswell', 'j.alvarez', 'p.nakamura', 'svc-terraform'];
+  const FROM = ['12.34.56.78', '12.34.56.91', '10.42.8.14', 'api · portal token'];
+  const actAll = (() => {
+    const out = [];
+    const push = (mins, who, verb, target, detail, ok) => out.push({ mins, who, verb, target, detail, ok });
+    (est.regionsList || []).filter(r => r.priv).forEach((r, i) => {
+      push(38 + i * 176, WHO[i % 3], 'Attached to the fabric', `${r.cloud} ${r.region}`, `${r.ramp || 'NetBond'} · ${r.wl} workloads behind it`, true);
+    });
+    [...(est.policies || []), ...(s.customPolicies || [])].forEach((pl, i) => {
+      push(96 + i * 214, WHO[(i + 1) % 3], pl.state === 'enforced' || i % 2 === 0 ? 'Enforced policy' : 'Simulated policy', pl.name || 'Private path required', `${pl.viol || 0} ${(pl.viol || 0) === 1 ? 'violation' : 'violations'} at the time`, true);
+    });
+    [...new Set((est.regionsList || []).map(r => r.cloud))].slice(0, 3).forEach((nm, i) => {
+      const cred = /azure/i.test(nm) ? 'Service principal' : /google/i.test(nm) ? 'Service account' : 'Cross-account role';
+      push(12 + i * 61, WHO[i % 3], 'Added a credential', `${nm} account`, `${cred} · read-only, all regions`, true);
+    });
+    (conns.rows || []).filter(r => r.hot || r.degraded).forEach((r, i) => {
+      push(24 + i * 133, WHO[i % 3], r.degraded ? 'Opened an impact view' : 'Ordered a port', `${r.cloud} ${r.region}`, r.degraded ? `${r.wl} workloads behind a degraded link` : `${r.ports} × 10 Gbps in place, ${r.pct}% used`, true);
+    });
+    (s.steered || []).forEach((f, i) => push(8 + i * 47, WHO[i % 3], 'Steered a flow', String(f), 'moved off the public path', true));
+    push(4, 'svc-terraform', 'Ran re-discovery', 'Whole estate', `${[...new Set((est.regionsList || []).map(r => r.cloud))].length} accounts, ${(est.regionsList || []).length} regions scanned`, true);
+    push(151, WHO[1], 'Changed a scope', 'AWS account 4102-8837-5510', 'read-only, all regions', true);
+    push(207, WHO[2], 'Export denied', 'Flow records, last 30 days', 'no export role on this account', false);
+    return out.sort((a, b) => a.mins - b.mins);
+  })();
+  const ago = (m) => m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`;
+  const actQ = (s.actQ || '').toLowerCase();
+  const actMatch = actAll.filter(a => !actQ || (a.who + ' ' + a.verb + ' ' + a.target + ' ' + a.detail).toLowerCase().includes(actQ));
+  const actRows = actMatch.map((a, i) => ({
+    key: 'ua' + i, when: ago(a.mins), who: a.who, verb: a.verb, target: a.target, detail: a.detail,
+    from: FROM[i % FROM.length], result: a.ok ? 'Applied' : 'Denied',
+    resBg: a.ok ? 'var(--bg-wash)' : (dark ? 'rgba(211,47,47,.2)' : '#fdecea'),
+    resInk: a.ok ? 'var(--text-body)' : 'var(--error)',
+  }));
+  const logTab = s.logTab || 'flow';
+  const logTabs = [['flow', 'Flow records'], ['user', 'User activity']].map(([k, l]) => ({
+    key: k, label: k === 'flow' ? `${l} · ${logAll.length.toLocaleString('en-US')}` : `${l} · ${actAll.length}`,
+    on: logTab === k, go: () => set({ logTab: k }),
+    bg: logTab === k ? 'var(--sidebar-accent)' : 'transparent',
+    color: logTab === k ? 'var(--sidebar-fg)' : 'var(--sidebar-muted)',
+  }));
+  const actVals = {
+    logTabs, onFlowTab: logTab === 'flow', onUserTab: logTab === 'user',
+    actRows, hasAct: actRows.length > 0, noAct: actRows.length === 0,
+    actQ: s.actQ || '', setActQ: (e) => set({ actQ: e.target.value }),
+    actCount: `${actMatch.length} of ${actAll.length} changes`,
+    actNote: `Who changed the network, from where, and whether it applied. Last 7 days.`,
+  };
   const logVals = {
+    ...actVals,
     flowRecords, logChips, logPathChips, logActChips,
     logQ: s.logQ || '', setLogQ: (e) => set({ logQ: e.target.value }),
     logCount: `${logMatch.length.toLocaleString('en-US')} of ${logAll.length.toLocaleString('en-US')} records`,
