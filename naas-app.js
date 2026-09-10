@@ -1473,6 +1473,7 @@ function shellVals(s, set, go, est, c) {
   // open, and takes it again when the surface closes.
   const surfaceOpen = !!(s.drawerOpen || s.queueOpen || s.mapSel);
   const railCollapsed = surfaceOpen ? true : (s.railCollapsed === undefined ? (andiDocked && !wideRail) : !!s.railCollapsed);
+  const railBtnPad = railCollapsed ? '4px 0' : '4px 8px';
   const pillBg = (on) => on ? 'var(--bg-accent)' : 'transparent';
   const pills = [
     { key: 'net', label: 'NaaS', current: true, off: false, go: est.stage === 'empty' ? goTab('s0', { layer: 'cloud' }) : goTab('s3', { layer: 'cloud', tab: 'connect' }) },
@@ -1482,7 +1483,7 @@ function shellVals(s, set, go, est, c) {
   // later: not in the first cut Ramesh asked for (2026-09-09); still reachable, drawn at 40 percent.
   // `sub` is the stage's job in the customer's words, drawn under the label.
   // A four-word loop only teaches itself if each word says what it is for.
-  const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: iconDir + '/' + ic + '.svg', bg: cur ? 'var(--sidebar-accent)' : 'transparent', color: cur ? 'var(--sidebar-fg)' : 'var(--sidebar-muted)', radius: cur ? '8px' : '4px', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
+  const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, pad: railBtnPad, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: iconDir + '/' + ic + '.svg', bg: cur ? 'var(--sidebar-accent)' : 'transparent', color: cur ? 'var(--sidebar-fg)' : 'var(--sidebar-muted)', radius: cur ? '8px' : '4px', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
   const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
   const composeCur = ['s4', 's5', 's6'].includes(s.screen);
   /**
@@ -1539,7 +1540,8 @@ function shellVals(s, set, go, est, c) {
         const row = (tab, id, label, ic) => {
           const isNav = id.startsWith('@');
           const cur = isNav ? s.screen === 's1' : (onS3('cloud', tab) && activeSec === id);
-          return item(label, ic, isNav ? go('s1') : () => { go('s3', { layer: 'cloud', tab })(); set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }); }, cur);
+          // A section sits one step in from the category that owns it.
+          return { ...item(label, ic, isNav ? go('s1') : () => { go('s3', { layer: 'cloud', tab })(); set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }); }, cur), pad: railCollapsed ? '4px 0' : '4px 8px 4px 24px' };
         };
         const goTabRow = (tab) => tab === 'observe'
           ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }
@@ -1557,7 +1559,8 @@ function shellVals(s, set, go, est, c) {
             const here = onS3('cloud', tab) || (tab === 'connect' && (s.screen === 's0' || s.screen === 's1' || s.screen === 's2'));
             return {
               key: tab, hasTitle: true, title, titleGo: () => { goTabRow(tab)(); set(close); }, titleCur: here,
-              items: here ? (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) : [],
+              // Every category shows its sections all the time. The rail scrolls.
+              items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)),
             };
           }),
         ];
@@ -1584,7 +1587,7 @@ function shellVals(s, set, go, est, c) {
     pills, railGroups, subNav, hasSubNav, pageTitle, credsLabel, credsTitle, manageCreds, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s3', { layer: 'cloud', tab: 'connect' }),
-    showRail, showHeader, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railPad: railCollapsed ? '16px 12px' : '16px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '4px 0' : '4px 8px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (showRail ? (railCollapsed ? '64px ' : '240px ') : '') + 'minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), shellPadRight: '0px', andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
+    showRail, showHeader, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railPad: railCollapsed ? '16px 12px' : '16px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad, railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (showRail ? (railCollapsed ? '64px ' : '240px ') : '') + 'minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), shellPadRight: '0px', andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
   };
 }
 
