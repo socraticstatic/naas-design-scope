@@ -1187,15 +1187,15 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <div class="fx-card-head" style="align-items:flex-start"><div style="min-width:0"><h3 class="fx-card-title">Insights</h3><div class="fx-card-sub">{{ insightSub }}</div></div><span style="flex:none;font-size:12px;color:var(--text-light);white-space:nowrap">{{ insightCount }}</span></div>
   <div class="fx-chips" style="gap:6px"><sc-for list="{{ insightFilters }}" as="if" hint-placeholder-count="3"><button class="fx-chip" aria-pressed="{{ if.on }}" onClick="{{ if.go }}" style="cursor:pointer;background:{{ if.bg }};color:{{ if.color }};border-color:{{ if.border }}">{{ if.label }}</button></sc-for></div>
   <sc-if value="{{ hasInsights }}" hint-placeholder-val="{{ true }}">
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:stretch">
     <sc-for list="{{ insightRows }}" as="ins" hint-placeholder-count="6">
-      <div style="display:grid;gap:6px;align-content:start;padding:14px 16px;border:1px solid var(--border-secondary);border-left:3px solid {{ ins.tone }};border-radius:12px;background:{{ ins.toneBg }};min-width:0">
-        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:{{ ins.tone }};white-space:nowrap">{{ ins.kind }}</span><span style="font-size:11px;color:var(--text-disabled);white-space:nowrap">{{ ins.when }}</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;height:100%;box-sizing:border-box;padding:14px 16px;border:1px solid var(--border-secondary);border-left:3px solid {{ ins.tone }};border-radius:12px;background:{{ ins.toneBg }};min-width:0">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--text-disabled);white-space:nowrap">{{ ins.kind }}</span><span style="font-size:11px;color:var(--text-disabled);white-space:nowrap">{{ ins.when }}</span></div>
         <div style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading);text-wrap:pretty">{{ ins.head }}</div>
         <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty">{{ ins.why }}</div>
         <sc-if value="{{ ins.hasDid }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty"><b style="font-weight:700">AT&amp;T did</b> · {{ ins.did }}</div></sc-if>
         <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty"><b style="font-weight:700;color:var(--success)">Do</b> · {{ ins.act }}</div>
-        <button onClick="{{ ins.go }}" style="justify-self:start;margin-top:2px;height:28px;padding:0 14px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">{{ ins.cta }}</button>
+        <button onClick="{{ ins.go }}" style="align-self:flex-start;margin-top:auto;padding-top:0;height:28px;padding:0 14px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">{{ ins.cta }}</button>
       </div>
     </sc-for>
   </div>
