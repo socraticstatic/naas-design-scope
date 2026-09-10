@@ -961,6 +961,44 @@ function shellVals(s, set, go, est, c) {
   const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
   const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
   const composeCur = ['s4', 's5', 's6'].includes(s.screen);
+  /**
+   * The sections of the page you are on, as sub-items under the stage.
+   *
+   * Everything below the picture was invisible: nothing on screen said the
+   * page continued, so the tradeoff table, the sources and the products were
+   * only ever found by accident. The rail lists them, clicking one glides
+   * there, and each section carries the same words as its nav item — so the
+   * name you clicked is the name you land on.
+   */
+  const SECTIONS = {
+    connect: [
+      ['sec-fabric', 'The fabric'],
+      ['sec-accounts', 'Your accounts'],
+      ['sec-paths', 'Choose a path'],
+      ['sec-attach', 'What to attach'],
+    ],
+    observe: [
+      ['sec-health', 'Health right now'],
+      ['sec-flow', 'Live flow map'],
+    ],
+    govern: [
+      ['sec-policies', 'Policies'],
+    ],
+    cost: [
+      ['sec-arbitrage', 'Where the money is'],
+      ['sec-egress', 'Egress by destination'],
+      ['sec-charges', 'AT&T charges'],
+      ['sec-buckets', 'Savings by bucket'],
+      ['sec-steer', 'Steer to save'],
+    ],
+  };
+  const activeSec = s.activeSec || '';
+  const subNav = (top === 'ai' || s.screen !== 's3') ? [] : (SECTIONS[s.tab] || []).map(([id, label]) => {
+    const on = activeSec === id;
+    return { key: id, id, label, on, go: () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
+      bg: on ? 'var(--bg-accent)' : 'transparent', color: on ? 'var(--link)' : 'var(--text-light)', weight: on ? 700 : 500 };
+  });
+  const hasSubNav = subNav.length > 0;
   const railGroups = top === 'ai'
     ? [
         { key: 'home', hasTitle: false, title: '', items: [item('AI Fabric', 'home', go('s3', { layer: 'ai', tab: 'connect' }), onS3('ai', 'connect'))] },
@@ -1009,7 +1047,7 @@ function shellVals(s, set, go, est, c) {
   const showPageTitle = !['s1', 's4', 's5', 's6', 's7', 's8'].includes(s.screen);
   return {
     demoOpen: !!s.demoOpen, toggleDemo: () => set({ demoOpen: !s.demoOpen }),
-    pills, railGroups, pageTitle, credsLabel, credsTitle, manageCreds, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
+    pills, railGroups, subNav, hasSubNav, pageTitle, credsLabel, credsTitle, manageCreds, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s3', { layer: 'cloud', tab: 'connect' }),
     showRail, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '0' : '0 12px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (railCollapsed ? '64px' : '240px') + ' minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), shellPadRight: '0px', andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
