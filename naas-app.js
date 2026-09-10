@@ -98,7 +98,8 @@ export function vals(c) {
   const strataMeta = D.LAYERS.map((l, i) => {
     const live = layerProducts(l.id).length, fcount = findingsFor(l.id).length;
     const selected = inDept && s.layer === l.id;
-    return { ...l, ...L.strata[i], ry: L.strata[i].y + 5, live, fcount, hasFindings: fcount > 0, selected, open: () => set({ fabDrill: ['fab'], bandOpen: false }), short: l.id === 'cloud' ? 'NetBond Advanced ↗' : l.id === 'transport' ? 'Vision' : '', fill: selected ? 'var(--cta)' : 'var(--bg-base)', labelColor: selected ? '#fff' : 'var(--text-heading)', subColor: selected ? '#cfe3ff' : 'var(--text-light)', op: inDept && !selected ? 0.6 : 1, ty: L.strata[i].y + 30, ty2: L.strata[i].y + 48, ty3: L.strata[i].y + 70 };
+    const dim = l.id !== 'cloud';
+    return { ...l, ...L.strata[i], ry: L.strata[i].y + 5, live, fcount, hasFindings: fcount > 0, selected, open: dim ? () => {} : () => set({ fabDrill: ['fab'], bandOpen: false }), cursor: dim ? 'default' : 'pointer', short: l.id === 'cloud' ? 'NetBond Advanced ↗' : l.id === 'transport' ? 'Vision' : '', open2: undefined, fill: selected ? 'var(--cta)' : 'var(--bg-base)', labelColor: selected ? '#fff' : 'var(--text-heading)', subColor: selected ? '#cfe3ff' : 'var(--text-light)', op: dim ? 0.4 : inDept && !selected ? 0.6 : 1, ty: L.strata[i].y + 30, ty2: L.strata[i].y + 48, ty3: L.strata[i].y + 70 };
   });
   const steeredRegionNames = new Set(steered.filter(id => id.startsWith('f-')).map(id => (estRaw.regionsList[+id.split('-')[1]] || {}).region));
   const heroEdges = L.edges.map(e => {
@@ -159,7 +160,7 @@ export function vals(c) {
   const degConn = conns.rows.find(r => r.degraded) || conns.rows.find(r => r.hot) || null;
   const firstPublic = est.regionsList.find(r => !r.priv) || null;
   const launchGo = { connect: go('s3', { layer: 'cloud', tab: 'connect', cloudDrill: firstPublic ? [firstPublic.region] : [] }), observe: go('s3', { layer: 'cloud', tab: 'observe', obPage: 'perf', obTab: 'flow', mapSel: degConn ? degConn.id : null, mapRegion: degConn ? degConn.region : null, panelTab: 'impact' }), govern: go('s3', { layer: 'cloud', tab: 'govern' }), cost: go('s3', { layer: 'cloud', tab: 'cost' }) };
-  const rollup = X.launchCards({ est, ob, conns, totalSave, violations: violationsN, isEmpty }).map(r => ({ ...r, go: launchGo[r.key], hasSub: !!r.sub, barVis: r.bar !== null ? 'visible' : 'hidden', alarm: r.bar !== null && r.bar < 50, barColor: r.bar !== null && r.bar < 50 ? 'var(--warning)' : 'var(--cta)', barW: (r.bar || 0) + '%', hasBar: r.bar !== null, border: r.primary ? 'var(--cta)' : 'var(--border-secondary)', borderW: r.primary ? '2px' : '1px', hasEyebrow: !!r.eyebrow, doorBg: r.primary ? 'var(--cta)' : 'transparent', doorColor: r.primary ? '#fff' : 'var(--link)', doorPad: r.primary ? '0 14px' : '0', doorBorder: r.primary ? '0' : '0' }));
+  const rollup = X.launchCards({ est, ob, conns, totalSave, violations: violationsN, isEmpty }).map(r => ({ ...r, go: launchGo[r.key], hasSub: !!r.sub, barVis: r.bar !== null ? 'visible' : 'hidden', alarm: r.bar !== null && r.bar < 50, barColor: r.bar !== null && r.bar < 50 ? 'var(--warning)' : 'var(--cta)', barW: (r.bar || 0) + '%', hasBar: r.bar !== null, border: r.primary ? 'var(--cta)' : 'var(--border-secondary)', borderW: r.primary ? '2px' : '1px', hasEyebrow: !!r.eyebrow, doorInk: r.primary ? 'var(--cta)' : 'var(--link)', doorBg: r.primary ? 'var(--cta)' : 'transparent', doorColor: r.primary ? '#fff' : 'var(--link)', doorPad: r.primary ? '0 14px' : '0', doorBorder: r.primary ? '0' : '0' }));
 
   // ---- findings ----
   const findingCard = (f) => {
@@ -501,7 +502,7 @@ function facetPass(r, i, chips) { const regionChips = chips.filter(c => !FACET_D
 
 // ---------- Addendum 01 ----------
 // ---------- Discovery window and labels (AO-353, AO-354, AO-362) ----------
-const WIN = { '7d': [7, '7 days'], '30d': [30, '30 days'], '90d': [90, '90 days'] };
+const WIN = { '1h': [1 / 24, 'the last hour'], '24h': [1, '24 hours'], '7d': [7, '7 days'], '30d': [30, '30 days'], '90d': [90, '90 days'], '6m': [182, '6 months'], '12m': [365, '12 months'] };
 const winDaysOf = (s) => (WIN[s.obWindow || '30d'] || WIN['30d'])[0];
 const winLabelOf = (s) => (WIN[s.obWindow || '30d'] || WIN['30d'])[1];
 const sinceLabel = (x) => x.since === 0 ? 'today' : x.since === 1 ? '1 day ago' : `${x.since} days ago`;
@@ -877,9 +878,11 @@ function shellVals(s, set, go, est, c) {
   const storeCur = s.screen === 's7' || s.screen === 's8';
   const curLayer = top === 'ai' ? 'ai' : top === 'net' ? 'net' : null;
   const elevator = [
-    { key: 'ai', name: 'AI Fabric', tag: 'The token layer', icon: iconDir + '/apis.svg', kicker: '', go: (e) => { e.preventDefault(); go('s3', { layer: 'ai', tab: 'connect' })(); set(close); }, href: '#' },
+    // Cloud is the only live layer. AI Fabric, Network services and Transport
+    // and access all draw greyed and inert — `vision` is what greys a row.
+    { key: 'ai', name: 'AI Fabric', tag: 'The token layer', icon: iconDir + '/apis.svg', kicker: '', vision: true, go: (e) => e.preventDefault(), href: '#' },
     { key: 'cloud', name: 'Cloud · NetBond Advanced', tag: 'The on-ramp layer, with control', icon: iconDir + '/cloud.svg', kicker: '', href: 'Elevator Boards.dc.html', go: () => {} },
-    { key: 'net', name: 'Network services', tag: 'The services layer', icon: iconDir + '/hub.svg', kicker: '', go: (e) => { e.preventDefault(); go('s2', { layer: 'cloud' })(); set(close); }, href: '#' },
+    { key: 'net', name: 'Network services', tag: 'The services layer', icon: iconDir + '/hub.svg', kicker: '', vision: true, go: (e) => e.preventDefault(), href: '#' },
     { key: 'transport', name: 'Transport and access', tag: 'The physical layer', icon: iconDir + '/cable.svg', kicker: 'Vision', vision: true, go: (e) => e.preventDefault(), href: '#' },
   ].map(l => ({ ...l, cur: l.key === curLayer, notCur: l.key !== curLayer, bg: l.key === curLayer ? 'var(--bg-accent)' : 'transparent', hover: l.vision ? 'transparent' : l.key === curLayer ? 'var(--bg-accent)' : 'var(--bg-neutral)', op: l.vision ? 0.4 : 1, cursor: l.vision ? 'default' : 'pointer' }));
   // ---- AI Fabric UI shell (Figma page 113:51): pills, grouped rail, page title, range.
@@ -890,13 +893,15 @@ function shellVals(s, set, go, est, c) {
   const railCollapsed = s.railCollapsed === undefined ? (andiDocked && !wideRail) : !!s.railCollapsed;
   const pillBg = (on) => on ? 'var(--bg-accent)' : 'transparent';
   const pills = [
-    { key: 'ai', label: 'AI Fabric', current: top === 'ai', go: goTab('s3', { layer: 'ai', tab: 'connect' }) },
-    { key: 'net', label: 'NaaS', current: top !== 'ai', go: est.stage === 'empty' ? goTab('s0', { layer: 'cloud' }) : goTab('s2', { layer: 'cloud' }) },
-  ].map(p => ({ ...p, bg: pillBg(p.current) }));
+    { key: 'ai', label: 'AI Fabric', current: false, off: true, go: () => {} },
+    { key: 'net', label: 'NaaS', current: top !== 'ai', off: false, go: est.stage === 'empty' ? goTab('s0', { layer: 'cloud' }) : goTab('s2', { layer: 'cloud' }) },
+  ].map(p => ({ ...p, bg: pillBg(p.current), op: p.off ? 0.4 : 1, cursor: p.off ? 'default' : 'pointer', hover: p.off ? 'transparent' : 'var(--bg-wash)', dis: p.off ? 'true' : 'false' }));
   const obTabNow = s.obTab || 'flow';
   const logsTab = (typeof OBTABS !== 'undefined' && OBTABS.includes('records')) ? 'records' : 'control';
   // later: not in the first cut Ramesh asked for (2026-09-09); still reachable, drawn at 40 percent.
-  const item = (label, ic, fn, cur, later) => ({ key: label, label, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : label });
+  // `sub` is the stage's job in the customer's words, drawn under the label.
+  // A four-word loop only teaches itself if each word says what it is for.
+  const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--bg-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
   const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
   const composeCur = ['s4', 's5', 's6'].includes(s.screen);
   const railGroups = top === 'ai'
@@ -921,20 +926,24 @@ function shellVals(s, set, go, est, c) {
     : [
         // Four words, one loop (Ramesh, 23:09; Micah, 13:23): Connect → Observe → Govern → Cost → Connect. Home is the fabric picture.
         { key: 'main', hasTitle: false, title: '', items: [
-          item('Connect', 'cable', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, s.screen === 's0' || s.screen === 's1' || (s.screen === 's2' && est.stage === 'empty') || onS3('cloud', 'connect')),
-          item('Observe', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe')),
-          item('Govern', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern')),
-          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost')),
+          item('Connect', 'cable', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, s.screen === 's0' || s.screen === 's1' || s.screen === 's2' || onS3('cloud', 'connect'), false, 'Connect credentials, see what you have'),
+          item('Observe', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe'), false, 'Live traffic and the resources on it'),
+          item('Govern', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern'), false, 'Set policy on what you found'),
+          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost'), false, "What you spend, what you'd keep"),
         ] },
       ];
   const aiTitle = { sec: 'Security & Governance', sav: 'Cost', perf: 'Performance & Reliability' }[s.aiTab || 'perf'];
   const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
-    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Connect', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'NaaS'))
-    : 'NaaS';
+    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Connect', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Connect'))
+    : 'Connect';
   const loadedAt = (typeof window !== 'undefined' && window.__naasLoaded) || Date.now();
   const agoMin = Math.max(0, Math.round((Date.now() - loadedAt) / 60000));
   const updatedAgo = agoMin < 1 ? 'just now' : agoMin < 60 ? `${agoMin}m ago` : `${Math.round(agoMin / 60)}h ago`;
   const rescan = () => { try { window.__naasLoaded = Date.now(); } catch (e) {} if (s.screen === 's1') { set({ scanStep: 0 }); startScan(c); } else set({ scanStep: s.scanStep }); };
+  const credsN = (est.clouds || []).length;
+  const credsLabel = credsN ? `Manage credentials (${credsN})` : 'Manage credentials';
+  const credsTitle = credsN ? `${credsN} connected accounts; this picture is what they can see` : 'Connect a cloud account to scan it';
+  const manageCreds = () => { go('s0')(); set(close); };
   const windowLabel = winLabelOf(s);
   const rangeValue = s.obWindow || '30d';
   const setRange = (e) => set({ obWindow: e.target.value });
@@ -943,7 +952,7 @@ function shellVals(s, set, go, est, c) {
   const showPageTitle = !['s1', 's4', 's5', 's6', 's7', 's8'].includes(s.screen);
   return {
     demoOpen: !!s.demoOpen, toggleDemo: () => set({ demoOpen: !s.demoOpen }),
-    pills, railGroups, pageTitle, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
+    pills, railGroups, pageTitle, credsLabel, credsTitle, manageCreds, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s2', { layer: 'cloud' }),
     showRail, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '0' : '0 12px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (railCollapsed ? '64px' : '240px') + ' minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
