@@ -6,6 +6,10 @@
  * integration by AT&T and its authorised partners. Not for redistribution.
  */
 export const LAYERS = [
+  // The AI Fabric stratum stays in the fabric picture. It is a greyed,
+  // non-interactive band inside the AT&T FABRIC box - removing it left the
+  // box a quarter empty, because the band is drawn in four equal strata.
+  { id: 'ai', label: 'AI Fabric', tagline: 'The token layer' },
   { id: 'cloud', label: 'Cloud', tagline: 'The on-ramp layer, with control' },
   { id: 'net', label: 'Network services', tagline: 'The services layer' },
   { id: 'transport', label: 'Transport and access', tagline: 'The physical layer' },
