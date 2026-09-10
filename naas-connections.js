@@ -183,7 +183,13 @@ export function regionDrillRows(est, inv, trail) {
   }
   const others = est.regionsList.length - 1 + (est.regionsExtra || 0);
   const rows = [pinned, ...children, ...(others > 0 ? [{ cloud: '', region: `+${others} other regions`, rollup: true, other: true, wl: 0, priv: false }] : [])];
-  return { level, label, rows, top };
+  // Every hop by name, cloud first. The crumb used to be built from `label`,
+  // which already carried the region, so it read "Clouds › AWS › us-east-1 ›
+  // AWS us-east-1". This is the trail; nothing derives it twice.
+  const vpcOf = trail.length > 1 ? reg.vpcs.find(v => v.id === trail[1]) : null;
+  const snOf = vpcOf && trail.length > 2 ? vpcOf.subnets.find(x => x.id === trail[2]) : null;
+  const crumb = [top.cloud, top.region, vpcOf ? vpcOf.name : null, snOf ? snOf.name : null].filter(Boolean);
+  return { level, label, crumb, rows, top };
 }
 
 /** Sankey split: 'site:<class>' splits a site class by metro; 'tag:<group>' splits a workload group by region. */
