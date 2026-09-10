@@ -1227,7 +1227,7 @@ function overlayFor(e, s, est, ob, hp, R, steered, hoverKey) {
 function overlayLegend(s, R) {
   if (s.screen !== 's3') return [];
   const tab = s.tab;
-  if (tab === 'connect') return [{ key: 'g', sw: 'var(--success)', l: 'good' }, { key: 'f', sw: 'var(--warning)', l: 'fair' }, { key: 'p', sw: 'var(--error)', l: 'poor' }, { key: 'lens', sw: null, l: 'wire color = ' + (s.lens || 'security') + ' lens · hover a region to compare the three paths' }];
+  if (tab === 'connect') return [{ key: 'g', sw: 'var(--success)', l: 'good' }, { key: 'f', sw: 'var(--warning)', l: 'fair' }, { key: 'p', sw: 'var(--error)', l: 'poor' }, { key: 'lens', sw: null, l: 'wire colour follows the ' + (s.lens || 'security') + ' lens · change it in Choose a path' }];
   if (tab === 'observe') return [{ key: 'w', sw: null, l: 'thickness = Gbps' }, { key: 'b', sw: '#0057b8', l: 'AT&T fabric' }, { key: 'p', sw: '#8a949c', l: 'public internet' }, { key: 'r', sw: 'var(--error)', l: 'red sleeve = over 100 ms' }, { key: 'd', sw: null, l: 'dashed = public path' }];
   if (tab === 'govern') return [{ key: 'g', sw: '#0057b8', l: 'gate = policy on this path' }, { key: 'o', sw: '#00abeb', l: 'matched by the policy you are authoring' }, { key: 'v', sw: 'var(--error)', l: 'violation' }, { key: 'd', sw: null, l: 'dashed = simulated' }];
   if (tab === 'cost') return [{ key: 'w', sw: null, l: 'thickness = $/mo' }, { key: 'r', sw: 'var(--error)', l: 'red sleeve = premium over the fabric rate' }, { key: 's', sw: null, l: 'slide the forecast to land the moves' }];
