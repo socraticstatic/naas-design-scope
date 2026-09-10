@@ -1101,6 +1101,7 @@ function shellVals(s, set, go, est, c) {
       ['sec-accounts', 'Your accounts'],
       ['sec-paths', 'Choose a path'],
       ['sec-attach', 'What to attach'],
+      ['@discover', 'Everything you have'],
     ],
     observe: [
       ['sec-health', 'Health right now'],
@@ -1124,9 +1125,10 @@ function shellVals(s, set, go, est, c) {
     ],
   };
   const activeSec = s.activeSec || '';
-  const subNav = (top === 'ai' || s.screen !== 's3') ? [] : (SECTIONS[s.tab] || []).map(([id, label]) => {
-    const on = activeSec === id;
-    return { key: id, id, label, on, go: () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
+  const subNav = (top === 'ai' || (s.screen !== 's3' && s.screen !== 's1')) ? [] : (SECTIONS[s.screen === 's1' ? 'connect' : s.tab] || []).map(([id, label]) => {
+    const isNav = id.startsWith('@');
+    const on = isNav ? s.screen === 's1' : (activeSec === id && s.screen === 's3');
+    return { key: id, id, label, on, go: isNav ? go('s1') : () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
       bg: on ? 'var(--bg-accent)' : 'transparent', color: on ? 'var(--link)' : 'var(--text-light)', weight: on ? 700 : 500 };
   });
   const hasSubNav = subNav.length > 0;
