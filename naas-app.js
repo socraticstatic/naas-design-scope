@@ -28,7 +28,7 @@ export function init(c) {
   if (q.get('mode') === 'browse') patch.screen = 's7';
   if (q.get('category')) { patch.screen = 's7'; patch.browseCat = q.get('category'); }
   if (SCREENS[hash[0]]) patch.screen = hash[0];
-  if (!patch.screen && (c.state.screen || 's0') === 's0' && (patch.view || c.state.view) !== 'empty') patch.screen = 's2';
+  if (!patch.screen && (c.state.screen || 's0') === 's0' && (patch.view || c.state.view) !== 'empty') { patch.screen = 's3'; patch.layer = 'cloud'; patch.tab = 'connect'; }
   if (hash[1] && D.LAYERS.find(l => l.id === hash[1])) patch.layer = hash[1];
   if (hash[2] && TABS.includes(hash[2])) patch.tab = hash[2];
   c.setState(patch);
@@ -731,6 +731,9 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const closeBranch = (arr, key) => arr.filter(k => k !== key && !k.startsWith(key + '/'));
   const toggleOpen = (key, select) => { const isOpen = mapOpen.includes(key); set({ mapOpen: isOpen ? closeBranch(mapOpen, key) : [...mapOpen, key], ...(select ? { mapSel: key, panelTab: s.panelTab || 'overview' } : {}) }); };
   const STATE_FILL = { ok: dark ? '#c5cfd9' : '#1a2431', degraded: '#ff8500', slo: '#c9362c' };
+  /** The map's door into the workload drawer. Same shape as the column's in
+   *  vals(); this function cannot see that one. */
+  const openWorkloads = (region, vpcId, snId) => set({ vol: { kind: 'workloads', region, vpcId, snId: snId || null }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [], volSlide: 0 });
   const mapNodes = map.nodes.map((nd, i) => { const left = nd.side === 'l'; const mid = nd.side === 'm'; const selected = nd.key === mapSel; return { ...nd, key: 'n' + i, id: nd.key, label: nd.name, subLabel: nd.sub || '', hasSub: !!nd.sub, vF: (nd.tot || nd.v) >= 1 ? (nd.tot || nd.v).toFixed(1) + ' Gbps' : Math.round((nd.tot || nd.v) * 1000) + ' Mbps', lx: left || mid ? nd.x2 + 6 : nd.x - 236, ly: nd.y + nd.h / 2 - 10, lw: 230, justify: left || mid ? 'flex-start' : 'flex-end', fill: mid ? (nd.priv ? '#0057b8' : nd.local ? '#00838f' : (dark ? '#5d6f80' : '#8a949c')) : nd.key === 'dest:local' ? '#00838f' : nd.kind === 'rollup' ? (dark ? '#5d6f80' : '#b8c2cc') : STATE_FILL[nd.state] || STATE_FILL.ok, op: nodeOp(nd.key), stroke: selected ? 'var(--cta)' : 'transparent', caret: nd.hasChildren ? (nd.open ? '−' : '+') : nd.kind === 'rollup' ? '‹' : '', cursor: nd.hasChildren || !mid ? 'pointer' : 'default', deltaF: (nd.delta >= 0 ? '+' : '') + nd.delta + '%', deltaColor: nd.delta > 10 ? '#1e7a3c' : nd.delta < -10 ? '#c9362c' : 'var(--text-light)', showDelta: mapMode === 'delta', click: () => { if (nd.kind === 'rollup') { set({ mapOpen: closeBranch(mapOpen, nd.foldsKey), mapSel: null }); return; } if (nd.kind === 'more') { const parts = (nd.parentKey || '').split('/'); if (parts.length >= 2) set({ vol: { kind: 'metro', cls: parts[0].replace(/^site:/, ''), metro: parts[1] }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [] }); return; } if (nd.kind === 'wlmore') { openWorkloads(nd.regionName, nd.vpcId, nd.subnetId); return; } if (nd.kind === 'workload' && nd.wlSel) { set({ mapSel: nd.wlSel, panelTab: 'overview' }); return; } if (nd.hasChildren) { if (mapOpen.includes(nd.key)) set({ mapSel: nd.key, panelTab: s.panelTab || 'overview' }); else toggleOpen(nd.key); } else set({ mapSel: nd.key, panelTab: s.panelTab || 'overview' }); }, pin: () => set({ mapPins: (s.mapPins || []).includes(nd.key) ? (s.mapPins || []).filter(k => k !== nd.key) : [...(s.mapPins || []).slice(-1), nd.key] }), enter: () => set({ mapHov: nd.key }), leave: () => set({ mapHov: null }), title: nd.hasChildren ? (nd.open ? 'Click to close' : 'Click to open in place') : 'Click to select', depthPad: (nd.depth || 0) * 8 }; });
   const mapRibbons = map.ribbons.map((r, i) => { const base = r.local ? '#4db6ac' : r.priv ? '#3374cc' : (dark ? '#5d6f80' : '#8a949c'); const fill = mapMode === 'delta' ? (r.delta > 10 ? '#1e7a3c' : r.delta < -10 ? '#c9362c' : (dark ? '#5d6f80' : '#b8c2cc')) : mapMode === 'slo' ? (r.state === 'slo' ? '#c9362c' : base) : base; return { key: 'r' + i, d: r.d, fill, op: ribOp(i, r.priv, r.local), pulse: mapMode === 'state' && r.state === 'degraded' ? 'skPulse 1.6s ease-in-out infinite' : 'none', sleeve: (mapMode === 'state' || mapMode === 'slo') && r.state === 'slo' ? '#c9362c' : 'transparent', title: `${r.v.toFixed(2)} Gbps · ${r.local ? 'stays in the region' : r.priv ? 'AT&T fabric' : 'outside the fabric'} · ${(F.PATTERNS.find(x => x[0] === r.pattern) || ['', r.pattern])[1]} · ${(r.delta >= 0 ? '+' : '') + r.delta}% vs prior window` }; });
   const mapHeads = map.heads.map((h, i) => ({ ...h, key: 'h' + i, fx: h.anchor === 'end' ? h.x - 240 : h.x, fy: h.y - 13, align: h.anchor === 'end' ? 'right' : 'left' }));
@@ -1021,10 +1024,32 @@ function connectVals(s, set, est, go, ob) {
   const lensQ = (R.LENSES.find(l => l.id === lens) || {}).q;
   const rs = est.regionsList;
   const sample = rs.find(r => !r.priv) || rs[0] || { fab: 8, pub: 60, wl: 100 };
-  const cell = (p, l) => ({ security: { text: p.sec.split(' · ')[0], sub: p.sec.split(' · ').slice(1).join(' · '), score: p.secScore }, performance: { text: p.latLabel(sample).split(' · ')[0], sub: p.latLabel(sample).split(' · ')[1], score: p.latScore }, reliability: { text: p.relLabel.split(' · ')[0], sub: p.relLabel.split(' · ')[1], score: p.relScore }, cost: { text: '$' + p.egress.toFixed(2) + '/GB', sub: p.setup, score: p.costScore } }[l]);
-  const matrix = R.PATHS.map(p => ({ key: p.id, name: p.name, short: p.short, tone: p.tone, count: rs.filter(r => R.regionPath(r) === p.id).length, cells: R.LENSES.map(l => ({ key: l.id, ...cell(p, l.id), color: R.SCORE_COLOR[cell(p, l.id).score], hi: l.id === lens })) }));
+  const cell = (p, l) => ({ security: { text: p.sec.split(' · ')[0], sub: p.sec.split(' · ').slice(1).join(' · '), score: p.secScore }, performance: { text: p.latLabel(sample).split(' · ')[0], sub: p.latLabel(sample).split(' · ')[1], score: p.latScore }, reliability: { text: p.relLabel.split(' · ')[0], sub: p.relLabel.split(' · ')[1], score: p.relScore }, cost: { text: '$' + p.egress.toFixed(2) + '/GB', sub: 'egress, every GB out', score: p.costScore } }[l]);
+  // Ramesh (1): the tradeoff between the three ways to reach a region is the
+  // thing a customer cannot work out for themselves. It was already modelled
+  // in full — uptime, latency, egress per GB, lead time, who runs the kit —
+  // and then hidden behind a tab row labelled "Lens" and a collapsed
+  // <details>. The lenses are the COLUMNS of one comparison, not a mode you
+  // switch the page into.
+  const pathCount = (id) => rs.filter(r => R.regionPath(r) === id).length;
+  const matrix = R.PATHS.map(p => {
+    const n = pathCount(p.id);
+    return {
+      key: p.id, name: p.name, short: p.short, tone: p.tone, count: n,
+      setup: p.setup,
+      yours: n === 0 ? 'none today' : `${n} of your ${rs.length} ${n === 1 ? 'region' : 'regions'}`,
+      hasYours: n > 0,
+      yoursBg: n > 0 ? 'var(--bg-accent)' : 'transparent',
+      yoursInk: n > 0 ? 'var(--link)' : 'var(--text-disabled)',
+      cells: R.LENSES.map(l => ({ key: l.id, ...cell(p, l.id), color: R.SCORE_COLOR[cell(p, l.id).score], word: R.SCORE_WORD[cell(p, l.id).score], hi: l.id === lens })),
+    };
+  });
+  const spread = R.PATHS.map(p => ({ id: p.id, short: p.short, n: pathCount(p.id) })).filter(x => x.n > 0);
+  const pathsSub = rs.length
+    ? `Your ${rs.length} regions today: ` + spread.map(x => `${x.n} ${x.short}`).join(' · ')
+    : 'Nothing connected yet.';
   const lensRegions = rs.map(r => ({ key: r.region, enter: () => set({ hoverNode: 'reg' + r.region, hoverRegion: r.region }), leave: () => set({ hoverNode: null, hoverRegion: null }), askAndi: () => set({ andiScope: { kind: 'region', id: r.region, label: r.cloud + ' ' + r.region }, andiOpen: true }), region: r.cloud + ' ' + r.region, path: R.PATHS.find(p => p.id === R.regionPath(r)).short, score: R.lensScore(r, lens), dot: R.SCORE_COLOR[R.lensScore(r, lens)], word: R.SCORE_WORD[R.lensScore(r, lens)] })).sort((a, b) => a.score - b.score);
-  return { lenses, lens, lensQ, lensVerdict: R.lensVerdict(est, lens), matrix, matrixHeads: R.LENSES.map(l => ({ key: l.id, label: l.label, hi: l.id === lens, color: l.id === lens ? 'var(--link)' : 'var(--text-light)' })), lensRegions, hasLensRegions: rs.length > 0, isCloudLayer: s.layer === 'cloud', notCloudLayer: s.layer !== 'cloud' };
+  return { lenses, lens, lensQ, lensVerdict: R.lensVerdict(est, lens), matrix, pathsSub, matrixHeads: R.LENSES.map(l => ({ key: l.id, label: l.label, hi: l.id === lens, color: l.id === lens ? 'var(--link)' : 'var(--text-light)' })), lensRegions, hasLensRegions: rs.length > 0, isCloudLayer: s.layer === 'cloud', notCloudLayer: s.layer !== 'cloud' };
 }
 function egressBaseFor(est, ob) { const bucketToday = (est.buckets || []).reduce((a, b) => a + b.today, 0); return bucketToday || ob.egressMo || 0; }
 function costVals(s, set, est, ob, go) {
