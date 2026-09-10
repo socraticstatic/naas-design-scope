@@ -1195,7 +1195,7 @@ function shellVals(s, set, go, est, c) {
   // later: not in the first cut Ramesh asked for (2026-09-09); still reachable, drawn at 40 percent.
   // `sub` is the stage's job in the customer's words, drawn under the label.
   // A four-word loop only teaches itself if each word says what it is for.
-  const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: iconDir + '/' + ic + '.svg', bg: cur ? 'var(--sidebar-accent)' : 'transparent', color: cur ? 'var(--text-heading)' : 'var(--text-light)', radius: cur ? '8px' : '4px', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
+  const item = (label, ic, fn, cur, later, sub) => ({ key: label, label, sub: sub || '', hasSub: !!sub, cur: !!cur, go: () => { fn(); set(close); }, icon: (cur ? iconLink : iconDir) + '/' + ic + '.svg', bg: cur ? 'var(--sidebar-accent)' : 'transparent', color: cur ? 'var(--link)' : 'var(--text-body)', radius: cur ? '8px' : '4px', op: later ? 0.4 : 1, title: later ? label + ' · later, not in the first cut' : (sub ? label + ' · ' + sub : label) });
   const onS3 = (layer, tab) => s.screen === 's3' && s.layer === layer && s.tab === tab;
   const composeCur = ['s4', 's5', 's6'].includes(s.screen);
   /**
@@ -1244,7 +1244,7 @@ function shellVals(s, set, go, est, c) {
     const isNav = id.startsWith('@');
     const on = isNav ? s.screen === 's1' : (activeSec === id && s.screen === 's3');
     return { key: id, id, label, on, go: isNav ? go('s1') : () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
-      bg: on ? 'var(--bg-accent)' : 'transparent', color: on ? 'var(--link)' : 'var(--text-light)', weight: on ? 700 : 500 };
+      bg: on ? 'var(--sidebar-accent)' : 'transparent', color: on ? 'var(--link)' : 'var(--text-light)', weight: on ? 600 : 400 };
   });
   const hasSubNav = subNav.length > 0;
   const railGroups = top === 'ai'
