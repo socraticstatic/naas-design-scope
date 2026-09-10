@@ -41,7 +41,7 @@ function region(r, i, est) {
     const priv = r.priv && k < 2;
     const azList = Array.from({ length: azs[k] }, (_, a) => r.region + 'abc'[a]);
     const WL_TYPES = { pub: [['alb', 'Load balancer'], ['api', 'API gateway'], ['web', 'Web tier'], ['nat', 'Bastion']], prv: [['app', 'App server'], ['db', 'Database'], ['cache', 'Cache'], ['worker', 'Batch worker'], ['gpu', 'GPU inference'], ['queue', 'Message queue']] };
-    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 6) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${w + 1}`, type: t[1], ip: cidr.replace(/0\/24$/, String(10 + w * 7)), tag, exposed: pub && w < 2 }; });
+    const mkWl = (pub, a, n, cidr, tag) => Array.from({ length: Math.min(n, 300) }, (_, w) => { const t = WL_TYPES[pub ? 'pub' : 'prv'][(w + a) % WL_TYPES[pub ? 'pub' : 'prv'].length]; return { id: `${cidr}-${w}`, since: (w * 37 + a * 53 + n * 11) % 365, name: `${t[0]}-${'abc'[a]}${String(w + 1).padStart(2, '0')}`, type: t[1], ip: cidr.replace(/0\/24$/, String(10 + w * 7)), tag, exposed: pub && w < 2 }; });
     const subnets = azList.flatMap((az, a) => {
       const pubN = Math.max(2, Math.round(wl / azs[k] * 0.4)), prvN = Math.max(2, Math.round(wl / azs[k] * 0.6));
       const pubC = `${cidrBase}.${a}.0/24`, prvC = `${cidrBase}.${10 + a}.0/24`;

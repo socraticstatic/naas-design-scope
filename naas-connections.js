@@ -178,8 +178,15 @@ export function regionDrillRows(est, inv, trail) {
   if (trail.length === 1) { level = 'vpc'; label = `${top.cloud} ${top.region}`; children = reg.vpcs.map(v => child({ name: v.name, wl: v.wl, priv: v.priv, drill: v.id, sub: v.purpose })); }
   else {
     const vpc = reg.vpcs.find(v => v.id === trail[1]); if (!vpc) return null;
-    if (trail.length === 2) { level = 'subnet'; label = `${top.region} › ${vpc.name}`; children = vpc.subnets.map(sn => child({ name: `${sn.name} · ${sn.cidr}`, wl: sn.wl, priv: !sn.pub, drill: sn.id, sub: sn.az })); }
-    else { const sn = vpc.subnets.find(x => x.id === trail[2]); if (!sn) return null; level = 'workload'; label = `${vpc.name} › ${sn.name}`; children = (sn.workloads || []).slice(0, 6).map(w => child({ name: w.name, wl: 1, priv: !w.exposed, leaf: true, wlLabel: w.ip, sub: w.type })); }
+    if (trail.length === 2) { level = 'subnet'; label = `${top.region} › ${vpc.name}`; children = vpc.subnets.map(sn => child({ name: `${sn.name} · ${sn.cidr}`, wl: sn.wl, priv: !sn.pub, drill: sn.id, sub: sn.az })); children.push({ ...child({ name: `See all ${vpc.subnets.reduce((t, x) => t + (x.workloads || []).length, 0)} workloads`, wl: 0, priv: true, leaf: true, sub: 'every app in this VPC' }), seeAll: true, wlScope: { region: trail[0], vpcId: trail[1], snId: null } }); }
+    else {
+      const sn = vpc.subnets.find(x => x.id === trail[2]); if (!sn) return null; level = 'workload'; label = `${vpc.name} › ${sn.name}`;
+      const wls = sn.workloads || [];
+      // The column samples; it never lies about the rest. Workloads are the
+      // first level with volume, so this is where the drawer takes over.
+      children = wls.slice(0, 6).map(w => child({ name: w.name, wl: 1, priv: !w.exposed, leaf: true, wlLabel: w.ip, sub: `${w.type} · ${w.tag || 'untagged'}` }));
+      if (wls.length > children.length) children.push({ ...child({ name: `See all ${wls.length} workloads`, wl: 0, priv: true, leaf: true, sub: 'every app in this subnet' }), seeAll: true, wlScope: { region: trail[0], vpcId: trail[1], snId: trail[2] } });
+    }
   }
   const others = est.regionsList.length - 1 + (est.regionsExtra || 0);
   const rows = [pinned, ...children, ...(others > 0 ? [{ cloud: '', region: `+${others} other regions`, rollup: true, other: true, wl: 0, priv: false }] : [])];
