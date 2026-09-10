@@ -955,10 +955,10 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const mixRows = mixBuckets.map(b => ({
     key: b.key, label: b.label,
     gbps: b.v.toFixed(1), share: Math.round(b.v / mixTotal * 100) + '%',
-    w: (b.v / mixTotal * 100).toFixed(2) + '%',
-    fabPct: b.local ? 'n/a' : Math.round(b.fab / (b.v || 1) * 100) + '%',
+    w: Math.max(3, b.v / mixTotal * 100).toFixed(2) + '%',
+    fabPct: b.local ? '—' : Math.round(b.fab / (b.v || 1) * 100) + '%',
     fabW: b.local ? '0%' : (b.fab / (b.v || 1) * 100).toFixed(2) + '%',
-    fabNote: b.local ? 'never leaves the region' : b.fab / (b.v || 1) >= 0.9 ? 'almost all on the fabric' : b.fab / (b.v || 1) <= 0.1 ? 'almost none on the fabric' : 'split',
+    fabNote: b.local ? 'Never crosses a mid mile, so it is neither on nor off the fabric' : b.fab / (b.v || 1) >= 0.9 ? 'almost all on the fabric' : b.fab / (b.v || 1) <= 0.1 ? 'almost none on the fabric' : 'split',
     tone: b.local ? '#4db6ac' : b.fab / (b.v || 1) >= 0.5 ? '#3374cc' : (dark ? '#5d6f80' : '#8a949c'),
   }));
   const fabAll = map.ribbons.filter(r => r.to === 'mid:fabric').reduce((a, r) => a + r.v, 0);
@@ -968,12 +968,13 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const firstMileRows = map.nodes.filter(n => n.side === 'l' && (n.group || '') === 'sites').map(n => ({
     key: 'fm-' + n.key, label: n.name, gbps: (n.tot || n.v).toFixed(1),
     share: Math.round((n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100) + '%',
-    w: ((n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100).toFixed(2) + '%',
+    w: Math.max(3, (n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100).toFixed(2) + '%',
   }));
   const mixVals = {
     mixRows, hasMix: mixRows.length > 0,
     firstMileRows, hasFirstMile: firstMileRows.length > 0,
-    fabShareLine: `${Math.round(fabAll / (crossed || 1) * 100)}% of everything that crosses a mid mile rides the AT&T fabric`,
+    fabBig: `${Math.round(fabAll / (crossed || 1) * 100)}%`,
+    fabShareLine: `of the ${crossed.toFixed(1)} Gbps that crosses a mid mile rides the AT&T fabric. The ${locAll.toFixed(1)} Gbps that stays inside a region is not counted here.`,
     fabGbps: fabAll.toFixed(1), pubGbps: pubAll.toFixed(1), locGbps: locAll.toFixed(1),
     fabW: (fabAll / (crossed || 1) * 100).toFixed(2) + '%',
     pubW: (pubAll / (crossed || 1) * 100).toFixed(2) + '%',
@@ -988,7 +989,10 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     fx: h.anchor === 'end' ? h.x - 240 : h.anchor === 'middle' ? h.x - 120 : h.x, fy: h.y - 14,
     align: h.anchor === 'end' ? 'right' : h.anchor === 'middle' ? 'center' : 'left',
     justify: h.anchor === 'end' ? 'flex-end' : h.anchor === 'middle' ? 'center' : 'flex-start',
-    hasRule: h.anchor !== 'middle' }));
+    // The rule leads into the heading on the right-hand column and trails it
+    // on the left, so it always points at the column and never reads as a
+    // strike through the word.
+    ruleBefore: h.anchor === 'end', ruleAfter: h.anchor === 'start' }));
   const trailKey = (mapSel && !mapSel.startsWith('cx-') && mapSel.includes('/')) ? mapSel : mapZoom;
   const mapTrail = trailKey ? F.trail(trailKey, est0, inv, ob.flows).map((t, i, a) => ({ ...t, key: 'tr' + i, go: () => set({ mapSel: t.key, mapOpen: closeBranch(mapOpen, t.key).concat(i < a.length - 1 ? [t.key] : []) }), last: i === a.length - 1, notLast: i < a.length - 1 })) : [];
   const climb = () => { if (!mapSel || mapSel.startsWith('cx-')) { set({ mapSel: null }); return; } const parent = mapSel.includes('/') ? mapSel.slice(0, mapSel.lastIndexOf('/')) : null; set({ mapOpen: closeBranch(mapOpen, parent || mapSel), mapSel: parent }); };
@@ -1132,7 +1136,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
       ? `${(patterns.find(p => p.on) || {}).label} · ${(modes.find(m => m.on) || {}).label}${mapRegion ? ' · ' + mapRegion : ''}`
       : 'All flows · coloured by state',
     mapFilterCount: mapFiltersOn ? `${mapFiltersOn} filter${mapFiltersOn === 1 ? '' : 's'}` : 'No filters',
-    mapFilterToggleWord: mapFiltersOpen ? 'Hide' : 'Show', mapZoomLabel: map.zoom ? `zoomed ×${map.zf.toFixed(1)}` : '', hasMapZoom: !!map.zoom, mapSub: `${map.total.toFixed(1)} Gbps · ${map.total ? Math.round(map.fabV / map.total * 100) : 0}% on the AT&T fabric · ${map.total ? Math.round((map.localV || 0) / map.total * 100) : 0}% stays in the region${mapRegion ? ' · filtered to ' + mapRegion : ''}${mapT != null ? ' · ' + Math.round(24 - mapT * 24) + 'h ago' : ' · last 24h'}`, mapTrail, hasMapTrail: mapTrail.length > 0, mapUp: climb, canClimb: !!mapSel, mapKey, modes, hasMapRegion: !!mapRegion, mapRegion: mapRegion || '', clearMapRegion: () => set({ mapRegion: null }), mapT: mapT == null ? 100 : Math.round(mapT * 100), setMapT: (e) => set({ mapT: +e.target.value / 100 }), mapPlaying: !!s.mapPlay, playLabel: s.mapPlay ? '❚❚' : '▶', playMap, resetMapT: () => set({ mapT: null }), replayOpen: !!s.replayOpen, toggleReplay: () => set({ replayOpen: !s.replayOpen, mapPlay: false, mapT: s.replayOpen ? null : s.mapT }), wholeWindow: () => set({ mapT: null, mapPlay: false }), gaugeRows, hasGauges: gaugeRows.length > 0, panel, hasPanel: !!panel, hasPanelOverlay: !!panel, drawerRight: panel ? '380px' : '0px', noPanel: !panel, dashCols: 'minmax(0,1fr)', mapJumpOpen: !!s.mapJumpOpen, mapJumpQ: s.mapJumpQ || '', setMapJumpQ: (e) => set({ mapJumpQ: e.target.value }), mapJumpKey: (e) => { if (e.key === 'Enter') jumpTo(s.mapJumpQ); if (e.key === 'Escape') set({ mapJumpOpen: false }); }, openJump: () => set({ mapJumpOpen: !s.mapJumpOpen }), pins: (s.mapPins || []).map(k => ({ key: k, name: (map.nodes.find(x => x.key === k) || { name: k }).name, v: ((map.nodes.find(x => x.key === k) || { v: 0 }).v).toFixed(1) + ' Gbps', unpin: () => set({ mapPins: (s.mapPins || []).filter(x => x !== k) }) })), hasPins: (s.mapPins || []).length > 0 };
+    mapFilterToggleWord: mapFiltersOpen ? 'Hide' : 'Show', mapZoomLabel: map.zoom ? `zoomed ×${map.zf.toFixed(1)}` : '', hasMapZoom: !!map.zoom, mapSub: `${map.total.toFixed(1)} Gbps in the last 24h · ${map.nodes.filter(n => n.side === 'l').length} sources · ${map.nodes.filter(n => n.side === 'r').length} destination classes${mapRegion ? ' · filtered to ' + mapRegion : ''}${mapT != null ? ' · ' + Math.round(24 - mapT * 24) + 'h ago' : ''}`, mapTrail, hasMapTrail: mapTrail.length > 0, mapUp: climb, canClimb: !!mapSel, mapKey, modes, hasMapRegion: !!mapRegion, mapRegion: mapRegion || '', clearMapRegion: () => set({ mapRegion: null }), mapT: mapT == null ? 100 : Math.round(mapT * 100), setMapT: (e) => set({ mapT: +e.target.value / 100 }), mapPlaying: !!s.mapPlay, playLabel: s.mapPlay ? '❚❚' : '▶', playMap, resetMapT: () => set({ mapT: null }), replayOpen: !!s.replayOpen, toggleReplay: () => set({ replayOpen: !s.replayOpen, mapPlay: false, mapT: s.replayOpen ? null : s.mapT }), wholeWindow: () => set({ mapT: null, mapPlay: false }), gaugeRows, hasGauges: gaugeRows.length > 0, panel, hasPanel: !!panel, hasPanelOverlay: !!panel, drawerRight: panel ? '380px' : '0px', noPanel: !panel, dashCols: 'minmax(0,1fr)', mapJumpOpen: !!s.mapJumpOpen, mapJumpQ: s.mapJumpQ || '', setMapJumpQ: (e) => set({ mapJumpQ: e.target.value }), mapJumpKey: (e) => { if (e.key === 'Enter') jumpTo(s.mapJumpQ); if (e.key === 'Escape') set({ mapJumpOpen: false }); }, openJump: () => set({ mapJumpOpen: !s.mapJumpOpen }), pins: (s.mapPins || []).map(k => ({ key: k, name: (map.nodes.find(x => x.key === k) || { name: k }).name, v: ((map.nodes.find(x => x.key === k) || { v: 0 }).v).toFixed(1) + ' Gbps', unpin: () => set({ mapPins: (s.mapPins || []).filter(x => x !== k) }) })), hasPins: (s.mapPins || []).length > 0 };
   // Sources (Micah, 14:33: "where can I connect to my current ecosystem?"): what feeds the picture, and the door to add more.
   const byCloud = {}; est0.regionsList.forEach(r => { const c = byCloud[r.cloud] = byCloud[r.cloud] || { regions: 0, acct: null }; c.regions++; if (r.acct && !c.acct) c.acct = r.acct; });
   const rescanNow = () => { try { window.__naasLoaded = Date.now(); } catch (e) {} set({ scanStep: 0 }); };
