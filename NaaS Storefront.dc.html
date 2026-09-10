@@ -1108,8 +1108,8 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   <div class="fx-chips" style="gap:6px;padding-top:8px;border-top:1px solid var(--border-secondary)"><sc-for list="{{ scopeMembers }}" as="sm" hint-placeholder-count="6"><button class="fx-chip" aria-pressed="{{ sm.on }}" onClick="{{ sm.go }}" style="cursor:pointer;background:{{ sm.bg }};color:{{ sm.color }};border-color:{{ sm.border }}">{{ sm.label }}</button></sc-for><button onClick="{{ clearScope }}" style="border:0;background:transparent;padding:0 6px;font:inherit;font-size:12px;font-weight:700;color:var(--link);cursor:pointer">Clear</button></div>
   </sc-if>
 </div>
-<div id="sec-health" style="display:grid;gap:10px"><div style="display:grid;gap:1px;margin-bottom:2px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">Health right now</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">Throughput, latency, loss and utilisation across the estate.</div></div>
-    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+<div id="sec-health" style="display:grid;gap:10px"><div style="display:grid;gap:1px;margin-bottom:2px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">Health right now</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">What is running, what is exposed, and how the network is carrying it.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
       <sc-for list="{{ dashTiles }}" as="k" hint-placeholder-count="5"><button class="fx-kpi sm" onClick="{{ k.go }}" title="{{ k.l }} · {{ k.badge }} {{ k.vs }}" aria-pressed="{{ k.on }}" style="border-color:{{ k.border }};padding:8px 14px;gap:2px"><span class="lab"><span>{{ k.l }}</span><span class="fx-badge" style="color:{{ k.deltaTone }}">{{ k.badge }}</span></span><span class="val">{{ k.v }}<sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><small>{{ k.u }}</small></sc-if></span></button></sc-for>
 </div></div>
     
