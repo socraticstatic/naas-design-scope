@@ -1536,27 +1536,29 @@ function shellVals(s, set, go, est, c) {
         // per verb over the very rows the sub-nav already carried. Nothing
         // moves, nothing is added, nothing is dropped.
         const TABS = [['connect', 'Discover'], ['observe', 'Observe'], ['govern', 'Govern'], ['cost', 'Cost']];
-        const TAB_ICON2 = { connect: 'search', observe: 'high-meter', govern: 'check-shield', cost: 'bill' };
         const row = (tab, id, label, ic) => {
           const isNav = id.startsWith('@');
           const cur = isNav ? s.screen === 's1' : (onS3('cloud', tab) && activeSec === id);
           return item(label, ic, isNav ? go('s1') : () => { go('s3', { layer: 'cloud', tab })(); set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }); }, cur);
         };
+        const goTabRow = (tab) => tab === 'observe'
+          ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }
+          : go('s3', { layer: 'cloud', tab });
         return [
           { key: 'home', hasTitle: false, title: '', items: [
             item('NaaS', 'home', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, false),
           ] },
-          // Only the page you are on opens its sections. Every group open at
-          // once ran the rail 137px past its own height with overflow:hidden,
-          // so 'AT&T charges' and 'Steer to save' could not be reached at all
-          // from Govern. A closed group is one row that takes you to its page.
+          // Discover, Observe, Govern and Cost are the same kind of thing - the
+          // four categories. They get one treatment, always, and the one you
+          // are in lists its sections underneath. Rendering three of them as
+          // icon rows and the fourth as a group label made peers look like two
+          // different levels depending on where you stood.
           ...TABS.map(([tab, title]) => {
             const here = onS3('cloud', tab) || (tab === 'connect' && (s.screen === 's0' || s.screen === 's1' || s.screen === 's2'));
-            if (here) return { key: tab, hasTitle: true, title, items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) };
-            const go1 = tab === 'observe'
-              ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }
-              : go('s3', { layer: 'cloud', tab });
-            return { key: tab, hasTitle: false, title: '', items: [item(title, TAB_ICON2[tab], go1, false)] };
+            return {
+              key: tab, hasTitle: true, title, titleGo: () => { goTabRow(tab)(); set(close); }, titleCur: here,
+              items: here ? (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) : [],
+            };
           }),
         ];
       })();
