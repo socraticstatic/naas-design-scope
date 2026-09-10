@@ -726,7 +726,39 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const logChips = [{ key: 'all', label: 'All' }, ...patternCards.map(p => ({ key: p.key, label: p.title }))].map(ch => ({ ...ch, on: ch.key === logPattern, go: () => set({ logPattern: ch.key }), bg: ch.key === logPattern ? 'var(--cta)' : 'var(--bg-base)', color: ch.key === logPattern ? '#fff' : 'var(--text-heading)', border: ch.key === logPattern ? 'var(--cta)' : 'var(--border-secondary)' }));
   const TILE_ORDER = ['thr', 'util', 'p95', 'loss'];
   const obTiles = ob.kpis.filter(k => TILE_ORDER.includes(k.key)).sort((a, b) => TILE_ORDER.indexOf(a.key) - TILE_ORDER.indexOf(b.key)).map(k => ({ ...k, hasUnit: !!k.u, hasE: !!k.e }));
-  const flowRecords = X.records(est0, inv, ob, logPattern).map(r => ({ ...r, key: r.id, actBg: r.deny ? (dark ? 'rgba(211,47,47,.2)' : '#fdecea') : 'var(--bg-wash)', actColor: r.deny ? 'var(--error)' : 'var(--text-body)' }));
+  // ---- Logs, as a section of Observe rather than a tab inside a panel ----
+  // The flow record is the evidence under every number on this page, so it
+  // gets the same treatment as the map: its own filters, its own count, and
+  // rows that open the thing they name.
+  const logQ = (s.logQ || '').trim().toLowerCase();
+  const logPath = s.logPath || 'all';
+  const logAct = s.logAct || 'all';
+  const logAll = X.records(est0, inv, ob, logPattern);
+  const logMatch = logAll.filter(r => {
+    if (logPath === 'private' && r.path !== 'private') return false;
+    if (logPath === 'public' && r.path !== 'public') return false;
+    if (logAct === 'allow' && r.deny) return false;
+    if (logAct === 'deny' && !r.deny) return false;
+    if (logQ && !`${r.srcName} ${r.srcSub} ${r.dstName} ${r.dstSub} ${r.proto}`.toLowerCase().includes(logQ)) return false;
+    return true;
+  });
+  const chipRow = (cur, opts, key) => opts.map(([k, l]) => ({ key: k, label: l, on: cur === k, go: () => set({ [key]: k }),
+    bg: cur === k ? 'var(--cta)' : 'var(--bg-base)', color: cur === k ? '#fff' : 'var(--text-heading)', border: cur === k ? 'var(--cta)' : 'var(--border-secondary)' }));
+  const logPathChips = chipRow(logPath, [['all', 'Any path'], ['private', 'On the fabric'], ['public', 'Outside the fabric']], 'logPath');
+  const logActChips = chipRow(logAct, [['all', 'Any action'], ['allow', 'Allowed'], ['deny', 'Denied']], 'logAct');
+  const logDeny = logMatch.filter(r => r.deny).length;
+  const logPub = logMatch.filter(r => r.path === 'public').length;
+  const flowRecords = logMatch.map(r => ({ ...r, key: r.id, actBg: r.deny ? (dark ? 'rgba(211,47,47,.2)' : '#fdecea') : 'var(--bg-wash)', actColor: r.deny ? 'var(--error)' : 'var(--text-body)',
+    pathInk: r.path === 'public' ? 'var(--warning)' : 'var(--success)',
+    pathWord: r.path === 'public' ? 'outside' : 'fabric' }));
+  const logVals = {
+    flowRecords, logChips, logPathChips, logActChips,
+    logQ: s.logQ || '', setLogQ: (e) => set({ logQ: e.target.value }),
+    logCount: `${logMatch.length.toLocaleString('en-US')} of ${logAll.length.toLocaleString('en-US')} records`,
+    logNote: logMatch.length ? `${logDeny} denied · ${logPub} outside the fabric · public destinations stay unresolved` : 'Nothing matches these filters.',
+    hasLogs: logMatch.length > 0, noLogs: logMatch.length === 0,
+    clearLogs: () => set({ logQ: '', logPath: 'all', logAct: 'all', logPattern: 'all' }),
+  };
   const degRow = conns.rows.find(r => r.degraded);
   const nextStop = degRow ? { title: 'Next stop: Govern', text: `${degRow.wl.toLocaleString('en-US')} workloads behind ${degRow.cloud} ${degRow.region} ${degRow.paths >= 2 ? 'have a second path but no policy that requires one' : 'ride a single path with no policy that requires a second'}. Author the policy, simulate it, then enforce it.`, cta: 'Open Govern', go: go('s3', { layer: 'cloud', tab: 'govern' }) } : { title: 'Next stop: Govern', text: 'Every connection is up. Set a latency SLO for the tags that still cross the public internet, then enforce it.', cta: 'Open Govern', go: go('s3', { layer: 'cloud', tab: 'govern' }) };
   const connectNext = { title: 'Next stop: Observe', text: isEmpty ? 'Once the first region is attached, telemetry starts and Observe shows what the fabric carries.' : `${conns.total} ${conns.total === 1 ? 'connection carries' : 'connections carry'} ${(ob.fab || 0).toFixed(1)} Gbps on the fabric. See which one is degraded and what it impacts.`, cta: 'Open Observe', go: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); } };
@@ -847,6 +879,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     utilRows: (ob.utilRows || []).map(u => { const hot = u.pct >= 80; const r = est0.regionsList.find(x => x.region === u.region) || { region: u.region, wl: 0 }; return { ...u, key: u.id, label: `${u.cloud} ${u.region}`, sub: `${u.ramp} · ${u.ports} × 10 Gbps`, w: u.pct + '%', v: `${u.gbps} Gbps`, pctF: u.pct + '%', fill: hot ? '#ff8500' : '#009fdb', doorLabel: hot ? 'Add a port →' : 'Ask Andi →', doorColor: hot ? 'var(--warning)' : 'var(--link)', go: hot ? composeFor(go, r) : () => set({ andiScope: { kind: 'region', id: u.region, label: `${u.cloud} ${u.region}` }, andiOpen: true }) }; }),
     obStrip: (() => { const rows = ob.utilRows || []; const hot = rows.filter(u => u.pct >= 80 && !(connRow && connRow.region === u.region && connRow.degraded)); const blind = ob.blind || []; const parts = []; const deg = conns.rows.find(r => r.degraded); if (deg) parts.push(`${deg.cloud} ${deg.region} is degraded on ${deg.ramp}: BGP flapping, ${deg.drops} drops, ${deg.wl.toLocaleString('en-US')} workloads behind it.`); if (hot.length) parts.push(`${hot.map(u => `${u.cloud} ${u.region}`).join(', ')} ${hot.length === 1 ? 'runs' : 'run'} above 80% of ${hot.length === 1 ? 'its' : 'their'} ports.`); if (blind.length) parts.push(`${blind.length} ${blind.length === 1 ? 'region sends' : 'regions send'} no flow logs, so ${ob.pub.toFixed(1)} Gbps is unseen.`); if (ob.worst && !blind.length) parts.push(`${ob.worst.name} is the slowest public flow at ${ob.worst.latency} ms.`); const first = hot[0] ? est0.regionsList.find(x => x.region === hot[0].region) : blind[0]; return { has: parts.length > 0, title: 'Act on it', text: parts.join(' ') + (hot.length ? ' Add a port before it saturates.' : blind.length ? ' Attach it to bring the traffic under control.' : ''), cta: hot.length ? `Add a port on ${hot[0].region}` : blind.length ? `Attach ${blind[0].region}` : 'Steer worst offender', go: first ? composeFor(go, first) : (ob.worst ? () => set({ steered: [...(s.steered || []), ob.worst.id] }) : () => {}) }; })(), hasUtil: (ob.utilRows || []).length > 0, utilLine: `${ob.util}% of ${ob.capGbps} Gbps in use · ${(ob.utilRows || []).length} ${(ob.utilRows || []).length === 1 ? 'connection' : 'connections'}`, utilHot: (ob.utilRows || []).filter(u => u.pct >= 80).length, goCapacity: go('s4'), anomalies: R.anomalies(R.applyScope(est0, obScope), ob).map(a => ({ ...a, dot: a.sev === 'amber' ? 'var(--warning)' : 'var(--link)', go: a.region ? () => set({ obScope: 'cloud:' + (est0.regionsList.find(r => r.region === a.region) || {}).cloud }) : () => {} })), hasAnomalies: R.anomalies(R.applyScope(est0, obScope), ob).length > 0, insights: R.insights(R.applyScope(est0, obScope), ob), hasInsights: !isEmpty, iw: iwVals(R.insightWidgets(R.applyScope(est0, obScope), ob, winDaysOf(s)), s, set, go, winLabelOf(s)) || {}, hasIw: !!R.insightWidgets(R.applyScope(est0, obScope), ob, winDaysOf(s)),
     obVerdict: ob.verdict, obCoverage: ob.coverage, obKpis: ob.kpis.map(k => ({ ...k, hasUnit: !!k.u, hasE: !!k.e })), obTabs, obIsFlow: obTab === 'flow', trend, hasTrend: !!trend,
+    ...logVals,
     skVB: `0 0 ${sk.W} ${sk.H}`, skNodes, skHeads, skRibbons, goLogs: () => toLogs({ logPattern: 'all' }), skSub: ob.subVerdict, skFoot: `All flows · ${ob.flows.filter(f => f.kind === 'App').length} app flows, ${ob.flows.filter(f => f.kind !== 'App').length} cloud-to-cloud. Sites roll up by class; the records table lists cloud flows only.`,
     records, recordCount: `${records.length} groups`, groupBy, setGroupBy: (e) => set({ groupBy: e.target.value }), groupOptions: ['None', 'Source', 'Destination', 'Path', 'Action'].map(o => ({ key: o, label: o })),
     briefing: ob.briefing, briefPills, briefQs, paths, pathsSummary: ob.pathsSummary, restoreAll: () => set({ steered: [] }), hasSteered: steered.length > 0,
@@ -1002,6 +1035,7 @@ function shellVals(s, set, go, est, c) {
     observe: [
       ['sec-health', 'Health right now'],
       ['sec-flow', 'Live flow map'],
+      ['sec-logs', 'Logs'],
     ],
     govern: [
       ['sec-policies', 'Policies'],

@@ -1101,7 +1101,45 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
       <sc-for list="{{ dashTiles }}" as="k" hint-placeholder-count="5"><button class="fx-kpi sm" onClick="{{ k.go }}" title="{{ k.l }} · {{ k.badge }} {{ k.vs }}" aria-pressed="{{ k.on }}" style="border-color:{{ k.border }};padding:8px 14px;gap:2px"><span class="lab"><span>{{ k.l }}</span><span class="fx-badge" style="color:{{ k.deltaTone }}">{{ k.badge }}</span></span><span class="val">{{ k.v }}<sc-if value="{{ k.hasUnit }}" hint-placeholder-val="{{ false }}"><small>{{ k.u }}</small></sc-if></span></button></sc-for>
 </div></div>
-    <div style="display:grid;grid-template-columns:{{ dashCols }};gap:16px;align-items:stretch">
+    <div id="sec-logs" class="fx-card" style="gap:12px;padding:16px 24px;margin-top:16px">
+  <div class="fx-card-head" style="align-items:flex-start"><div style="min-width:0"><h3 class="fx-card-title">Logs</h3><div class="fx-card-sub">{{ logCount }} · {{ logNote }}</div></div><button class="fx-btn" onClick="{{ clearLogs }}" style="flex:none;height:28px;padding:0 12px;font-size:12px">Clear filters</button></div>
+  <div style="display:grid;grid-template-columns:58px minmax(0,1fr);gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--border-secondary);border-bottom:1px solid var(--border-secondary)">
+    <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Find</span>
+    <label class="fx-search" style="width:100%"><span aria-hidden="true"></span><input value="{{ logQ }}" onChange="{{ setLogQ }}" placeholder="Resource name, address, protocol" aria-label="Search the records"></input></label>
+    <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Pattern</span>
+    <div class="fx-chips" style="gap:6px"><sc-for list="{{ logChips }}" as="lc" hint-placeholder-count="6"><button class="fx-chip" aria-pressed="{{ lc.on }}" onClick="{{ lc.go }}" style="cursor:pointer;background:{{ lc.bg }};color:{{ lc.color }};border-color:{{ lc.border }}">{{ lc.label }}</button></sc-for></div>
+    <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Path</span>
+    <div class="fx-chips" style="gap:6px"><sc-for list="{{ logPathChips }}" as="lp" hint-placeholder-count="3"><button class="fx-chip" aria-pressed="{{ lp.on }}" onClick="{{ lp.go }}" style="cursor:pointer;background:{{ lp.bg }};color:{{ lp.color }};border-color:{{ lp.border }}">{{ lp.label }}</button></sc-for><span style="width:10px"></span><sc-for list="{{ logActChips }}" as="la" hint-placeholder-count="3"><button class="fx-chip" aria-pressed="{{ la.on }}" onClick="{{ la.go }}" style="cursor:pointer;background:{{ la.bg }};color:{{ la.color }};border-color:{{ la.border }}">{{ la.label }}</button></sc-for></div>
+  </div>
+  <sc-if value="{{ hasLogs }}" hint-placeholder-val="{{ true }}">
+  <div style="overflow-x:auto">
+    <div class="dt" style="width:100%;min-width:860px;border-collapse:collapse;table-layout:fixed;font-size:13px">
+      <div class="dt-h"><div class="dt-r" style="border-bottom:1px solid var(--border-secondary)">
+        <div class="dt-c dt-th" style="width:9%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Time</div>
+        <div class="dt-c dt-th" style="width:26%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Source</div>
+        <div class="dt-c dt-th" style="width:26%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Destination</div>
+        <div class="dt-c dt-th" style="width:13%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Proto</div>
+        <div class="dt-c dt-th" style="width:10%;text-align:right;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Bytes</div>
+        <div class="dt-c dt-th" style="width:8%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Path</div>
+        <div class="dt-c dt-th" style="width:8%;text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Action</div>
+      </div></div>
+      <div class="dt-b"><sc-for list="{{ flowRecords }}" as="lr" hint-placeholder-count="10">
+        <div class="dt-r" style="border-bottom:1px solid var(--border-secondary)">
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-light);white-space:nowrap">{{ lr.time }}</div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top;min-width:0"><div style="font-weight:600;color:var(--text-heading);overflow-wrap:anywhere">{{ lr.srcName }}</div><div style="font-size:11px;line-height:14px;color:var(--text-light);overflow-wrap:anywhere">{{ lr.srcSub }}</div></div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top;min-width:0"><div style="font-weight:600;color:var(--text-heading);overflow-wrap:anywhere">{{ lr.dstName }}</div><div style="font-size:11px;line-height:14px;color:var(--text-light);overflow-wrap:anywhere">{{ lr.dstSub }}</div></div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-body);white-space:nowrap">{{ lr.proto }}</div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-heading);white-space:nowrap">{{ lr.bytes }}</div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:{{ lr.pathInk }};white-space:nowrap"><i style="width:6px;height:6px;border-radius:9999px;background:{{ lr.pathInk }}"></i>{{ lr.pathWord }}</span></div>
+          <div class="dt-c" style="padding:9px 10px;vertical-align:top"><span style="display:inline-block;padding:1px 8px;border-radius:9999px;background:{{ lr.actBg }};color:{{ lr.actColor }};font-size:11px;font-weight:700;white-space:nowrap">{{ lr.action }}</span></div>
+        </div>
+      </sc-for></div>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{ noLogs }}" hint-placeholder-val="{{ false }}"><div style="padding:20px;text-align:center;color:var(--text-light);font-size:13px">Nothing matches these filters.</div></sc-if>
+</div>
+<div style="display:grid;grid-template-columns:{{ dashCols }};gap:16px;align-items:stretch">
       <div style="display:grid;gap:16px;min-width:0;grid-template-rows:auto auto;align-content:start">
         <div id="sec-flow" class="fx-card" aria-label="Live flow map" tabindex="0" onKeyDown="{{ mapKey }}" style="outline:none;gap:10px;padding:16px 24px">
           <div class="fx-card-head" style="align-items:center"><div style="min-width:0"><h3 class="fx-card-title">Live flow map</h3><div class="fx-card-sub" title="{{ mapSub }}">{{ mapSub }}</div></div><div style="flex:none;display:flex;align-items:center;gap:8px"><button class="fx-btn" onClick="{{ openJump }}" style="height:28px;padding:0 12px;font-size:12px" title="Jump to anything by name (/)">Jump</button></div><sc-if value="{{ queueClosed }}" hint-placeholder-val="{{ true }}"><button class="fx-btn" onClick="{{ openQueue }}" style="margin-left:auto;height:28px;padding:0 12px;font-size:12px;white-space:nowrap">Queue · {{ queueCount }}</button></sc-if></div>
