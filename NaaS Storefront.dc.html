@@ -140,7 +140,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg-wash);color:var(--text-body);font-size:14px;line-height:20px">
 
 
-<header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:32px;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
+<header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:32px;height:{{ strataCardH }}px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
   <div style="position:relative">
     <!-- Stacked wordmark, as drawn on the AI Fabric UI main-header. The click still opens the layer elevator. -->
     <button onClick="{{ toggleElevator }}" aria-haspopup="menu" aria-expanded="{{ elevatorOpen }}" aria-label="AT&amp;T AI-grade network, layers" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:4px 8px;margin:0 -8px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;white-space:nowrap;line-height:1" style-focus="outline:2px solid var(--border-active);outline-offset:1px"><span style="font-size:10px;line-height:12px;font-weight:700;letter-spacing:.02em;color:#009fdb">AT&amp;T</span><span style="display:flex;align-items:center;gap:6px;font-size:22px;line-height:24px;letter-spacing:-.03em;color:var(--text-heading)"><span><span style="font-weight:500">AI-grade </span><span style="font-weight:700">network</span></span><span aria-hidden="true" style="display:inline-block;font-size:12px;color:var(--text-light);font-weight:400;transform:{{ chevronRot }};transition:transform .15s">⌄</span></span></button>
@@ -328,9 +328,9 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     <sc-if value="{{ fabClosed }}" hint-placeholder-val="{{ true }}">
     <sc-for list="{{ strata }}" as="s" hint-placeholder-count="4">
       <g onClick="{{ s.open }}" role="button" aria-label="{{ s.label }}" opacity="{{ s.op }}" style="cursor:pointer;transition:opacity .2s"><title>Open the fabric: facilities, ports, circuits</title>
-        <rect x="572" y="{{ s.ry }}" width="216" height="64" rx="8" fill="{{ s.fill }}" style="stroke:var(--border-secondary)"></rect>
-        <foreignObject x="572" y="{{ s.ry }}" width="216" height="64" style="pointer-events:none">
-          <div style="box-sizing:border-box;height:64px;padding:5px 14px;display:grid;grid-template-rows:18px 14px 1fr;gap:1px;align-items:start">
+        <rect x="572" y="{{ s.ry }}" width="216" height="{{ strataCardH }}" rx="8" fill="{{ s.fill }}" style="stroke:var(--border-secondary)"></rect>
+        <foreignObject x="572" y="{{ s.ry }}" width="216" height="{{ strataCardH }}" style="pointer-events:none">
+          <div style="box-sizing:border-box;height:{{ strataCardH }}px;padding:5px 14px;display:grid;grid-template-rows:18px 14px 1fr;gap:1px;align-items:start">
             <div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:{{ s.labelColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><sc-if value="{{ s.iconSrc }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display:inline-block;width:18px;height:18px;flex:none;background:url('{{ s.iconSrc }}') center / contain no-repeat"></span></sc-if>{{ s.label }}</div>
             <div style="font-size:11px;line-height:14px;color:{{ s.subColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.short }}</div>
             <div style="display:flex;justify-content:space-between;align-items:end;align-self:end;height:20px"><span style="font-size:12px;line-height:20px;color:{{ s.subColor }}">{{ s.live }}</span>
@@ -901,7 +901,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
   <!-- Connect -->
   <sc-if value="{{ tConnect }}" hint-placeholder-val="{{ true }}">
-  <div style="display:grid;gap:32px">
+  <div style="display:grid;gap:32px;margin-top:24px">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goDiscover }}">Explore the estate</button></div>
     <div class="fx-card" aria-label="Sources" style="gap:10px;padding:16px 24px">
       <div class="fx-card-head"><div><h3 class="fx-card-title">Sources</h3><div class="fx-card-sub">{{ sourcesSub }}</div></div><button class="fx-btn" onClick="{{ toggleAddSource }}" style="height:32px">{{ addSourceLabel }}</button></div>
@@ -981,7 +981,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
   <!-- Govern -->
   <sc-if value="{{ tGovern }}" hint-placeholder-val="{{ false }}">
-  <div style="display:grid;gap:32px">
+  <div style="display:grid;gap:32px;margin-top:24px">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goLogs }}">View logs</button></div>
     <sc-if value="{{ hasGovernFindings }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:6px"><sc-for list="{{ governFindings }}" as="f" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;color:var(--text-heading);font-size:14px"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="font-weight:700;text-wrap:pretty">{{ f.head }}</span></span><span style="display:flex;align-items:center;gap:8px;white-space:nowrap"><button onClick="{{ f.rec.choose }}" style="height:32px;padding:0 14px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--cta-hover)">{{ f.rec.name }}</button><button onClick="{{ f.askAndi }}" style="height:32px;padding:0 10px;border:0;border-radius:9999px;background:transparent;color:var(--link);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Ask Andi</button></span></div></sc-for></div></sc-if>
     <div style="display:grid;gap:12px">
@@ -1126,7 +1126,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
   <!-- Cost -->
   <sc-if value="{{ tCost }}" hint-placeholder-val="{{ false }}">
-  <div style="display:grid;gap:32px">
+  <div style="display:grid;gap:32px;margin-top:24px">
     <div class="fx-filters"><label class="fx-filter"><span class="fx-label">Scope</span><select class="fx-select" value="{{ obScope }}" onChange="{{ setObScope }}" aria-label="Scope"><sc-for list="{{ obScopes }}" as="sc" hint-placeholder-count="4"><option value="{{ sc.key }}">{{ sc.label }}</option></sc-for></select></label><span class="fx-spacer"></span><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
     <sc-if value="{{ costStrip.has }}" hint-placeholder-val="{{ true }}">
     <div class="fx-alert" role="status" aria-label="Act on it">
@@ -1409,7 +1409,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   </sc-if>
   <sc-if value="{{ hasOrder }}" hint-placeholder-val="{{ true }}">
   <div style="display:grid;grid-template-columns:8fr 4fr;gap:24px;align-items:start">
-    <div style="display:grid;gap:32px">
+    <div style="display:grid;gap:32px;margin-top:24px">
       <svg viewBox="0 0 800 100" width="100%" role="img" aria-label="Final path" style="display:block;max-width:640px">
         <rect x="8" y="32" width="160" height="36" rx="8" style="fill:var(--bg-base);stroke:var(--border-primary)"></rect>
         <foreignObject x="8" y="32" width="160" height="36"><div style="font-size:12px;line-height:36px;text-align:center;font-weight:500;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px">{{ reviewSrc }}</div></foreignObject>
@@ -1511,7 +1511,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
   </sc-if>
 
   <sc-if value="{{ notBrowsing }}" hint-placeholder-val="{{ true }}">
-  <div style="display:grid;gap:32px">
+  <div style="display:grid;gap:32px;margin-top:24px">
     <div style="display:grid;grid-template-columns:5fr 7fr;gap:32px;padding:40px 40px 40px 48px;background:#00235a;border-radius:24px;align-items:center;color:#fff;overflow:hidden">
       <div style="display:grid;gap:16px">
         <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:#66c8f0">Max resiliency · AWS</span>
@@ -1589,7 +1589,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <section data-screen-label="S8 Product detail" style="animation:fadeIn .3s;display:grid;gap:24px;grid-template-columns:minmax(0,1fr)">
   <button onClick="{{ goBrowse }}" style="justify-self:start;border:0;background:transparent;padding:0;color:var(--link);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">‹ Back to the marketplace</button>
   <div style="display:grid;grid-template-columns:8fr 4fr;gap:24px;align-items:start">
-    <div style="display:grid;gap:32px">
+    <div style="display:grid;gap:32px;margin-top:24px">
       <div style="display:grid;gap:12px">
         <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:12px;background:var(--bg-accent);display:flex;align-items:center;justify-content:center;overflow:hidden"><sc-if value="{{ product.markSrc }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="{{ product.provider }}" style="display:inline-block;width:28px;height:28px;;background:url('{{ product.markSrc }}') center / contain no-repeat"></span></sc-if></div><span style="font-size:12px;color:var(--text-light)">{{ product.provider }} · {{ product.layerLabel }}</span></div>
         <h1 style="margin:0;font-size:26px;line-height:34px;font-weight:700;color:var(--text-heading);text-wrap:pretty">{{ product.name }}</h1>
