@@ -191,8 +191,13 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);
   const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
+  // The band carries only what crosses a mid mile, so it is scaled against
+  // that, not against the estate total. Scaling against T left the two nodes
+  // short and hanging in the middle of the column once region-local traffic
+  // stopped passing through them.
+  const crossedV = Math.max(0.0001, T - localV);
   const midBudget = rowsBudget(mids.length, 0) - 40;
-  const MMh = mids.map(m => ({ ...m, tot: m.v, h: Math.max(minH, m.v / (T || 1) * midBudget) }));
+  const MMh = mids.map(m => ({ ...m, tot: m.v, h: Math.max(minH, m.v / crossedV * midBudget) }));
   const midH = MMh.reduce((a, m) => a + m.h, 0) + pad * (MMh.length - 1);
   const MM = layout(MMh, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];

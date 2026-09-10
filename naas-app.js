@@ -937,7 +937,10 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   // the fabric flag, so nothing here is a second set of numbers.
   const mixTotal = map.ribbons.filter(r => /^dest:/.test(r.to)).reduce((a, r) => a + r.v, 0) || 1;
   const destName = (k) => (map.nodes.find(n => n.key === k) || {}).name || k;
-  const MIX_LABEL = { 'dest:local': 'Stays in the region', 'dest:regions': 'Into the cloud, from sites' };
+  // Named in the words the question was asked in.
+  const MIX_LABEL = { 'dest:local': 'Cloud to cloud, inside one region', 'dest:regions': 'Ingress to cloud, from sites',
+    'dest:public internet': 'Cloud egress to the internet', 'dest:inter-cloud': 'Cloud to cloud, across clouds',
+    'dest:AI endpoints': 'Cloud egress to AI endpoints', 'dest:object storage': 'Cloud egress to object storage' };
   const mixBuckets = (() => {
     const by = {};
     map.ribbons.filter(r => /^dest:/.test(r.to)).forEach(r => {
