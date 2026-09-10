@@ -68,6 +68,35 @@ export function workloadList(est, inv, scope, opts = {}) {
   if (!subnets.length) return null;
   const sn = scope.snId ? subnets[0] : null;
 
+  // At a VPC the drawer shows its SUBNETS and slides into one, rather than
+  // dumping every workload in the VPC as a flat list. Depth is revealed one
+  // level at a time; the trail in the header climbs back out.
+  if (!sn && !scope.flat) {
+    const totalWl = vpc.subnets.reduce((t, x) => t + (x.workloads || []).length, 0);
+    const rows = vpc.subnets.map(x => {
+      const ws = x.workloads || [];
+      const exp = ws.filter(y => y.exposed).length;
+      return {
+        id: x.name, snId: x.id, descend: true,
+        state: x.pub ? 'public' : 'fabric',
+        stateLabel: x.pub ? 'Public subnet' : 'Private subnet',
+        sub: `${x.cidr} · ${x.az} · ${n(ws.length)} ${ws.length === 1 ? 'workload' : 'workloads'}${exp ? ` · ${exp} exposed` : ''}`,
+        action: '',
+      };
+    });
+    return {
+      kind: 'workloads', level: 'subnets', apps: [],
+      title: `${vpc.name} · ${n(vpc.subnets.length)} ${vpc.subnets.length === 1 ? 'subnet' : 'subnets'}`,
+      sub: `${top.cloud} ${top.region} · ${n(totalWl)} workloads`,
+      trail: [top.cloud, top.region, vpc.name],
+      counts: { total: totalWl, exposed: 0, apps: 0 },
+      matching: rows.length, shownCount: rows.length, hasMore: false, rows,
+      flatDoor: { label: `All ${n(totalWl)} workloads in this VPC`, sub: 'skip the subnets' },
+      selectedCount: 0, matchingIds: [], bulk: { attach: 0, label: '' },
+    };
+  }
+
+
   const all = subnets.flatMap(x => (x.workloads || []).map(w => ({
     ...w, snName: x.name, snCidr: x.cidr, az: x.az, snPub: !!x.pub,
     state: w.exposed ? 'public' : 'fabric',
@@ -90,9 +119,10 @@ export function workloadList(est, inv, scope, opts = {}) {
   const matching = rows.length, shown = rows.slice(0, page * size);
   const selected = all.filter(w => sel.has(w.id));
   const where = sn ? `${vpc.name} › ${sn.name}` : vpc.name;
+  const trail = [top.cloud, top.region, vpc.name, ...(sn ? [sn.name] : [])];
 
   return {
-    kind: 'workloads', apps,
+    kind: 'workloads', level: 'workloads', trail, apps,
     title: `${where} · ${n(all.length)} ${all.length === 1 ? 'workload' : 'workloads'}`,
     sub: `${top.cloud} ${top.region} · ${n(counts.apps)} ${counts.apps === 1 ? 'app' : 'apps'} · ${n(counts.exposed)} exposed`,
     counts, matching, shownCount: shown.length, hasMore: shown.length < matching,
