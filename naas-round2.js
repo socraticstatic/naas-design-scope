@@ -1,3 +1,4 @@
+import * as S from './naas-sites.js';
 // Stakeholder round 2: path tradeoffs, health, endpoints/resources, Observe cuts, Cost arbitrage.
 import { fmt, pct } from './naas-logic.js';
 
@@ -83,6 +84,13 @@ export function applyScope(est, scope) {
   const [kind, name] = scope.split(':');
   if (kind === 'cloud') return { ...est, regionsList: est.regionsList.filter(r => r.cloud === name), sites: est.sites };
   if (kind === 'site') { const site = est.sites.find(s => s.name === name); return { ...est, sites: est.sites.filter(s => s.name === name), regionsList: est.regionsList.filter((r, i) => site && site.priv ? r.priv || i % 2 === 0 : i % 2 === 1 || !r.priv) }; }
+  if (kind === 'first') return { ...est, sites: est.sites.filter(s => S.accessOf(s) === name) };
+  if (kind === 'app') {
+    // An app tag spans regions and clouds; scoping to it keeps the regions
+    // that carry it and drops the rest.
+    const keep = est.regionsList.filter(r => (r.tags || []).some(t => String(t).toLowerCase() === name.toLowerCase()));
+    return { ...est, regionsList: keep.length ? keep : est.regionsList };
+  }
   return est;
 }
 export function trends(ob, window) {

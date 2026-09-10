@@ -781,6 +781,9 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const closeBranch = (arr, key) => arr.filter(k => k !== key && !k.startsWith(key + '/'));
   const toggleOpen = (key, select) => { const isOpen = mapOpen.includes(key); set({ mapOpen: isOpen ? closeBranch(mapOpen, key) : [...mapOpen, key], ...(select ? { mapSel: key, panelTab: s.panelTab || 'overview' } : {}) }); };
   const STATE_FILL = { ok: dark ? '#c5cfd9' : '#1a2431', degraded: '#ff8500', slo: '#c9362c' };
+  /** The volume drawer, for a metro that stands for many sites. Same shape as
+   *  the one in vals(); this function cannot see that one either. */
+  const openVolume = (cls, metro) => set({ vol: { kind: 'metro', cls, metro }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [] });
   /** The map's door into the workload drawer. Same shape as the column's in
    *  vals(); this function cannot see that one. */
   const openWorkloads = (region, vpcId, snId) => set({ vol: { kind: 'workloads', region, vpcId, snId: snId || null }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [], volSlide: 0 });
@@ -804,11 +807,50 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const PATTERN_ALL = ['all', 'All', 'Every flow the estate carries, whichever way it goes.'];
   const patterns = [PATTERN_ALL, ...F.PATTERNS].map(([k, l, why]) => ({ key: k, label: l, why, on: mapPattern === k, go: () => set({ mapPattern: k }), bg: mapPattern === k ? 'var(--cta)' : 'var(--bg-base)', color: mapPattern === k ? '#fff' : 'var(--text-heading)', border: mapPattern === k ? 'var(--cta)' : 'var(--border-secondary)' }));
   const patternWhy = (patterns.find(p => p.on) || patterns[0]).why;
+
+  // ---- Observe's scope cut (Ramesh 3: site360, cloud360, trends) ----
+  // The same numbers, four ways of asking. A dimension picks the question,
+  // a member answers it, and every panel below re-cuts to that answer.
+  const scopeParts = String(obScope || 'all').split(':');
+  const scopeDim = obScope === 'all' || !obScope ? 'all' : scopeParts[0];
+  const scopeName = scopeParts[1] || '';
+  const scopeDims = [
+    ['all', 'Whole estate'],
+    ['cloud', 'By cloud'],
+    ['site', 'By site'],
+    ['first', 'By first mile'],
+    ['app', 'By app'],
+  ].map(([k, l]) => ({ key: k, label: l, on: scopeDim === k,
+    go: () => { if (k === 'all') { set({ obScope: 'all', obDim: 'all' }); return; } set({ obDim: k }); },
+    bg: scopeDim === k ? 'var(--cta)' : 'var(--bg-base)', color: scopeDim === k ? '#fff' : 'var(--text-heading)',
+    border: scopeDim === k ? 'var(--cta)' : 'var(--border-secondary)' }));
+  const obDim = s.obDim || scopeDim;
+  const memberList = (() => {
+    if (obDim === 'cloud') return [...new Set(est0.regionsList.map(r => r.cloud))];
+    if (obDim === 'site') return (est0.sites || []).map(x => x.name);
+    if (obDim === 'first') return [...new Set((est0.sites || []).map(x => S.ACCESS_CLASS[S.accessOf(x)].label))];
+    if (obDim === 'app') return [...new Set(est0.regionsList.flatMap(r => r.tags || []))];
+    return [];
+  })();
+  const scopeMembers = memberList.slice(0, 10).map(nameOf => {
+    const key = obDim === 'first'
+      ? Object.keys(S.ACCESS_CLASS).find(k => S.ACCESS_CLASS[k].label === nameOf) || 'other'
+      : nameOf;
+    const sel = `${obDim}:${key}`;
+    return { key: sel, label: nameOf, on: obScope === sel, go: () => set({ obScope: sel }),
+      bg: obScope === sel ? 'var(--bg-accent)' : 'transparent', color: obScope === sel ? 'var(--link)' : 'var(--text-heading)',
+      border: obScope === sel ? 'var(--cta)' : 'var(--border-secondary)' };
+  });
+  const scopeLabel = scopeDim === 'all' || !scopeName
+    ? 'Whole estate'
+    : `${(scopeDims.find(d => d.key === scopeDim) || {}).label} · ${obDim === 'first' ? (S.ACCESS_CLASS[scopeName] || {}).label || scopeName : scopeName}`;
   const mapFiltersOn = (mapPattern !== 'all' ? 1 : 0) + (mapMode !== 'state' ? 1 : 0) + (mapRegion ? 1 : 0);
   const mapFiltersOpen = s.mapFiltersOpen === undefined ? true : !!s.mapFiltersOpen;
   const modes = [['state', 'State'], ['delta', 'Changes'], ['slo', 'Over SLO']].map(([k, l]) => ({ key: k, label: l, on: mapMode === k, go: () => set({ mapMode: k }), bg: mapMode === k ? 'var(--cta)' : 'var(--bg-base)', color: mapMode === k ? '#fff' : 'var(--text-heading)', border: mapMode === k ? 'var(--cta)' : 'var(--border-secondary)' }));
   const dashTiles = R.trends(ob, s.obWindow || '30d').filter(k => ['thr', 'util', 'p95', 'loss', 'fab'].includes(k.key)).map(k => ({ ...k, key: k.key, hasUnit: !!k.u, badge: `${k.arrow} ${k.delta}`, on: (k.key === 'loss' && mapMode === 'slo') || (k.key === 'fab' && mapMode === 'state'), border: (k.key === 'loss' && mapMode === 'slo') ? 'var(--cta)' : 'var(--border-secondary)', go: ({ loss: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, p95: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, fab: () => set({ mapMode: 'state', mapRegion: null, mapPattern: 'all', mapSel: 'mid:public', panelTab: 'overview' }), util: () => set({ mapSel: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).id || null, mapRegion: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).region || null, panelTab: 'overview' }), thr: () => { const top = map.nodes.filter(x => x.side === 'l' && x.hasChildren).sort((a, b) => b.v - a.v)[0]; set({ mapRegion: null, mapMode: 'delta', mapOpen: top ? [...new Set([...mapOpen, top.key])] : mapOpen, mapSel: top ? top.key : mapSel, panelTab: 'overview' }); } })[k.key] }));
   const dash = { dashTiles, queueRows, hasQueue: queueRows.length > 0, queueCount: `${queueRows.length} open`, queueOpen: queueRows.length > 0 && !!s.queueOpen, queueClosed: !(queueRows.length > 0 && !!s.queueOpen), openQueue: () => set({ queueOpen: true }), closeQueue: () => set({ queueOpen: false }), mapNodes, mapRibbons, mapHeads, mapVB: `0 0 ${map.W} ${map.H}`, patternWhy, patterns,
+    scopeDims, scopeMembers, hasScopeMembers: scopeMembers.length > 0, scopeLabel,
+    clearScope: () => set({ obScope: 'all', obDim: 'all' }), scopeIsAll: !obScope || obScope === 'all',
     mapFiltersOpen, mapFiltersShut: !mapFiltersOpen,
     toggleMapFilters: () => set({ mapFiltersOpen: !mapFiltersOpen }),
     mapFilterSummary: mapFiltersOn
