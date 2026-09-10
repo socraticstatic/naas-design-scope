@@ -6,7 +6,7 @@ const CLOUD_ORDER = ['AWS', 'Azure', 'GCP', 'CoreWeave', 'Oracle'];
 
 export function heroLayout(est, opts) {
   // The band widens when the fabric is open (facilities, ports, circuits) so its rows read at full size.
-  const W = 1392, H = 440, bandX = opts.bandX || 560, bandW = opts.bandW || 240, bandY = 24, bandH = 300, strataH = bandH / 4;
+  const W = 1392, H = 560, bandX = opts.bandX || 560, bandW = opts.bandW || 240, bandY = 28, bandH = 396, strataH = bandH / 4;
   // Beneath the band: the lane for traffic that never touches the AT&T fabric (third party, internet). Ramesh, 2026-09-09.
   const lane = { x: bandX, y: bandY + bandH + 16, w: bandW, h: 76 };
   const out = { W, H, bandX, bandW, bandY, bandH, lane, sites: [], groups: [], regions: [], workloads: [], edges: [], arcs: [], internet: null, strata: [], ghost: false };
@@ -18,7 +18,7 @@ export function heroLayout(est, opts) {
   const rawSites = empty ? [{ name: 'Your data centers', access: 'AVPN, ASE', ghost: true }, { name: 'Your sites', access: 'ADI, ABF, SD-WAN', ghost: true }, { name: 'Your internet sites', access: 'Internet first mile', ghost: true }] : (opts.siteRows || est.sites);
   const sites = rawSites.length > 7 ? [...rawSites.slice(0, 6), { name: `+${fmtN(rawSites.length - 6)} more`, access: 'In the level map', more: true, rollup: false }] : rawSites;
   const n = sites.length;
-  const gap = n > 1 ? Math.min(52, (H - 120) / (n - 1)) : 0;
+  const gap = n > 1 ? Math.min(66, (H - 120) / (n - 1)) : 0;
   const top = 48 + ((H - 96) - (n - 1) * gap) / 2 - 18;
   sites.forEach((s, i) => {
     const y = Math.round(top + i * gap);
@@ -32,8 +32,8 @@ export function heroLayout(est, opts) {
   regs.forEach(r => { (byCloud[r.cloud] = byCloud[r.cloud] || []).push(r); });
   const ord = (c) => { const i = CLOUD_ORDER.indexOf(c); return i < 0 ? 99 : i; };
   const clouds = Object.keys(byCloud).sort((a, b) => ord(a) - ord(b));
-  const rowH = 30, groupHead = 16, groupGap = 8;
-  let y = 28;
+  const rowH = 34, groupHead = 20, groupGap = 12;
+  let y = 30;
   clouds.forEach(c => {
     out.groups.push({ cloud: c, y, count: byCloud[c].length });
     y += groupHead;
@@ -48,7 +48,7 @@ export function heroLayout(est, opts) {
     y += groupGap;
   });
   if (!empty && est.regionsExtra && !opts.regionRows) { out.regions.push({ cloud: '', region: '+' + est.regionsExtra + ' regions', rollup: true, y, cy: y + 14, key: 'more' }); y += rowH; }
-  out.internet = { y: Math.min(404, Math.max(y + 4, 380)) };
+  out.internet = { y: Math.min(H - 36, Math.max(y + 8, 380)) };
   out.edges.push({ id: 'inet', kind: 'internet', priv: false, ghost: empty, viaLane: true, x1: bandX + bandW, y1: lane.y + lane.h - 14, x2: 980, y2: out.internet.y + 14, internet: true });
   (est && est.arcs || []).forEach((a, i) => {
     const r1 = out.regions.find(r => r.region === a.from), r2 = out.regions.find(r => r.region === a.to);

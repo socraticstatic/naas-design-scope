@@ -37,6 +37,7 @@ export function panelFor(sel, ctx) {
   }
   // An opened node is replaced by its children on the map; its trail still knows it.
   if (sel.startsWith('asset:')) return sitePanel(sel.slice(6), ctx);
+  if (sel.startsWith('wl:')) return workloadPanel(sel, ctx);
   const tr = F.trail(sel, est, inv, flows);
   const node = map.nodes.find(x => x.key === sel) || (tr.length && tr[tr.length - 1].key === sel ? { ...tr[tr.length - 1].node, delta: F.deltaOf(sel), opened: true } : null); if (!node) return null;
   if (node.kind === 'sitename' && node.siteName) { const sp = sitePanel(node.siteName, ctx); if (sp) return { ...sp, trail: tr.map(t => ({ key: t.key, name: t.name })) }; }
@@ -74,4 +75,67 @@ export function sitePanel(id, ctx) {
     overview: [['Class', site.clsLabel || site.cls], ['Metro', site.metro], ...(site.address ? [['Address', site.address]] : []), ['Access', site.access || 'Access'], ['First mile', pub ? 'Public internet' : 'AT&T private'], ['PoP', `${site.metro === 'Various' ? 'nearest' : site.metro} PoP · ${site.popMs || site.ms || 4} ms`], ['State', state], ['Traffic', (() => { const g = sr.rows.reduce((a, x) => a + x.gbps, 0); return g >= 1 ? g.toFixed(1) + ' Gbps' : Math.max(1, Math.round(g * 1000)) + ' Mbps'; })()], ['Reaches', `${sr.total} regions`], ['Discovered', `${site.since || 0} days ago`]],
     paths, talks, impact: null, records: recs,
     actions: [...(pub ? [{ key: 'attach', label: `Attach ${site.id || site.name}`, site: site.id || site.name }] : [{ key: 'path', label: 'Add a second path', site: site.id || site.name }]), { key: 'failover', label: 'Run a failover test' }, { key: 'policy', label: `Author a policy for ${(site.clsLabel || site.cls || 'this class').toLowerCase()}` }] };
+}
+
+/**
+ * What is inside one workload — app-b12, cache-b08, whichever leaf you land on.
+ *
+ * The leaf was the one thing with no detail: every level above it opens a
+ * panel, and the last one just sat there. It is reachable from three places,
+ * like every other detail on this product: the map node, the drawer row, and
+ * the column.
+ *
+ * Honest to the data. A private workload resolves to a name because we
+ * created the mapping; its partners are the flows we can see. Nothing here
+ * claims layer 7.
+ */
+export function workloadPanel(sel, ctx) {
+  const { est, inv, flows, conns } = ctx;
+  const [region, vpcId, wid] = sel.slice(3).split('|');
+  const reg = inv.flatMap(c => c.regions).find(r => r.region === region);
+  const top = est.regionsList.find(r => r.region === region);
+  const vpc = reg && reg.vpcs.find(v => v.id === vpcId);
+  if (!reg || !top || !vpc) return null;
+  let sn = null, w = null;
+  for (const x of vpc.subnets) { const hit = (x.workloads || []).find(y => y.id === wid || y.name === wid); if (hit) { sn = x; w = hit; break; } }
+  if (!w) return null;
+
+  const app = w.tag || 'untagged';
+  const row = conns && conns.rows.find(r => r.region === region);
+  const ms = top.priv ? top.fab : top.pub;
+  // Its neighbours: the other workloads carrying the same app tag. That is
+  // what "who does this talk to" can honestly mean from tags and flow logs.
+  const peers = reg.vpcs.flatMap(v => v.subnets.flatMap(x => (x.workloads || []).map(y => ({ ...y, vpc: v.name, sn: x.name }))))
+    .filter(y => (y.tag || 'untagged') === app && y.id !== w.id);
+  const talks = peers.slice(0, 4).map(y => ({ key: y.id, label: `${y.vpc} · ${y.sn}`, what: `${y.name} · ${y.ip}`, gbps: 0.04 }));
+  const recs = records(est, inv, { flows }, 'all').filter(r => (r.srcSub + ' ' + r.dstSub).includes(region)).slice(0, 6);
+
+  return {
+    kind: 'workload',
+    title: w.name,
+    sub: `${w.type} · ${app} · ${top.cloud} ${top.region}`,
+    trail: [top.cloud, top.region, vpc.name, sn.name, w.name].map((nm, i) => ({ key: 'wt' + i, name: nm })),
+    overview: [
+      ['Resource', `${app}/${w.name}`],
+      ['Address', w.ip],
+      ['Type', w.type],
+      ['App tag', app],
+      ['VPC / VNet', `${vpc.name} · ${vpc.purpose || 'workload'}`],
+      ['Subnet', `${sn.name} · ${sn.cidr}`],
+      ['Availability zone', sn.az],
+      ['Reachability', w.exposed ? 'Exposed to the internet' : 'Private'],
+      ['Path', top.priv ? `AT&T fabric · ${top.ramp || 'NetBond'}` : 'Public internet'],
+      ['Latency to the on-ramp', `${ms} ms`],
+      ...(row ? [['Connection', `${row.ramp} · ${row.state}`]] : []),
+      ['First seen', w.since === 0 ? 'today' : w.since === 1 ? '1 day ago' : `${w.since} days ago`],
+      ['Instances sharing this app', `${peers.length + 1}`],
+    ],
+    paths: [{ key: 'p0', region: `${top.cloud} ${top.region}`, ms, gbps: 0.04, priv: !!top.priv, via: top.priv ? (top.ramp || 'NetBond') : 'hyperscaler edge', state: w.exposed ? 'warn' : 'ok', worst: w.exposed ? 'reachable from the internet' : 'clean' }],
+    talks, impact: null, records: recs,
+    actions: [
+      ...(w.exposed ? [{ key: 'attach', label: `Isolate ${w.name}`, site: `${w.name} · ${w.ip}` }] : []),
+      { key: 'policy', label: `Author a policy for ${app}`, region },
+      { key: 'logs', label: 'All records for this workload', region },
+    ],
+  };
 }
