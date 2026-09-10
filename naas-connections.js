@@ -184,7 +184,7 @@ export function regionDrillRows(est, inv, trail) {
       const wls = sn.workloads || [];
       // The column samples; it never lies about the rest. Workloads are the
       // first level with volume, so this is where the drawer takes over.
-      children = wls.slice(0, 6).map(w => child({ name: w.name, wl: 1, priv: !w.exposed, leaf: true, wlLabel: w.ip, sub: `${w.type} · ${w.tag || 'untagged'}` }));
+      children = wls.slice(0, 6).map(w => ({ ...child({ name: w.name, wl: 1, priv: !w.exposed, leaf: true, wlLabel: w.ip, sub: `${w.type} · ${w.tag || 'untagged'}` }), wlSel: `wl:${trail[0]}|${trail[1]}|${w.id}` }));
       if (wls.length > children.length) children.push({ ...child({ name: `See all ${wls.length} workloads`, wl: 0, priv: true, leaf: true, sub: 'every app in this subnet' }), seeAll: true, wlScope: { region: trail[0], vpcId: trail[1], snId: trail[2] } });
     }
   }
