@@ -1226,7 +1226,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
     </sc-if>
     <sc-if value="{{ hasArbitrage }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid;gap:12px">
+    <div class="fx-card" style="gap:12px;padding:16px 24px">
       <div id="sec-arbitrage" style="display:flex;align-items:baseline;gap:12px"><h3 class="fx-card-title">Where the money is</h3><span style="font-size:13px;color:var(--text-body)"><strong style="color:var(--success)">{{ arbTotal }}/mo</strong> · {{ arbTotalYr }}/yr if every public region moves</span></div>
       <div style="display:grid;gap:6px">
         <sc-for list="{{ arbitrage }}" as="a" hint-placeholder-count="3"><div onMouseEnter="{{ a.enter }}" onMouseLeave="{{ a.leave }}" style="display:grid;grid-template-columns:180px minmax(0,1fr) 110px auto;gap:12px;align-items:center;padding:8px 12px;border-radius:10px;background:var(--bg-base);border:1px solid var(--border-secondary)" style-hover="border-color:var(--border-active)"><span style="font-weight:700;font-size:13px;color:var(--text-heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.region }}</span><span style="position:relative;height:14px;border-radius:7px;background:var(--bg-neutral);overflow:hidden"><span style="position:absolute;left:0;top:0;height:100%;width:{{ a.fabW }};background:#0057b8"></span><span style="position:absolute;left:{{ a.fabW }};top:0;height:100%;width:{{ a.premW }};background:var(--error);opacity:.7"></span></span><span style="font-size:13px;font-weight:700;color:var(--success);text-align:right;white-space:nowrap">{{ a.save }}/mo</span><button onClick="{{ a.attach }}" style="height:28px;padding:0 12px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap">Attach</button></div></sc-for>
@@ -1240,7 +1240,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
     </sc-if>
     <sc-if value="{{ hasBuckets }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:stretch">
       <div id="sec-egress" class="fx-card" aria-label="Egress by destination">
         <div class="fx-card-head"><div><h3 class="fx-card-title">Egress by destination</h3><div class="fx-card-sub">Today, and what the fabric would carry</div></div></div>
         <div style="display:grid;gap:8px">
@@ -1266,7 +1266,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
         </sc-if>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:stretch">
       <sc-if value="{{ hasAttCharges }}" hint-placeholder-val="{{ true }}">
       <div id="sec-charges" class="fx-card" aria-label="AT&amp;T charges">
         <div class="fx-card-head"><div><h3 class="fx-card-title">AT&amp;T charges</h3><div class="fx-card-sub" title="{{ attNote }}">{{ attNote }}</div></div><button class="fx-btn" onClick="{{ goMarketplace }}">Catalog prices</button></div>
@@ -1289,7 +1289,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </div>
       </sc-if>
     </div>
-    <div style="display:grid;gap:12px">
+    <div class="fx-card" style="gap:12px;padding:16px 24px">
       <h3 id="sec-buckets" class="fx-card-title">Savings by bucket</h3>
       <div class="dt" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px">
         <div class="dt-h"><div class="dt-r" style="background:var(--bg-wash);color:var(--text-heading)"><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500;width:30%">Bucket</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">Today on the hyperscaler</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">On the fabric</div><div class="dt-c dt-th" style="text-align:right;padding:8px 12px;font-weight:500">Saved</div><div class="dt-c dt-th" style="text-align:left;padding:8px 12px;font-weight:500;width:20%">Action</div></div></div>
@@ -1300,7 +1300,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </div>
     </div>
     <sc-if value="{{ hasSteer }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid;gap:12px">
+    <div class="fx-card" style="gap:12px;padding:16px 24px">
       <h3 id="sec-steer" class="fx-card-title">Steer to save</h3>
       <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px"><sc-for list="{{ steerRecs }}" as="b" hint-placeholder-count="3"><div style="padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:6px;align-content:start"><div style="font-weight:700;color:var(--text-heading)">{{ b.name }}</div><div style="font-size:12px;color:var(--text-light)">{{ b.arb }}</div><button onClick="{{ b.steer }}" style="justify-self:start;height:32px;padding:0 12px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--cta-hover)">Steer</button></div></sc-for></div>
     </div>
