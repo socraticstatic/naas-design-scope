@@ -1209,44 +1209,44 @@ function shellVals(s, set, go, est, c) {
    */
   const SECTIONS = {
     connect: [
-      ['sec-fabric', 'Fabric'],
-      ['@discover', 'Explore 360'],
-      ['sec-accounts', 'Accounts'],
-      ['sec-gap', 'Off fabric'],
-      ['sec-paths', 'Paths'],
-      ['sec-buy', 'Buy'],
-      ['sec-prov', 'Provision'],
-      ['sec-attach', 'Products'],
+      ['sec-fabric', 'Fabric', 'cable'],
+      ['@discover', 'Explore 360', 'search'],
+      ['sec-accounts', 'Accounts', 'lock'],
+      ['sec-gap', 'Off fabric', 'router'],
+      ['sec-paths', 'Paths', 'apis'],
+      ['sec-buy', 'Buy', 'shopping-bag'],
+      ['sec-prov', 'Provision', 'checklist'],
+      ['sec-attach', 'Products', 'apps'],
     ],
     observe: [
-      ['sec-health', 'Health'],
-      ['sec-flow', 'Flow map'],
-      ['sec-changed', 'Changes'],
-      ['sec-logs', 'Logs'],
+      ['sec-health', 'Health', 'high-meter'],
+      ['sec-flow', 'Flow map', 'hub'],
+      ['sec-changed', 'Changes', 'pie-chart'],
+      ['sec-logs', 'Logs', 'checklist'],
     ],
     govern: [
-      ['sec-policies', 'Policies'],
-      ['sec-starting', 'Templates'],
+      ['sec-policies', 'Policies', 'check-shield'],
+      ['sec-starting', 'Templates', 'grid'],
     ],
     cost: [
-      ['sec-arbitrage', 'Savings'],
-      ['sec-egress', 'By destination'],
-      ['sec-firstmile', 'By first mile'],
-      ['sec-forecast', 'Forecast'],
-      ['sec-commit', 'Commitments'],
-      ['sec-charges', 'Charges'],
-      ['sec-buckets', 'By bucket'],
-      ['sec-steer', 'Steering'],
+      ['sec-arbitrage', 'Savings', 'bill'],
+      ['sec-egress', 'By destination', 'cloud'],
+      ['sec-firstmile', 'By first mile', 'cable'],
+      ['sec-forecast', 'Forecast', 'pie-chart'],
+      ['sec-commit', 'Commitments', 'checklist'],
+      ['sec-charges', 'Charges', 'bill'],
+      ['sec-buckets', 'By bucket', 'grid'],
+      ['sec-steer', 'Steering', 'router'],
     ],
   };
   const activeSec = s.activeSec || '';
-  const subNav = (top === 'ai' || (s.screen !== 's3' && s.screen !== 's1')) ? [] : (SECTIONS[s.screen === 's1' ? 'connect' : s.tab] || []).map(([id, label]) => {
+  const subNav = (top === 'ai' || (s.screen !== 's3' && s.screen !== 's1')) ? [] : (SECTIONS[s.screen === 's1' ? 'connect' : s.tab] || []).map(([id, label, ic]) => {
     const isNav = id.startsWith('@');
     const on = isNav ? s.screen === 's1' : (activeSec === id && s.screen === 's3');
-    return { key: id, id, label, on, go: isNav ? go('s1') : () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
+    return { key: id, id, label, on, icon: iconDir + '/' + (ic || 'apps') + '.svg', go: isNav ? go('s1') : () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
       bg: on ? 'var(--sidebar-accent)' : 'transparent', color: on ? 'var(--sidebar-fg)' : 'var(--sidebar-muted)', radius: on ? '8px' : '4px' };
   });
-  const hasSubNav = subNav.length > 0;
+  const hasSubNav = top === 'ai' && subNav.length > 0;
   const railGroups = top === 'ai'
     ? [
         { key: 'home', hasTitle: false, title: '', items: [item('AI Fabric', 'home', go('s3', { layer: 'ai', tab: 'connect' }), onS3('ai', 'connect'))] },
@@ -1266,15 +1266,23 @@ function shellVals(s, set, go, est, c) {
           item('Virtual Keys', 'lock', go('s3', { layer: 'ai', tab: 'connect' }), false),
         ] },
       ]
-    : [
-        // Four words, one loop (Ramesh, 23:09; Micah, 13:23): Connect → Observe → Govern → Cost → Connect. Home is the fabric picture.
-        { key: 'main', hasTitle: false, title: '', items: [
-          item('Discover', 'search', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, s.screen === 's0' || s.screen === 's1' || s.screen === 's2' || onS3('cloud', 'connect'), false, 'What you have'),
-          item('Observe', 'high-meter', () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); }, onS3('cloud', 'observe'), false, 'Live traffic'),
-          item('Govern', 'check-shield', go('s3', { layer: 'cloud', tab: 'govern' }), onS3('cloud', 'govern'), false, 'Policy and posture'),
-          item('Cost', 'bill', go('s3', { layer: 'cloud', tab: 'cost' }), onS3('cloud', 'cost'), false, 'Spend and savings'),
-        ] },
-      ];
+    : (() => {
+        // Their rail, our destinations. Home on top, then a bold group label
+        // per verb over the very rows the sub-nav already carried. Nothing
+        // moves, nothing is added, nothing is dropped.
+        const TABS = [['connect', 'Discover'], ['observe', 'Observe'], ['govern', 'Govern'], ['cost', 'Cost']];
+        const row = (tab, id, label, ic) => {
+          const isNav = id.startsWith('@');
+          const cur = isNav ? s.screen === 's1' : (onS3('cloud', tab) && activeSec === id);
+          return item(label, ic, isNav ? go('s1') : () => { go('s3', { layer: 'cloud', tab })(); set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }); }, cur);
+        };
+        return [
+          { key: 'home', hasTitle: false, title: '', items: [
+            item('NaaS', 'home', () => { if (est.stage === 'empty') go('s0')(); else go('s3', { layer: 'cloud', tab: 'connect' })(); }, false),
+          ] },
+          ...TABS.map(([tab, title]) => ({ key: tab, hasTitle: true, title, items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) })),
+        ];
+      })();
   const aiTitle = { sec: 'Security & Governance', sav: 'Cost', perf: 'Performance & Reliability' }[s.aiTab || 'perf'];
   const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
     : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Discover', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Discover'))
