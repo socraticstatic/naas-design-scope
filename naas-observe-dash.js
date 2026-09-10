@@ -159,18 +159,23 @@ export function workloadPanel(sel, ctx) {
     ],
     children: (w.endpoints || []).length ? {
       title: `${n(w.endpoints.length)} ${w.endpoints.length === 1 ? 'application' : 'applications'} on ${w.name}`,
+      note: `Volume is this workload's ${n(Math.round(top.gbPerWl || 42))} GB/mo split across its listeners — the same figure Cost prices egress with.`,
       // Internet-reachable first: that one is a finding, the rest is
       // inventory.
       rows: w.endpoints.map((e, k) => {
         const open = !!w.exposed && /^(443|80|22)\//.test(e.port || '');
-        // Per-application rate and p95, derived from this workload's own path
-        // and its share of the listeners — the same flows the map draws, cut
-        // by port. Nothing here is measured above layer 4.
-        const share = [0.62, 0.28, 0.10][k] ?? 0.05;
-        const mbps = Math.max(4, Math.round(420 * share));
+        // Volume, not a fabricated rate. The first cut multiplied a made-up
+        // 420 Mbps by a made-up share and reconciled with nothing; the second
+        // divided region throughput that this screen does not carry and
+        // floored at 1 Kbps. This is the same per-workload monthly volume the
+        // Cost page prices its egress with, split across the workload's
+        // listeners — so an application's number rolls up to the bill.
+        const gbMo = (top.gbPerWl || 42) * ([0.62, 0.28, 0.10][k] ?? 0.05);
+        // Latency is the region's own measured path, plus the queueing a
+        // listener behind the load balancer actually adds.
         const p95 = (top.priv ? top.fab : top.pub) + (k * 3) + (open ? 6 : 0);
         return { key: '', port: e.port || 'no listener', name: e.app, ver: e.ver, sub: e.note, warn: open,
-          rate: mbps >= 1000 ? (mbps / 1000).toFixed(1) + ' Gbps' : mbps + ' Mbps',
+          rate: gbMo >= 10 ? Math.round(gbMo) + ' GB/mo' : gbMo.toFixed(1) + ' GB/mo',
           lat: p95 + ' ms p95',
           note: open ? 'reachable from the internet' : 'private to the VPC' };
       }).sort((a, b) => (b.warn - a.warn)),
