@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-observe-dash.js — gauges, the alert queue and the detail panel for the
 // Observe dashboard. Pure data. Added 2026-09-09.
 import * as F from './naas-flowmap.js';

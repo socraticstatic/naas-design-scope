@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // GENERATED from dc-runtime/src/*.ts — do not edit. Rebuild with `cd dc-runtime && bun run build`.
 "use strict";
 (() => {

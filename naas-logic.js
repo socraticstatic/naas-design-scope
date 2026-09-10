@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // Layout and derivation helpers for the NaaS storefront. Pure functions, no DOM.
 export const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 export const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);

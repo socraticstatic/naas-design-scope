@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-flowmap.js — the live flow map: a Sankey you can open in place, node
 // by node, down to the flow record. Pure data. Added 2026-09-09 for the
 // Observe dashboard (Micah: "deep-drillable, with cutting edge UX").
@@ -151,7 +158,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
-  const groups = [['sites', 'Sites · first mile'], ['tags', 'Cloud workloads by tag'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
+  const groups = [['sites', 'First mile · from sites'], ['tags', 'First mile · from cloud workloads'], ['c2c', 'First mile · cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
   // 55 percent of the row budget and everything else compresses into the rest; ribbons taper, so they still attach.
@@ -179,20 +186,25 @@ export function buildMap(est, inv, flows0, opts = {}) {
   groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
   const leftH = SS.length ? y - gap + 8 : top;
   heads.push({ x: W, y: top - 4, anchor: 'end', text: 'Destinations' });
+  heads.push({ x: W / 2, y: top - 4, anchor: 'middle', text: 'Mid mile' });
   const DD = layout(heightsFor(Rs, rowsBudget(Rs.length, 1)), W - colW, top + headH - 6);
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);
-  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:local', name: 'Stays in the region', v: localV, fabV: 0, priv: false, local: true, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
+  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
   const midBudget = rowsBudget(mids.length, 0) - 40;
   const MMh = mids.map(m => ({ ...m, tot: m.v, h: Math.max(minH, m.v / (T || 1) * midBudget) }));
   const midH = MMh.reduce((a, m) => a + m.h, 0) + pad * (MMh.length - 1);
   const MM = layout(MMh, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];
-  const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (a.key === 'mid:local' || b.key === 'mid:local' || b.key === 'dest:local') return 'region'; if (g === 'sites' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
+  const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (b.key === 'dest:local') return 'region'; if (g === 'sites' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
   const link = (a, b, v, priv, kindOverride) => { if (v <= 0.0005) return; const sa = a.h / (a.tot || a.v || 1), sb = b.h / (b.tot || b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, local: !!kindOverride, v, from: a.key, to: b.key, state: kindOverride ? 'ok' : priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key), pattern: kindOverride || patternOf(a, b) }); };
-  const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv && !m.local), loc = MM.find(m => m.local);
-  SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); if (loc && s.locV) link(s, loc, s.locV, false, 'region'); });
-  DD.forEach(d => { if (d.key === 'dest:local') { if (loc) link(loc, d, d.v, false, 'region'); return; } if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
+  const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv);
+  const localDest = DD.find(d => d.key === 'dest:local');
+  // Traffic that starts and ends inside one region crosses no mid mile, so it
+  // is drawn straight across, under the band, instead of being given a middle
+  // node that misrepresents it as a path you could buy.
+  SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); if (localDest && s.locV) link(s, localDest, s.locV, false, 'region'); });
+  DD.forEach(d => { if (d.key === 'dest:local') return; if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
   const nodes = [...SS.map(x => ({ ...x, side: 'l' })), ...MM.map(x => ({ ...x, side: 'm' })), ...DD.map(x => ({ ...x, side: 'r' }))].map(x => ({ ...x, delta: deltaOf(x.key), open: open.has(x.key) }));
   return { W, H, heads, nodes, ribbons, total: T, fabV, localV, open: [...open], zoom, zf };
 }

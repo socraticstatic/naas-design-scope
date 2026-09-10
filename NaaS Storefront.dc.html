@@ -1,3 +1,12 @@
+<!--
+  AT&T AI-grade Network — NaaS storefront prototype
+  Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+
+  AT&T proprietary and confidential. Provided for evaluation and integration
+  by AT&T and its authorised partners. Not for redistribution.
+
+  Standing it up, and lifting it into another shell: see README.md.
+-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,7 +41,7 @@ a{color:#0057b8}a:hover{color:#00388f}
 .fx-search{box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;height:36px;width:272px;max-width:100%;padding:0 12px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);box-shadow:0 1px 1px rgba(0,0,0,.1)}
 .fx-search input{border:0;background:transparent;font:inherit;font-size:14px;color:var(--text-heading);min-width:0;flex:1;outline:none}
 .fx-btn{box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);box-shadow:0 1px 1px rgba(0,0,0,.1);color:var(--text-heading);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
-/* Figma AI Fabric UI cards (table-horizontal-bar-chart 114:1719, Alert 114:2625, Badge). */
+/* Figma shell cards (table-horizontal-bar-chart 114:1719, Alert 114:2625, Badge). */
 .fx-card{padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px;min-width:0;align-content:start}
 .fx-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .fx-card-head>div{min-width:0;flex:1 1 auto}
@@ -141,9 +150,10 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg-wash);color:var(--text-body);font-size:14px;line-height:20px">
 
 
+<sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
 <header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:32px;height:64px;padding:0 24px;background:var(--bg-base);border-bottom:1px solid var(--border-secondary)">
   <div style="position:relative">
-    <!-- Stacked wordmark, as drawn on the AI Fabric UI main-header. The click still opens the layer elevator. -->
+    <!-- Stacked wordmark, as drawn on the shell's main-header. The click still opens the layer elevator. -->
     <button onClick="{{ toggleElevator }}" aria-haspopup="menu" aria-expanded="{{ elevatorOpen }}" aria-label="AT&amp;T AI-grade network, layers" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:4px 8px;margin:0 -8px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit;white-space:nowrap;line-height:1" style-focus="outline:2px solid var(--border-active);outline-offset:1px"><span style="font-size:10px;line-height:12px;font-weight:700;letter-spacing:.02em;color:#009fdb">AT&amp;T</span><span style="display:flex;align-items:center;gap:6px;font-size:22px;line-height:24px;letter-spacing:-.03em;color:var(--text-heading)"><span><span style="font-weight:500">AI-grade </span><span style="font-weight:700">network</span></span><span aria-hidden="true" style="display:inline-block;font-size:12px;color:var(--text-light);font-weight:400;transform:{{ chevronRot }};transition:transform .15s">⌄</span></span></button>
     <sc-if value="{{ elevatorOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeElevator }}" style="position:fixed;inset:0;z-index:25"></div>
@@ -184,6 +194,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
     </div>
   </div>
 </header>
+</sc-if>
 <div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }};padding-right:{{ shellPadRight }};transition:padding-right .28s cubic-bezier(.22,1,.36,1)">
 <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
 <aside aria-label="{{ railTitle }} sections" data-collapsed="{{ railCollapsed }}" style="position:sticky;top:var(--hdr,65px);align-self:start;height:calc(100vh - var(--hdr,65px));display:flex;flex-direction:column;padding:{{ railPad }};border-right:1px solid var(--sidebar-border);background:var(--bg-base);width:{{ railW }};box-sizing:border-box;font-size:14px;transition:width .15s;overflow:hidden">
@@ -993,75 +1004,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       <div style="font-size:11px;line-height:16px;color:var(--text-disabled);text-wrap:pretty">The table compares the middle mile. An SD-WAN overlay rides whichever of these your sites already have — it changes the edge, not the middle, so its numbers follow the row underneath it.</div>
     </div>
     </sc-if>
-    <sc-if value="{{ isCloudLayer }}" hint-placeholder-val="{{ true }}">
-    <div id="sec-buy" style="display:grid;gap:16px">
-      <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)"><span style="color:var(--text-disabled);font-weight:600">Step 2 · </span>Two ways to buy it</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">Same path either way. The difference is who owns the port.</div></div>
-      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
-        <sc-for list="{{ buyRows }}" as="by" hint-placeholder-count="2">
-          <div style="display:grid;gap:8px;align-content:start;padding:20px;border:1px solid {{ by.border }};border-radius:16px;background:{{ by.bg }};min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:15px;line-height:21px;font-weight:700;color:var(--text-heading)">{{ by.name }}</span><span style="padding:1px 8px;border-radius:9999px;background:var(--bg-wash);color:var(--text-light);font-size:10px;font-weight:700;white-space:nowrap">{{ by.badge }}</span></div>
-            <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty">{{ by.what }}</div>
-            <div style="display:grid;gap:4px;margin-top:2px"><sc-for list="{{ by.getRows }}" as="gt" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px;font-size:12px;line-height:17px;color:var(--text-body)"><span aria-hidden="true" style="color:var(--success);font-weight:700">✓</span><span style="text-wrap:pretty">{{ gt.text }}</span></div></sc-for></div>
-            <div style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty">{{ by.fit }}</div>
-            <button onClick="{{ by.pick }}" style="justify-self:start;margin-top:2px;height:30px;padding:0 16px;border:1px solid {{ by.pickBorder }};border-radius:9999px;background:{{ by.pickBg }};color:{{ by.pickInk }};font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">{{ by.pickLabel }}</button>
-          </div>
-        </sc-for>
-      </div>
-    </div>
-    <div id="sec-prov" style="display:grid;gap:16px">
-      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
-        <div style="min-width:0"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)"><span style="color:var(--text-disabled);font-weight:600">Step 3 · </span>What happens after you order</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">{{ provSub }}</div></div>
-        <button onClick="{{ startOrder }}" style="margin-left:auto;flex:none;height:32px;padding:0 18px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Start an order</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
-        <sc-for list="{{ provSteps }}" as="pv" hint-placeholder-count="6">
-          <div style="display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;padding:14px 16px;border:1px solid var(--border-secondary);border-radius:12px;background:var(--bg-base);min-width:0">
-            <span aria-hidden="true" style="width:24px;height:24px;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ pv.n }}</span>
-            <span style="display:grid;gap:2px;min-width:0"><span style="font-size:13px;line-height:18px;font-weight:700;color:var(--text-heading)">{{ pv.t }}</span><span style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty">{{ pv.d }}</span></span>
-          </div>
-        </sc-for>
-      </div>
-    </div>
-    </sc-if>
-    <div style="display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:24px;align-items:start">
-<div id="sec-attach" style="display:grid;gap:24px"><div style="display:grid;gap:1px;margin-bottom:2px"><h3 style="margin:0;font-size:16px;line-height:22px;font-weight:700;color:var(--text-heading)">What to order</h3><div style="font-size:12px;line-height:16px;color:var(--text-light)">The AT&amp;T products that close the gaps above.</div></div>
-        <sc-if value="{{ hasConnectFindings }}" hint-placeholder-val="{{ false }}"><div style="display:grid;gap:6px"><sc-for list="{{ connectFindings }}" as="f" hint-placeholder-count="1"><button onClick="{{ f.askAndi }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:12px 16px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:12px;color:var(--text-heading);font:inherit;font-size:14px;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--border-active)"><span style="display:flex;align-items:center;gap:10px;min-width:0"><span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:var(--warning);flex:none"></span><span style="font-weight:700;text-wrap:pretty">{{ f.head }}</span></span><span style="display:flex;align-items:center;gap:12px;white-space:nowrap"><span style="font-size:12px;font-weight:700;color:var(--success)">{{ f.saveLine }}</span><span style="font-size:12px;color:var(--link);font-weight:500">Ask Andi →</span></span></button></sc-for></div></sc-if>
-        <sc-if value="{{ hasConnectOthers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:16px;align-items:center;padding:12px 16px;border-radius:8px;background:var(--bg-wash);font-size:13px;color:var(--text-body)">Other findings in this layer close elsewhere:<sc-for list="{{ connectOthers }}" as="o" hint-placeholder-count="0"><button onClick="{{ o.go }}" style="border:0;background:transparent;padding:0;color:var(--link);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">{{ o.label }} →</button></sc-for></div></sc-if>
-        <sc-if value="{{ noConnectFindings }}" hint-placeholder-val="{{ false }}">
-          <div style="display:grid;gap:16px">
-            <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px"><div style="font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">{{ connectEmptyHead }}</div><div style="color:var(--text-light)">{{ connectEmptySub }}</div></div>
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
-              <sc-for list="{{ mostChosen }}" as="p" hint-placeholder-count="3">
-                <div style="padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:8px;align-content:start">
-                  <div style="width:36px;height:36px;border-radius:12px;background:var(--bg-accent);display:flex;align-items:center;justify-content:center;overflow:hidden"><sc-if value="{{ p.markSrc }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="{{ p.provider }}" style="display:inline-block;width:24px;height:24px;;background:url('{{ p.markSrc }}') center / contain no-repeat"></span></sc-if></div>
-                  <button onClick="{{ p.open }}" style="text-align:left;border:0;background:transparent;padding:0;font-weight:700;color:var(--text-heading);font-size:14px;cursor:pointer;white-space:normal;text-wrap:pretty" style-hover="color:var(--link)">{{ p.name }}</button>
-                  <div style="font-size:12px;color:var(--text-light)">{{ p.promise }}</div>
-                  <span style="justify-self:start;height:20px;padding:0 8px;border-radius:9999px;background:var(--bg-accent);color:var(--link);font-size:11px;line-height:20px;font-weight:500">{{ p.evidenceShort }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-        </sc-if>
-      </div>
-      <sc-if value="{{ notCloudLayer }}" hint-placeholder-val="{{ false }}">
-      <aside aria-label="Level map" style="padding:20px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:12px;min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:700;color:var(--text-heading)">{{ levelTitle }}</span><span style="font-size:12px;color:var(--text-light)">{{ levelCount }} groups</span></div>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
-          <label class="fx-search" style="width:auto;flex:1 1 160px"><span aria-hidden="true" style="width:16px;height:16px;flex:none;background:url('{{ iconSearch }}') center / contain no-repeat"></span><input value="{{ levelQuery }}" onChange="{{ setLevelQuery }}" placeholder="Search" aria-label="Search groups"></input></label>
-          <select class="fx-select" value="{{ levelSort }}" onChange="{{ setLevelSort }}" aria-label="Sort"><option value="largest">Largest</option><option value="exposed">Most exposed</option><option value="az">A to Z</option></select>
-        </div>
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
-          <sc-for list="{{ levelTiles }}" as="t" hint-placeholder-count="6">
-            <button onClick="{{ t.click }}" style="text-align:left;padding:10px 12px;border:1px solid var(--border-secondary);border-radius:8px;background:var(--bg-base);display:grid;gap:2px;cursor:{{ t.cursor }};min-width:0;white-space:nowrap" style-hover="border-color:var(--border-primary)">
-              <span style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-weight:500;font-size:13px;color:var(--text-heading);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.name }}</span><span style="width:8px;height:8px;border-radius:9999px;flex:none;background:{{ t.dot }}"></span></span>
-              <span style="display:block;font-size:11px;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.meta }}</span>
-            </button>
-          </sc-for>
-        </div>
-        <sc-if value="{{ hasLevelMore }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:var(--text-light)">Showing 60 of {{ levelCount }}. Search or sort to narrow, or drill into a group.</div></sc-if>
-      </aside>
-      </sc-if>
-    </div>
     <div class="fx-alert" role="status" aria-label="Next stop">
       <div class="fx-alert-body"><span class="fx-alert-icon" aria-hidden="true"></span><div><div class="fx-alert-title">{{ connectNext.title }}</div><div class="fx-alert-text">{{ connectNext.text }}</div></div></div>
       <button class="fx-btn" onClick="{{ connectNext.go }}">{{ connectNext.cta }}</button>
@@ -1137,39 +1079,6 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 
   <!-- Observe -->
   <sc-if value="{{ tObserve }}" hint-placeholder-val="{{ false }}">
-  <sc-if value="{{ aiObserve }}" hint-placeholder-val="{{ false }}">
-  <div style="display:grid;gap:24px">
-        <div style="display:flex;align-items:baseline;gap:16px"><h3 style="margin:0;font-size:18px;line-height:26px;font-weight:700;color:var(--text-heading)">Insights</h3><span style="margin-left:auto;font-size:12px;color:var(--text-light)">Last {{ windowLabel }}</span></div>
-    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px">
-      <sc-for list="{{ aiTiles }}" as="t" hint-placeholder-count="4"><button class="fx-kpi" onClick="{{ t.click }}" style="border:{{ t.width }} solid {{ t.border }}"><span class="lab"><span>{{ t.l }}</span></span><span class="val">{{ t.v }}<sc-if value="{{ t.hasUnit }}" hint-placeholder-val="{{ false }}"><small>{{ t.u }}</small></sc-if></span><span class="sub">{{ t.e }}</span></button></sc-for>
-    </div>
-    <sc-if value="{{ aiIsPerf }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid;gap:24px">
-      <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:16px">
-        <div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0;font-size:16px;font-weight:700;color:var(--text-heading)">Traffic flow</h4><span style="display:flex;gap:16px;font-size:12px;color:var(--text-body)"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#0057b8"></span>CoreWeave</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#00235a"></span>Nebius</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#00abeb"></span>OpenAI (external)</span></span></div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));font-size:12px"><sc-for list="{{ aiHeads }}" as="h" hint-placeholder-count="4"><div style="text-align:{{ h.a }}"><div style="font-weight:700;color:var(--text-heading);text-transform:uppercase;letter-spacing:.04em;font-size:11px">{{ h.t }}</div><div style="color:var(--text-light)">{{ h.s }}</div></div></sc-for></div>
-        <svg viewBox="{{ aiVB }}" width="100%" role="img" aria-label="AI traffic flow" style="display:block">
-          <sc-for list="{{ aiRibbons }}" as="r" hint-placeholder-count="9"><path d="{{ r.d }}" fill="{{ r.fill }}" opacity=".16"></path></sc-for>
-          <sc-for list="{{ aiNodes }}" as="n" hint-placeholder-count="12"><rect x="{{ n.x }}" y="{{ n.y }}" width="10" height="{{ n.h }}" rx="1" fill="{{ n.fill }}"></rect><foreignObject x="{{ n.lx }}" y="{{ n.y }}" width="260" height="{{ n.h }}" style="pointer-events:none"><div style="display:flex;align-items:center;height:100%;gap:6px;font-size:11px;color:var(--text-heading);justify-content:{{ n.anchor }}"><span>{{ n.label }}</span><strong>{{ n.val }}</strong></div></foreignObject></sc-for>
-        </svg>
-      </div>
-      <div style="padding:16px 24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;color:var(--text-body)">No latency incidents in this window.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-        <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:12px"><h4 style="margin:0;font-size:16px;font-weight:700;color:var(--text-heading)">Latency with routing</h4>
-          <div style="display:grid;gap:4px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text-body)">Direct (external)</span><strong style="color:var(--text-heading)">{{ aiDirect }}</strong></div><div style="height:8px;border-radius:9999px;background:var(--bg-neutral);overflow:hidden"><div style="height:100%;width:{{ aiDirectW }};background:var(--text-disabled);border-radius:9999px"></div></div></div>
-          <div style="display:grid;gap:4px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text-body)">With routing</span><strong style="color:var(--text-heading)">{{ aiRouted }}</strong></div><div style="height:8px;border-radius:9999px;background:var(--bg-neutral);overflow:hidden"><div style="height:100%;width:100%;background:var(--cta);border-radius:9999px"></div></div></div>
-        </div>
-        <div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;display:grid;gap:12px;align-content:start"><h4 style="margin:0;font-size:16px;font-weight:700;color:var(--text-heading)">Share by provider</h4>
-          <div style="display:flex;height:10px;border-radius:9999px;overflow:hidden;gap:2px"><sc-for list="{{ aiShare }}" as="x" hint-placeholder-count="3"><span style="width:{{ x.w }};background:{{ x.color }}"></span></sc-for></div>
-          <div style="display:flex;gap:16px;font-size:12px;color:var(--text-body)"><sc-for list="{{ aiShare }}" as="x" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:{{ x.color }}"></span>{{ x.label }}</span></sc-for></div>
-        </div>
-      </div>
-    </div>
-    </sc-if>
-    <sc-if value="{{ aiIsSav }}" hint-placeholder-val="{{ false }}"><div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;color:var(--text-body)">Savings: routed spend against the external list price, per identity and per model. Frozen as Figma board 21.</div></sc-if>
-    <sc-if value="{{ aiIsSec }}" hint-placeholder-val="{{ false }}"><div style="padding:24px;background:var(--bg-base);border:1px solid var(--border-secondary);border-radius:16px;color:var(--text-body)">Security: requests judged at the gate, blocked by policy, and the identities behind them. Frozen as Figma board 22.</div></sc-if>
-  </div>
-  </sc-if>
   <sc-if value="{{ netObserve }}" hint-placeholder-val="{{ true }}">
   <div style="display:grid;gap:16px">
     <!-- Observe dashboard (2026-09-09, 14:30): fits the fold at 1440×900. Tiles · map + gauges left · queue + panel right. -->
@@ -1203,6 +1112,35 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Colour</span>
       <div class="fx-chips" style="gap:6px"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><button class="fx-chip" aria-pressed="{{ m.on }}" onClick="{{ m.go }}" style="cursor:pointer;background:{{ m.bg }};color:{{ m.color }};border-color:{{ m.border }}">{{ m.label }}</button></sc-for><sc-if value="{{ hasMapRegion }}" hint-placeholder-val="{{ false }}"><button class="fx-chip" onClick="{{ clearMapRegion }}" style="cursor:pointer;margin-left:6px" title="Clear the filter">{{ mapRegion }} ×</button></sc-if></div>
     </div></sc-if>
+      <div style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px;padding:12px 0 4px;border-top:1px solid var(--border-secondary)">
+        <div style="display:grid;gap:6px;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Where it goes</span><span style="font-size:11px;color:var(--text-light);min-width:0">{{ mixSub }}</span></div>
+          <sc-for list="{{ mixRows }}" as="mx" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 52px 58px 74px;gap:8px;align-items:center;font-size:12px;line-height:16px;min-width:0">
+              <span style="display:grid;gap:2px;min-width:0"><span style="color:var(--text-heading);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ mx.label }}</span><span aria-hidden="true" style="display:block;height:4px;border-radius:9999px;background:var(--bg-neutral)"><span style="display:block;height:4px;border-radius:9999px;width:{{ mx.w }};background:{{ mx.tone }}"></span></span></span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--text-heading)">{{ mx.share }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-light);white-space:nowrap">{{ mx.gbps }} G</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-light);white-space:nowrap" title="{{ mx.fabNote }}">{{ mx.fabPct }} fabric</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;gap:6px;align-content:start;min-width:0">
+          <span style="font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">Through AT&amp;T, or not</span>
+          <div style="font-size:13px;line-height:18px;font-weight:700;color:var(--text-heading);text-wrap:pretty">{{ fabShareLine }}</div>
+          <span aria-hidden="true" style="display:flex;height:10px;border-radius:9999px;overflow:hidden;background:var(--bg-neutral)"><span style="display:block;width:{{ fabW }};background:#3374cc"></span><span style="display:block;width:{{ pubW }};background:#8a949c"></span></span>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;line-height:16px;color:var(--text-light)"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#3374cc;margin-right:5px"></i>AT&amp;T fabric {{ fabPctF }} · {{ fabGbps }} Gbps</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#8a949c;margin-right:5px"></i>Outside {{ pubPctF }} · {{ pubGbps }} Gbps</span></div>
+          <sc-if value="{{ hasFirstMile }}" hint-placeholder-val="{{ true }}">
+          <span style="margin-top:4px;font-size:11px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-disabled)">From sites, by first mile</span>
+          <sc-for list="{{ firstMileRows }}" as="fm" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 44px 56px;gap:8px;align-items:center;font-size:12px;line-height:16px;min-width:0">
+              <span style="display:grid;gap:2px;min-width:0"><span style="color:var(--text-body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fm.label }}</span><span aria-hidden="true" style="display:block;height:3px;border-radius:9999px;background:var(--bg-neutral)"><span style="display:block;height:3px;border-radius:9999px;width:{{ fm.w }};background:#3374cc"></span></span></span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-heading)">{{ fm.share }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-light);white-space:nowrap">{{ fm.gbps }} G</span>
+            </div>
+          </sc-for>
+          </sc-if>
+        </div>
+      </div>
           <sc-if value="{{ hasMapTrail }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;font-size:12px;line-height:18px"><button onClick="{{ mapUp }}" title="Up one level (Esc)" style="flex:none;border:0;background:var(--cta);color:#fff;border-radius:8px;height:22px;padding:0 9px;font:inherit;font-size:11px;font-weight:700;cursor:pointer">‹ Up</button><sc-if value="{{ hasMapZoom }}" hint-placeholder-val="{{ false }}"><span style="flex:none;padding:1px 7px;border-radius:9999px;background:var(--bg-wash);color:var(--text-light);font-size:11px;font-weight:600;white-space:nowrap">{{ mapZoomLabel }}</span></sc-if><sc-for list="{{ mapTrail }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.go }}" style="flex:none;border:0;background:transparent;padding:0;font:inherit;font-size:12px;font-weight:500;color:var(--link);cursor:pointer;white-space:nowrap">{{ t.name }}</button><sc-if value="{{ t.notLast }}" hint-placeholder-val="{{ false }}"><span style="flex:none;color:var(--text-disabled)">›</span></sc-if></sc-for></div></sc-if>
           <svg viewBox="{{ mapVB }}" width="100%" role="img" aria-label="Live flow map" preserveAspectRatio="xMidYMin meet" style="display:block;font-family:inherit;height:auto">
             <sc-for list="{{ mapRibbons }}" as="r" hint-placeholder-count="10"><path d="{{ r.d }}" fill="{{ r.fill }}" opacity="{{ r.op }}" stroke="{{ r.sleeve }}" stroke-width="1.5" style="animation:{{ r.pulse }};transition:opacity .2s"><title>{{ r.title }}</title></path></sc-for>
@@ -1229,6 +1167,24 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
       </div>
     </div>
 <sc-if value="{{ hasAnomalies }}" hint-placeholder-val="{{ true }}">
+<div id="sec-insights" class="fx-card" style="gap:12px;padding:16px 24px;margin-top:16px">
+  <div class="fx-card-head" style="align-items:flex-start"><div style="min-width:0"><h3 class="fx-card-title">Insights</h3><div class="fx-card-sub">{{ insightSub }}</div></div><span style="flex:none;font-size:12px;color:var(--text-light);white-space:nowrap">{{ insightCount }}</span></div>
+  <div class="fx-chips" style="gap:6px"><sc-for list="{{ insightFilters }}" as="if" hint-placeholder-count="3"><button class="fx-chip" aria-pressed="{{ if.on }}" onClick="{{ if.go }}" style="cursor:pointer;background:{{ if.bg }};color:{{ if.color }};border-color:{{ if.border }}">{{ if.label }}</button></sc-for></div>
+  <sc-if value="{{ hasInsights }}" hint-placeholder-val="{{ true }}">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px">
+    <sc-for list="{{ insightRows }}" as="ins" hint-placeholder-count="6">
+      <div style="display:grid;gap:6px;align-content:start;padding:14px 16px;border:1px solid var(--border-secondary);border-left:3px solid {{ ins.tone }};border-radius:12px;background:{{ ins.toneBg }};min-width:0">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:{{ ins.tone }};white-space:nowrap">{{ ins.kind }}</span><span style="font-size:11px;color:var(--text-disabled);white-space:nowrap">{{ ins.when }}</span></div>
+        <div style="font-size:14px;line-height:20px;font-weight:700;color:var(--text-heading);text-wrap:pretty">{{ ins.head }}</div>
+        <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty">{{ ins.why }}</div>
+        <sc-if value="{{ ins.hasDid }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;line-height:17px;color:var(--text-light);text-wrap:pretty"><b style="font-weight:700">AT&amp;T did</b> · {{ ins.did }}</div></sc-if>
+        <div style="font-size:12px;line-height:17px;color:var(--text-body);text-wrap:pretty"><b style="font-weight:700;color:var(--success)">Do</b> · {{ ins.act }}</div>
+        <button onClick="{{ ins.go }}" style="justify-self:start;margin-top:2px;height:28px;padding:0 14px;border:0;border-radius:9999px;background:var(--cta);color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">{{ ins.cta }}</button>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+</div>
 <div id="sec-changed" class="fx-card" style="gap:12px;padding:16px 24px;margin-top:16px">
   <div class="fx-card-head"><div><h3 class="fx-card-title">What changed</h3><div class="fx-card-sub">Anomalies in this window, newest first. What we saw, what caused it, and what closes it.</div></div></div>
   <div style="display:grid;gap:10px">
@@ -1977,7 +1933,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <script>(function(){var d=document.querySelector('x-dc'),t=d&&d.querySelector('template');if(!t)return;window.__resources=window.__resources||{};d.replaceChildren(t.content);})();</script>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { screen: 's3', view: 'mature', estateParam: null, mode: 'foryou', theme: 'light', layer: 'cloud', tab: 'connect', steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', aiTab: 'perf', aiMetric: 'tokens', breakdownOpen: false, events: [], drill: [], regionDrill: null, hoverRegion: null, hoverNode: null, bandOpen: false, picked: [], scanStep: 0, treeOrMap: 'tree', openWorkload: null, treeOpen: {}, chips: [], compose: { outcome: null, source: [], dest: [], regionTab: 'US East', metros: [], resiliency: 'Standard', control: [] }, freeText: '', order: null, submitted: false, pendingDismissed: false, browseQuery: '', browseCat: null, browseSort: 'popular', filtersOpen: false, filterProviders: [], priceCeil: 0, product: null, simulated: false, enforced: false, whyOpen: null, levelSort: 'largest', levelQuery: '', intakeOrg: '', intakeSource: 'credential', intakeProvider: 'AWS', approver: 'j.martinez@meridianlogistics.com', term: 36 }; }
+  constructor(p) { super(p); this.state = { screen: 's3', view: 'mature', estateParam: null, mode: 'foryou', theme: 'light', layer: 'cloud', tab: 'connect', steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', breakdownOpen: false, events: [], drill: [], regionDrill: null, hoverRegion: null, hoverNode: null, bandOpen: false, picked: [], scanStep: 0, treeOrMap: 'tree', openWorkload: null, treeOpen: {}, chips: [], compose: { outcome: null, source: [], dest: [], regionTab: 'US East', metros: [], resiliency: 'Standard', control: [] }, freeText: '', order: null, submitted: false, pendingDismissed: false, browseQuery: '', browseCat: null, browseSort: 'popular', filtersOpen: false, filterProviders: [], priceCeil: 0, product: null, simulated: false, enforced: false, whyOpen: null, levelSort: 'largest', levelQuery: '', intakeOrg: '', intakeSource: 'credential', intakeProvider: 'AWS', approver: 'j.martinez@meridianlogistics.com', term: 36 }; }
   componentDidUpdate() {
     // Guarded on the instance, not on prevState: comparing against prevState
     // re-entered on the very setState this handler makes, and React counted
@@ -2112,7 +2068,7 @@ class Component extends DCLogic {
         security: { desc: 'NGFW in path, DDoS, threat and web protection.', seg: [40, 60], span: 1 },
         vnf: { desc: 'Palo Alto, F5 and Cisco hosted on FlexWare.', seg: [4, 30], span: 1 },
         apis: { desc: 'Insights, provisioning and billing. Portal, API, Terraform.', seg: [4, 96], span: 1 },
-        managed: { desc: 'Monitoring, NOC, observability and AI Fabric governance.', seg: [30, 70], span: 1 },
+        managed: { desc: 'Monitoring, NOC, observability and fabric governance.', seg: [30, 70], span: 1 },
       };
       v.categories = v.categories.map(c => { const m = CATMETA[c.id] || { desc: '', seg: [4, 96], span: 1 }; return { ...c, desc: m.desc, span: m.span, segX1: m.seg[0], segX2: m.seg[1], bg: c.on ? 'var(--cta)' : 'var(--bg-base)', color: c.on ? '#fff' : 'var(--text-heading)', border: c.on ? 'var(--cta)' : 'var(--border-secondary)', tileBg: c.on ? 'rgba(255,255,255,.16)' : 'var(--bg-accent)', subColor: c.on ? '#cfe3ff' : 'var(--text-light)', trackColor: c.on ? 'rgba(255,255,255,.35)' : 'var(--border-secondary)', segColor: c.on ? '#66c8f0' : 'var(--cta)' }; });
       v.hasCat = !!s.browseCat; v.clearCat = () => this.setState({ browseCat: null });

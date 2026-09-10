@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // Addendum 01: inventory tree, station track, Observe at full weight. Pure derivations from an estate.
 import { fmt, pct } from './naas-logic.js';
 
@@ -269,25 +276,4 @@ export function stopCta(stop, est, ob, onTable) {
   }[stop];
 }
 
-// ---------- AI Fabric Insights ----------
-export function aiInsights(est, metric) {
-  const gpu = est.regionsList.filter(r => r.tags.includes('GPU') || r.tags.includes('AI')).reduce((a, r) => a + r.wl, 0);
-  const tokensB = +(gpu * 0.0282).toFixed(2);
-  const spend = Math.round(gpu * 14.2);
-  const tiles = [
-    { key: 'tok', l: 'Tokens', v: tokensB ? tokensB + 'B' : '0', e: 'all on governed paths', on: metric === 'tokens' },
-    { key: 'spend', l: 'Spend', v: '$' + spend.toLocaleString('en-US'), e: '/today', on: metric === 'spend' },
-    { key: 'ttft', l: 'TTFT (p95 latency)', v: '246', u: 'ms', e: 'P95 across 3 models', on: false },
-    { key: 'blk', l: 'Blocked requests', v: '0', e: 'no request denied by policy today', on: false },
-  ];
-  const ids = [{ name: 'rd-helion', v: 2.4, model: 'CoreWeave H100', prov: 'CoreWeave/helion-70b', color: '#0057b8' }, { name: 'classified-helion', v: 0.9, model: 'Nebius L40S', prov: 'Nebius/helion-cls-13b', color: '#00235a' }, { name: 'shared-services', v: 1.6, model: 'OpenAI API', prov: 'OpenAI (external)/GPT-class', color: '#00abeb' }];
-  const T = ids.reduce((a, b) => a + b.v, 0);
-  const W = 1100, H = 320, colW = 10; const cols = [0, 370, 730, W - colW];
-  const stack = (x) => { let y = 8; const pad = 10; const scale = (H - 16 - pad * 2) / T; return ids.map(a => { const h = a.v * scale; const o = { ...a, x, y, h, x2: x + colW }; y += h + pad; return o; }); };
-  const C = cols.map(stack);
-  const ribbons = [];
-  for (let c = 0; c < 3; c++) C[c].forEach((a, i) => { const b = C[c + 1][i]; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x},${b.y} L${b.x},${b.y + b.h} C${mx},${b.y + b.h} ${mx},${a.y + a.h} ${a.x2},${a.y + a.h} Z`, fill: a.color }); });
-  const nodes = C.flatMap((col, c) => col.map((n, i) => ({ ...n, key: `n${c}${i}`, label: [n.name, n.model, c === 2 ? (i === 1 ? 'Public internet' : '') : '', n.prov][c], val: n.v.toFixed(2) + 'B', lx: c === 3 ? n.x - 268 : n.x2 + 8, anchor: c === 3 ? 'flex-end' : 'flex-start', shift: '0', fill: c === 2 ? '#0057b8' : n.color })));
-  const heads = [{ key: 'h0', x: 0, t: 'Identity', s: 'User / Agent', a: 'left' }, { key: 'h1', x: 370, t: 'Source', s: 'Model endpoint', a: 'left' }, { key: 'h2', x: 730, t: 'Fabric route', s: 'Egress path', a: 'left' }, { key: 'h3', x: W, t: 'Provider / model', s: 'Destination', a: 'right' }];
-  return { tiles, sankey: { W, H, nodes, ribbons, heads }, latency: { direct: 38, routed: 50 }, share: [{ key: 'oa', name: 'OpenAI (external)', pct: 76, color: '#00abeb' }, { key: 'cw', name: 'CoreWeave', pct: 21, color: '#0057b8' }, { key: 'nb', name: 'Nebius', pct: 3, color: '#00235a' }] };
-}
+

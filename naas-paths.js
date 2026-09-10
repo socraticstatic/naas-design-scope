@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-paths.js — the route between a site and a cloud region, hop by hop.
 // Pure data. Explore 360 uses it for "Sites that reach it" on a region row,
 // "Paths" on a site row, the inline trace, and Jump. Added 2026-09-09.

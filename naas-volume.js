@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-volume.js — the drawer at the point of volume (Micah, 16:23): every
 // asset behind a rolled-up count, searchable, sortable worst first, filterable,
 // selectable in bulk. Pure data. Added 2026-09-09.

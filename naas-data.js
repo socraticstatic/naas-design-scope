@@ -1,5 +1,11 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 export const LAYERS = [
-  { id: 'ai', label: 'AI Fabric', tagline: 'The token layer', verbs: { connect: 'Connect', govern: 'Govern', observe: 'Observe', cost: 'Cost' }, sub: { connect: 'Providers, Virtual keys', govern: 'Policies, Teams and limits', observe: 'Insights', cost: 'Savings' } },
   { id: 'cloud', label: 'Cloud', tagline: 'The on-ramp layer, with control' },
   { id: 'net', label: 'Network services', tagline: 'The services layer' },
   { id: 'transport', label: 'Transport and access', tagline: 'The physical layer' },
@@ -112,7 +118,6 @@ export const ESTATES = {
       { id: 'base', name: 'Committed base', cloud: 'AWS', today: 64000, fabric: 64000 },
     ],
     findings: [
-      { kind: 'aiuntracked', layer: 'ai', tab: 'observe', pillar: 'Observability', persona: 'Cloud and Platform Architect', head: 'AI traffic to 4 model providers is untracked', ev: '174 GPU-tagged workloads call OpenAI, Anthropic, Bedrock and Vertex over the public internet. No token policy applies.', priced: false, why: 'The fabric can carry the calls privately, but the token layer has no view of them until an assessment runs.', ladder: ['Add the providers to AI Fabric', 'Virtual keys with team limits', '14-day AI traffic assessment'] },
       { kind: 'unmonitored', layer: 'net', tab: 'observe', pillar: 'Observability', persona: 'Network Engineering', head: '3 paths send no telemetry', ev: 'ap-southeast-1 and two Singapore ADI (Dedicated Internet) circuits send no flow logs.', priced: false, why: 'Singapore is the only site not attached to the fabric.', ladder: ['Enable flow logs on the public paths', 'Advanced Network Monitoring for APAC', 'Managed NOC with path telemetry'] },
     ],
     tailored: {
@@ -208,9 +213,6 @@ export const CATALOG = [
   P('policy', 'cloud', 'hosted', 'Policy engine', 'AT&T', 'Tag, region and workload policies. Author, simulate, enforce. Ships with every path.', null, ['Control', 'Ships with every path'], ['Simulate first', 'Enforced on delivery', 'Undo any time'], { popular: 85, included: ['Requirements: private path, no direct internet, inspection, segment by tag, latency SLO', 'Allow-deny, segmentation, route steering', 'Cost-aware routing'], limits: ['Included with every path'], runsWith: ['hosted-vpc'] }),
   P('ngfw', 'cloud', 'security', 'NGFW (Palo Alto) in path', 'Palo Alto', 'Next-generation firewall inserted on the path inside the hosted VPC.', 1400, ['Inspection', 'Palo Alto'], ['99.99% uptime', 'Inline', '24x7 managed'], { popular: 82, included: ['Service insertion', 'Inspection zone in flow logs'], limits: ['Per hosted VPC'], runsWith: ['hosted-vpc', 'policy'] }),
   P('observability', 'cloud', 'managed', 'Observability', 'AT&T', 'Path, throughput, latency, loss, flow logs and cost analytics per path and workload.', null, ['Control', 'Ships with every path'], ['From day one', 'Per path', 'Per workload'], { popular: 84, included: ['Path visualization', 'Traffic and policy analytics', 'Cost analytics'], limits: ['Included with every path'], runsWith: ['hosted-vpc'] }),
-  P('ai-gov', 'ai', 'managed', 'AI Fabric governance', 'AT&T', 'Providers, virtual keys, token policies, teams and limits, insights, savings.', 1600, ['AI Fabric'], ['4 providers', 'Per-team limits', 'Token savings'], { popular: 66, included: ['Providers', 'Virtual keys', 'Token policies', 'Teams and limits', 'Insights', 'Savings'], limits: ['Unlimited keys'], runsWith: ['ai-transport', 'ai-assess'] }),
-  P('ai-transport', 'ai', 'private', 'Private AI transport', 'AT&T', 'Model endpoints and neoclouds reached over the fabric instead of the public internet.', 1900, ['AI Fabric', 'Neocloud'], ['99.99% uptime', '13 ms to neocloud', '24x7 support'], { popular: 62, included: ['Private endpoints', 'Neocloud reach'], limits: ['Per provider'], runsWith: ['neocloud', 'ai-gov'] }),
-  P('ai-assess', 'ai', 'managed', '14-day AI traffic assessment', 'AT&T', 'Fourteen days of AI traffic seen, priced, and steered. The advisor\'s first offer.', 0, ['AI Fabric', 'Assessment'], ['Read-only', '14 days', 'Savings report'], { popular: 74, included: ['Provider discovery', 'Token spend by team', 'Savings report'], limits: ['Read-only'], runsWith: ['ai-gov'] }),
   P('sdwan', 'net', 'managed', 'SD-WAN', 'Cisco, VeloCloud', 'Managed SD-WAN over any first mile, steered on the fabric.', 180, ['SD-WAN'], null, { popular: 80, included: ['Managed edge', 'Policy steering'], limits: ['Per site'], runsWith: ['flexware'] }),
   P('flexware', 'net', 'vnf', 'FlexWare', 'AT&T', 'Universal CPE hosting VNFs at the site.', 220, ['VNF host'], null, { popular: 58, included: ['uCPE', 'VNF hosting'], limits: ['Per site'], runsWith: ['vnf-pan'] }),
   P('ddos', 'net', 'security', 'DDoS Defense', 'AT&T', 'Volumetric attack mitigation on the AT&T backbone.', 950, ['Security'], null, { popular: 77, included: ['Always-on detection', 'Backbone scrubbing'], limits: ['Per circuit'], runsWith: ['mfw'] }),

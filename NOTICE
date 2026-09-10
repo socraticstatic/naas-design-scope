@@ -1,0 +1,35 @@
+AT&T AI-grade Network — NaaS storefront prototype
+
+Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+
+AT&T, the AT&T logo, the AT&T globe, AT&T Aleck Sans, NetBond, AVPN, ASE and
+all related marks are trademarks of AT&T Intellectual Property.
+
+AT&T PROPRIETARY AND CONFIDENTIAL
+---------------------------------
+This package is provided to AT&T personnel and to authorised partners for
+evaluation, design review and integration into AT&T work. It may not be
+redistributed, published, or disclosed to a third party without written
+permission from AT&T Intellectual Property.
+
+CONTENTS AND THIRD-PARTY COMPONENTS
+-----------------------------------
+All source in this package is AT&T work product.
+
+React and ReactDOM are loaded at runtime from a public CDN and are not
+redistributed here. React is Copyright (c) Meta Platforms, Inc. and
+affiliates, licensed under the MIT License.
+
+The AT&T Aleck Sans typeface is licensed and is NOT included in this package.
+The pages fall back to a system sans-serif stack in its absence. Obtain the
+font files from AT&T's brand asset library; do not source them elsewhere.
+
+Icons under brand/ are AT&T functional icons drawn from AT&T's published icon
+set (att.com/scmsassets). They are AT&T assets and carry AT&T's terms.
+
+DATA
+----
+Every figure, name, address, account number and log line in this package is
+synthetic. It is constructed to be internally consistent so the screens read
+truthfully, but it describes no real customer, no real estate, and no real
+traffic. Nothing here is customer data.

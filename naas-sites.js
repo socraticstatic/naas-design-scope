@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-sites.js — the sites side of Explore 360, drilled the way the cloud
 // side is: class → metro → site. Pure data; the app decorates it with
 // open state, carets and doors. Added 2026-09-08 (Micah: "dive from top to

@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-fabric.js — inside the AT&T fabric band: facilities → ports → circuits,
 // opened in place on the picture. Pure data. Added 2026-09-09 (Micah, 14:13:
 // "Why does clicking on AT&T fabric take me to a wordy sales page!").

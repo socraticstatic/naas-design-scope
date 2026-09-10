@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 import * as D from './naas-data.js';
 import { fmt, pct, heroLayout, edgePath, arcPath, drillLevel, sankey } from './naas-logic.js';
 import * as A from './naas-addendum.js';
@@ -38,7 +45,7 @@ export function init(c) {
 export function defaults() {
   return {
     screen: 's0', view: 'mature', estateParam: null, mode: 'foryou', theme: 'light', layer: 'cloud', tab: 'connect',
-    steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', aiTab: 'perf', aiMetric: 'tokens', breakdownOpen: false, events: [],
+    steered: [], inv: {}, invSel: [], obTab: 'flow', groupBy: 'Path', breakdownOpen: false, events: [],
     drill: [], regionDrill: null, hoverRegion: null, hoverNode: null, bandOpen: false, picked: [], scanStep: 0, treeOrMap: 'tree', openWorkload: null, treeOpen: {}, chips: [],
     compose: { outcome: null, source: [], dest: [], regionTab: 'US East', metros: [], resiliency: 'Standard', control: [] }, freeText: '',
     order: null, submitted: false, pendingDismissed: false, browseQuery: '', browseCat: null, browseSort: 'popular', filtersOpen: false, filterProviders: [], priceCeil: 0, product: null,
@@ -233,7 +240,7 @@ export function vals(c) {
   const sorted = levelItems.sort((a, b) => s.levelSort === 'az' ? a.name.localeCompare(b.name) : s.levelSort === 'exposed' ? b.exposed - a.exposed : b.size - a.size).slice(0, 60);
   const baseItems = s.layer === 'cloud' ? est.regionsList.map(r => ({ exposed: r.priv ? 0 : 1 })) : levelItems;
   const exposedN = baseItems.filter(t => t.exposed > 0).length, totalN = baseItems.length;
-  const noun = s.layer === 'ai' ? ['model provider', 'model providers', 'are reached over the public internet'] : s.layer === 'cloud' ? ['region', 'regions', 'still ride the public internet'] : ['site', 'sites', 'reach clouds over the public internet'];
+  const noun = s.layer === 'cloud' ? ['region', 'regions', 'still ride the public internet'] : ['site', 'sites', 'reach clouds over the public internet'];
   const connectVerdict = isEmpty ? 'Nothing connected yet. AT&T already sees 41 metros with on-ramps and 12 clouds you could reach.' : exposedN ? `${exposedN} of ${totalN} ${noun[1]} ${noun[2]}. ${totalN - exposedN} ${totalN - exposedN === 1 ? 'is' : 'are'} on the AT&T fabric${s.layer === 'cloud' && est.regionsExtra ? `, plus ${est.regionsExtra} smaller regions rolled up` : ''}.` : `Every ${noun[0]} is on the AT&T fabric.`;
   const connectEmptyHead = isEmpty ? 'Nothing connected yet' : connectVerdict;
   const catalogRow = layerProducts(s.layer).sort((a, b) => (a.id === 'hosted-vpc' ? -1 : b.id === 'hosted-vpc' ? 1 : b.popular - a.popular)).map(p => productCard(c, p, est));
@@ -447,7 +454,6 @@ function levelMap(s, est, layer, drillInfo, set) {
 function layerPolicies(s, est, scope) {
   const inScope = (list) => { if (!scope || scope === 'all') return list; const name = scope.split(':')[1].toLowerCase(); return list.filter(p => !p.scope || /any cloud/i.test(p.scope) || `${p.match} ${p.scope || ''} ${p.name || ''}`.toLowerCase().includes(name)); };
   if (s.layer === 'cloud') return inScope(est.policies);
-  if (s.layer === 'ai') return est.stage === 'empty' ? [] : [{ name: 'Data Science token limit', match: 'team Data Science', req: 'Limit 2M tokens/day', matched: 12, viol: 0, state: 'enforced' }, { name: 'Provider private path', match: 'tag AI', req: 'Private path required', matched: est.id === 'mature' ? 174 : 41, viol: est.id === 'mature' ? 174 : 41, state: 'authored' }];
   if (s.layer === 'net') return est.policies.filter(p => /Branch|Internet-facing/.test(p.match));
   return est.policies.filter(p => /Branch|region/.test(p.match));
 }
@@ -455,7 +461,6 @@ function layerPolicies(s, est, scope) {
 function layerBuckets(s, est) {
   if (s.layer === 'cloud') return est.buckets;
   if (est.stage === 'empty') return [];
-  if (s.layer === 'ai') return [{ id: 'tok', name: 'Public API egress to model providers', cloud: 'GCP', today: est.id === 'mature' ? 18400 : 6200, fabric: est.id === 'mature' ? 7100 : 2400 }, { id: 'keys', name: 'Token spend on unmanaged keys', cloud: 'providers', today: est.id === 'mature' ? 42000 : 9000, fabric: est.id === 'mature' ? 31000 : 6800 }];
   if (s.layer === 'net') return [{ id: 'bh', name: 'Internet backhaul from branches', cloud: 'ISP', today: est.id === 'trust' ? 96000 : 8400, fabric: est.id === 'trust' ? 52000 : 5100 }];
   return [{ id: 'mtm', name: 'Month-to-month circuits', cloud: 'AT&T', today: est.id === 'trust' ? 210000 : est.id === 'mature' ? 11200 : 6400, fabric: est.id === 'trust' ? 105000 : est.id === 'mature' ? 5600 : 3200 }];
 }
@@ -688,7 +693,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const attachN = selWl || pubWl;
   // station track
   const current = s.screen === 's1' ? 'discover' : s.screen === 's3' ? s.tab : s.screen === 's2' ? 'discover' : null;
-  const goStop = (stop) => () => { if (stop === 'discover') { go('s1')(); return; } if (s.screen !== 's3') { go('s3', { layer: s.layer === 'ai' ? 'ai' : s.layer, tab: stop })(); return; } set({ tab: stop }); syncHash('s3', s.layer, stop); scrollToResult('S3 Department'); };
+  const goStop = (stop) => () => { if (stop === 'discover') { go('s1')(); return; } if (s.screen !== 's3') { go('s3', { layer: s.layer, tab: stop })(); return; } set({ tab: stop }); syncHash('s3', s.layer, stop); scrollToResult('S3 Department'); };
   const stations = A.STOPS.map((st, i) => { const cur = st === current; const done = !isEmpty && st === 'discover' && !cur; return { key: st, label: A.STOP_LABEL[st], cur, done, go: goStop(st), fill: cur ? 'var(--cta)' : done ? 'var(--success)' : 'transparent', ring: cur ? 'var(--cta)' : done ? 'var(--success)' : 'var(--border-primary)', color: cur ? 'var(--link)' : done ? 'var(--text-heading)' : 'var(--text-light)', weight: cur ? 700 : 500, notLast: i < A.STOPS.length - 1, flex: i < A.STOPS.length - 1 ? '1 1 0' : '0 0 auto', mark: done ? '✓' : cur ? '●' : '' }; });
   const onTable = (est.buckets || []).reduce((a, b) => a + Math.max(0, b.today - b.fabric), 0);
   const cta = A.stopCta(current || 'discover', est, ob, onTable);
@@ -712,7 +717,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const briefPills = [{ key: 'a', label: 'Show public flows', go: () => set({ obTab: 'flow' }) }, { key: 'b', label: 'Steer worst offender', go: ob.worst ? steer(ob.worst) : () => {} }, { key: 'c', label: 'Review path diversity', go: () => set({ obTab: 'control' }) }];
   const briefQs = ['Which flow would save the most by steering to AT&T mid-mile?', 'What is driving the public egress spend?', 'Are any controlled flows single-homed (no failover)?'].map((q, i) => ({ key: 'q' + i, q }));
   const events = (s.events || []).slice().reverse();
-  // Observe in the AI Fabric's shape (Ramesh, 2026-09-09): connections, impacted workloads, five patterns, logs.
+  // Observe (Ramesh, 2026-09-09): connections, impacted workloads, five patterns, logs.
   const obPage = s.obPage || 'perf';
   const conns = X.connections(est0, ob);
   const obConn = s.obConn && conns.rows.some(r => r.id === s.obConn) ? s.obConn : (conns.rows[0] || {}).id;
@@ -926,6 +931,53 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
    *  vals(); this function cannot see that one. */
   const openWorkloads = (region, vpcId, snId) => set({ vol: { kind: 'workloads', region, vpcId, snId: snId || null }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [], volSlide: 0 });
   const mapNodes = map.nodes.map((nd, i) => { const left = nd.side === 'l'; const mid = nd.side === 'm'; const selected = nd.key === mapSel; return { ...nd, key: 'n' + i, id: nd.key, label: nd.name, subLabel: nd.sub || '', hasSub: !!nd.sub, vF: (nd.tot || nd.v) >= 1 ? (nd.tot || nd.v).toFixed(1) + ' Gbps' : Math.round((nd.tot || nd.v) * 1000) + ' Mbps', lx: left || mid ? nd.x2 + 6 : nd.x - 236, ly: nd.y + nd.h / 2 - 10, lw: 230, justify: left || mid ? 'flex-start' : 'flex-end', fill: mid ? (nd.priv ? '#0057b8' : nd.local ? '#00838f' : (dark ? '#5d6f80' : '#8a949c')) : nd.key === 'dest:local' ? '#00838f' : nd.kind === 'rollup' ? (dark ? '#5d6f80' : '#b8c2cc') : STATE_FILL[nd.state] || STATE_FILL.ok, op: nodeOp(nd.key), stroke: selected ? 'var(--cta)' : 'transparent', caret: nd.hasChildren ? (nd.open ? '−' : '+') : nd.kind === 'rollup' ? '‹' : '', cursor: nd.hasChildren || !mid ? 'pointer' : 'default', deltaF: (nd.delta >= 0 ? '+' : '') + nd.delta + '%', deltaColor: nd.delta > 10 ? '#1e7a3c' : nd.delta < -10 ? '#c9362c' : 'var(--text-light)', showDelta: mapMode === 'delta', click: () => { if (nd.kind === 'rollup') { if (nd.foldsKey && !nd.tailOnly) set({ mapOpen: closeBranch(mapOpen, nd.foldsKey), mapSel: null }); return; } if (nd.kind === 'more') { const parts = (nd.parentKey || '').split('/'); if (parts.length >= 2) set({ vol: { kind: 'metro', cls: parts[0].replace(/^site:/, ''), metro: parts[1] }, drawerOpen: true, andiOpen: false, volQ: '', volPath: 'all', volState: 'all', volPage: 1, volSel: [] }); return; } if (nd.kind === 'wlmore') { openWorkloads(nd.regionName, nd.vpcId, nd.subnetId); return; } if (nd.kind === 'workload' && nd.wlSel) { set({ mapSel: nd.wlSel, panelTab: 'overview' }); return; } if (nd.hasChildren) { if (mapOpen.includes(nd.key)) set({ mapSel: nd.panelSel || nd.key, panelTab: 'overview' }); else toggleOpen(nd.key); } else set({ mapSel: nd.panelSel || nd.key, panelTab: s.panelTab || 'overview' }); }, pin: () => set({ mapPins: (s.mapPins || []).includes(nd.key) ? (s.mapPins || []).filter(k => k !== nd.key) : [...(s.mapPins || []).slice(-1), nd.key] }), enter: () => set({ mapHov: nd.key }), leave: () => set({ mapHov: null }), title: nd.hasChildren ? (nd.open ? 'Click to close' : 'Click to open in place') : 'Click to select', depthPad: (nd.depth || 0) * 8 }; });
+  // The two questions the map has to answer without being read closely:
+  // where does the traffic go, and how much of it rides AT&T. Both come out
+  // of the ribbons already drawn - the destination leg carries the volume and
+  // the fabric flag, so nothing here is a second set of numbers.
+  const mixTotal = map.ribbons.filter(r => /^dest:/.test(r.to)).reduce((a, r) => a + r.v, 0) || 1;
+  const destName = (k) => (map.nodes.find(n => n.key === k) || {}).name || k;
+  const MIX_LABEL = { 'dest:local': 'Stays in the region', 'dest:regions': 'Into the cloud, from sites' };
+  const mixBuckets = (() => {
+    const by = {};
+    map.ribbons.filter(r => /^dest:/.test(r.to)).forEach(r => {
+      const k = r.to;
+      const b = by[k] || (by[k] = { key: k, label: MIX_LABEL[k] || destName(k), v: 0, fab: 0 });
+      b.v += r.v;
+      // a bypass ribbon never touches a mid mile, so it is neither on nor off the fabric
+      if (r.pattern === 'region') b.local = true; else if (r.priv) b.fab += r.v;
+    });
+    return Object.values(by).sort((a, b) => b.v - a.v);
+  })();
+  const mixRows = mixBuckets.map(b => ({
+    key: b.key, label: b.label,
+    gbps: b.v.toFixed(1), share: Math.round(b.v / mixTotal * 100) + '%',
+    w: (b.v / mixTotal * 100).toFixed(2) + '%',
+    fabPct: b.local ? 'n/a' : Math.round(b.fab / (b.v || 1) * 100) + '%',
+    fabW: b.local ? '0%' : (b.fab / (b.v || 1) * 100).toFixed(2) + '%',
+    fabNote: b.local ? 'never leaves the region' : b.fab / (b.v || 1) >= 0.9 ? 'almost all on the fabric' : b.fab / (b.v || 1) <= 0.1 ? 'almost none on the fabric' : 'split',
+    tone: b.local ? '#4db6ac' : b.fab / (b.v || 1) >= 0.5 ? '#3374cc' : (dark ? '#5d6f80' : '#8a949c'),
+  }));
+  const fabAll = map.ribbons.filter(r => r.to === 'mid:fabric').reduce((a, r) => a + r.v, 0);
+  const pubAll = map.ribbons.filter(r => r.to === 'mid:public').reduce((a, r) => a + r.v, 0);
+  const locAll = map.ribbons.filter(r => r.pattern === 'region' && /^dest:/.test(r.to)).reduce((a, r) => a + r.v, 0);
+  const crossed = fabAll + pubAll;
+  const firstMileRows = map.nodes.filter(n => n.side === 'l' && (n.group || '') === 'sites').map(n => ({
+    key: 'fm-' + n.key, label: n.name, gbps: (n.tot || n.v).toFixed(1),
+    share: Math.round((n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100) + '%',
+    w: ((n.tot || n.v) / (map.nodes.filter(x => x.side === 'l' && (x.group || '') === 'sites').reduce((a, x) => a + (x.tot || x.v), 0) || 1) * 100).toFixed(2) + '%',
+  }));
+  const mixVals = {
+    mixRows, hasMix: mixRows.length > 0,
+    firstMileRows, hasFirstMile: firstMileRows.length > 0,
+    fabShareLine: `${Math.round(fabAll / (crossed || 1) * 100)}% of everything that crosses a mid mile rides the AT&T fabric`,
+    fabGbps: fabAll.toFixed(1), pubGbps: pubAll.toFixed(1), locGbps: locAll.toFixed(1),
+    fabW: (fabAll / (crossed || 1) * 100).toFixed(2) + '%',
+    pubW: (pubAll / (crossed || 1) * 100).toFixed(2) + '%',
+    fabPctF: Math.round(fabAll / (crossed || 1) * 100) + '%',
+    pubPctF: Math.round(pubAll / (crossed || 1) * 100) + '%',
+    mixSub: `${(mixTotal).toFixed(1)} Gbps in the window. ${locAll.toFixed(1)} Gbps of it never leaves its region, so it crosses no mid mile at all.`,
+  };
   const mapRibbons = map.ribbons.map((r, i) => { const base = r.local ? '#4db6ac' : r.priv ? '#3374cc' : (dark ? '#5d6f80' : '#8a949c'); const fill = mapMode === 'delta' ? (r.delta > 10 ? '#1e7a3c' : r.delta < -10 ? '#c9362c' : (dark ? '#5d6f80' : '#b8c2cc')) : mapMode === 'slo' ? (r.state === 'slo' ? '#c9362c' : base) : base; return { key: 'r' + i, d: r.d, fill, op: ribOp(i, r.priv, r.local), pulse: mapMode === 'state' && r.state === 'degraded' ? 'skPulse 1.6s ease-in-out infinite' : 'none', sleeve: (mapMode === 'state' || mapMode === 'slo') && r.state === 'slo' ? '#c9362c' : 'transparent', title: `${r.v.toFixed(2)} Gbps · ${r.local ? 'stays in the region' : r.priv ? 'AT&T fabric' : 'outside the fabric'} · ${(F.PATTERNS.find(x => x[0] === r.pattern) || ['', r.pattern])[1]} · ${(r.delta >= 0 ? '+' : '') + r.delta}% vs prior window` }; });
   const mapHeads = map.heads.map((h, i) => ({ ...h, key: 'h' + i, fx: h.anchor === 'end' ? h.x - 240 : h.x, fy: h.y - 14, align: h.anchor === 'end' ? 'right' : 'left', justify: h.anchor === 'end' ? 'flex-end' : 'flex-start' }));
   const trailKey = (mapSel && !mapSel.startsWith('cx-') && mapSel.includes('/')) ? mapSel : mapZoom;
@@ -1021,7 +1073,48 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     util: { door: 'Open the hottest connection' },
   };
   const dashTiles = [...wlTiles, ...R.trends(ob, s.obWindow || '30d').filter(k => ['thr', 'p95', 'fab'].includes(k.key))].map(k => ({ ...k, key: k.key, hasUnit: !!k.u, badge: `${k.arrow} ${k.delta}`, on: (k.key === 'loss' && mapMode === 'slo') || (k.key === 'fab' && mapMode === 'state'), border: (k.key === 'loss' && mapMode === 'slo') ? 'var(--cta)' : 'var(--border-secondary)', go: ({ loss: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, p95: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, fab: () => set({ mapMode: 'state', mapRegion: null, mapPattern: 'all', mapSel: 'mid:public', panelTab: 'overview' }), util: () => set({ mapSel: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).id || null, mapRegion: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).region || null, panelTab: 'overview' }), thr: () => { const top = map.nodes.filter(x => x.side === 'l' && x.hasChildren).sort((a, b) => b.v - a.v)[0]; set({ mapRegion: null, mapMode: 'delta', mapOpen: top ? [...new Set([...mapOpen, top.key])] : mapOpen, mapSel: top ? top.key : mapSel, panelTab: 'overview' }); } })[k.key] })).map(k => ({ ...k, door: (TILE_DOORS[k.key] || {}).door || 'Open on the map', hasE: !!k.e, hasDelta: !!(k.delta && String(k.delta).trim()), go: (TILE_DOORS[k.key] || {}).act || k.go }));
-  const dash = { dashTiles, queueRows, hasQueue: queueRows.length > 0, queueCount: `${queueRows.length} open`, queueOpen: queueRows.length > 0 && !!s.queueOpen, queueClosed: !(queueRows.length > 0 && !!s.queueOpen), openQueue: () => set({ queueOpen: true }), closeQueue: () => set({ queueOpen: false }), mapNodes, mapRibbons, mapHeads, mapVB: `0 0 ${map.W} ${map.H}`, patternWhy, patterns,
+  // Insights: the screen was showing what the network carries without ever
+  // saying what that means. Two sources, one grammar - an anomaly is something
+  // that happened and has a time on it; an insight is something that is true
+  // and has a number on it. Both carry the evidence and one thing to do.
+  const anomalyRows = R.anomalies(est0, ob).map((a, i) => ({
+    key: a.key, kind: 'Event', when: a.when, head: a.head, why: a.cause, did: a.did, hasDid: !!a.did, act: a.can,
+    tone: a.sev === 'amber' ? 'var(--warning)' : 'var(--link)',
+    toneBg: a.sev === 'amber' ? (dark ? 'rgba(255,162,94,.14)' : '#fff6ec') : (dark ? 'rgba(102,200,240,.12)' : '#eef4fc'),
+    cta: a.region ? 'Open it on the map' : 'Open Cost',
+    go: a.region
+      ? () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow', mapRegion: a.region, panelTab: 'overview' }); }
+      : go('s3', { layer: 'cloud', tab: 'cost' }),
+  }));
+  const insightRows = R.insights(est0, ob).map(x => ({
+    key: x.key, kind: x.kicker, when: '', head: x.head, why: x.body, did: '', hasDid: false,
+    act: { talkers: 'Open the busiest source on the map and see what it reaches.',
+           newdest: 'Review the new destinations in Logs before they become normal.',
+           shadow: 'Author a policy that requires inspection for SaaS from cloud workloads.',
+           growth: 'Steer object storage onto the fabric and the curve flattens.',
+           multi: 'Put the cloud-to-cloud pairs on the fabric and stop paying egress twice.',
+           idle: 'Consolidate the under-used ports at renewal.' }[x.key] || '',
+    tone: 'var(--link)', toneBg: (dark ? 'rgba(102,200,240,.12)' : '#eef4fc'),
+    cta: { talkers: 'Open the map', newdest: 'Open Logs', shadow: 'Open Govern', growth: 'Open Cost', multi: 'Open Cost', idle: 'Open Cost' }[x.key] || 'Open Cost',
+    go: { talkers: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); },
+          newdest: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1 }); },
+          shadow: go('s3', { layer: 'cloud', tab: 'govern' }) }[x.key] || go('s3', { layer: 'cloud', tab: 'cost' }),
+  }));
+  const insightAll = [...anomalyRows, ...insightRows];
+  const insightFilters = [['all', 'Everything'], ['events', 'Events'], ['standing', 'Standing']].map(([k, l]) => ({
+    key: k, label: l, on: (s.insightTab || 'all') === k, go: () => set({ insightTab: k }),
+    bg: (s.insightTab || 'all') === k ? 'var(--cta)' : 'var(--bg-base)',
+    color: (s.insightTab || 'all') === k ? '#fff' : 'var(--text-heading)',
+    border: (s.insightTab || 'all') === k ? 'var(--cta)' : 'var(--border-secondary)',
+  }));
+  const insightTab = s.insightTab || 'all';
+  const insightRowsShown = insightTab === 'events' ? anomalyRows : insightTab === 'standing' ? insightRows : insightAll;
+  const insightVals = {
+    insightRows: insightRowsShown, hasInsights: insightRowsShown.length > 0, insightFilters,
+    insightCount: `${insightAll.length} open`,
+    insightSub: `${anomalyRows.length} ${anomalyRows.length === 1 ? 'event' : 'events'} in the window · ${insightRows.length} standing findings. Each one names the evidence and the next move.`,
+  };
+  const dash = { ...mixVals, ...insightVals, dashTiles, queueRows, hasQueue: queueRows.length > 0, queueCount: `${queueRows.length} open`, queueOpen: queueRows.length > 0 && !!s.queueOpen, queueClosed: !(queueRows.length > 0 && !!s.queueOpen), openQueue: () => set({ queueOpen: true }), closeQueue: () => set({ queueOpen: false }), mapNodes, mapRibbons, mapHeads, mapVB: `0 0 ${map.W} ${map.H}`, patternWhy, patterns,
     scopeDims, scopeMembers, hasScopeMembers: scopeMembers.length > 0, scopeLabel,
     clearScope: () => set({ obScope: 'all', obDim: 'all' }), scopeIsAll: !obScope || obScope === 'all',
     mapFiltersOpen, mapFiltersShut: !mapFiltersOpen,
@@ -1045,11 +1138,6 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const credScanned = sources.filter(x => x.state === 'Connected').length;
   const gapVals = { gapRows, hasGap: gapRows.length > 0, noGap: gapRows.length === 0, gapSummary, gapCount: String(gapRows.length) };
   const obX = { sources, sourcesSub: `${credScanned} of ${sources.length} credentials scanning · everything above is drawn from these`, addSourceOpen: !!s.addSourceOpen, toggleAddSource: () => set({ addSourceOpen: !s.addSourceOpen }), addSourceLabel: s.addSourceOpen ? 'Close' : 'Add a source', addSourceKind: s.addSourceKind || 'AWS account', setAddSourceKind: (e) => set({ addSourceKind: e.target.value }), addSource: () => set({ addedSources: [...(s.addedSources || []), s.addSourceKind || 'AWS account'], addSourceOpen: false }), ...dash, nextStop, connectNext, governNext, costNext, obIsPerf: obPage === 'perf', obIsSec: false, obIsLogs: obTab === 'control', obTiles, connRows, hasConns: conns.rows.length > 0, connHead: `${conns.total} ${conns.total === 1 ? 'connection' : 'connections'}`, connSub: conns.degraded ? `${conns.degraded} degraded · ${conns.rows.filter(r => r.state === 'Saturating').length} saturating` : conns.rows.some(r => r.state === 'Saturating') ? `${conns.rows.filter(r => r.state === 'Saturating').length} saturating · none degraded` : 'all up', impact, patternCards, logChips, logPattern, flowRecords, flowRecordCount: `${flowRecords.length} records`, logsPatternLabel: (logChips.find(ch => ch.on) || {}).label || 'All', goGovern: go('s3', { layer: 'cloud', tab: 'govern' }), goPerf: () => set({ obPage: 'perf', obTab: 'flow' }), closeLogs: () => set({ obTab: 'flow' }) };
-  // AI Fabric insights
-  const ai = A.aiInsights(est, s.aiMetric || 'tokens');
-  const aiTab = s.aiTab || 'perf';
-  const aiTabs = [['perf', 'Performance'], ['sav', 'Savings'], ['sec', 'Security']].map(([k, l]) => ({ key: k, label: l, on: aiTab === k, go: () => set({ aiTab: k }), border: aiTab === k ? 'var(--cta)' : 'transparent', color: aiTab === k ? 'var(--link)' : 'var(--text-body)' }));
-  const aiTiles = ai.tiles.map(t => ({ ...t, hasUnit: !!t.u, border: t.on ? 'var(--cta)' : 'var(--border-secondary)', width: t.on ? '2px' : '1px', click: () => set({ aiMetric: t.key === 'spend' ? 'spend' : 'tokens' }) }));
   return {
     invTree: s.tagView ? tagTree(inv, tree, chip) : tree, tagView: !!s.tagView, cloudView: !s.tagView, toggleTagView: () => set({ tagView: !s.tagView }), tagViewUb: s.tagView ? 'var(--cta)' : 'transparent', tagViewColor: s.tagView ? 'var(--link)' : 'var(--text-body)', cloudViewUb: !s.tagView ? 'var(--cta)' : 'transparent', cloudViewColor: !s.tagView ? 'var(--link)' : 'var(--text-body)', hasTree: tree.length > 0, invStats: [{ key: 's', v: stats.sites, l: 'sites' }, { key: 'c', v: stats.clouds, l: 'clouds' }, { key: 'r', v: stats.regions, l: 'regions' }, { key: 'w', v: stats.workloads.toLocaleString('en-US'), l: 'workloads' }, { key: 'a', v: stats.attached, l: 'attached' }, { key: 'e', v: stats.exposed, l: 'exposed' }],
     expandAll: () => set({ inv: Object.fromEntries(allKeys.map(k => [k, true])) }), collapseAll: () => set({ inv: {} }), collapsedLabel: Object.values(openMap).some(Boolean) ? 'Expanded view' : 'Collapsed view',
@@ -1118,7 +1206,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     records, recordCount: `${records.length} groups`, groupBy, setGroupBy: (e) => set({ groupBy: e.target.value }), groupOptions: ['None', 'Source', 'Destination', 'Path', 'Action'].map(o => ({ key: o, label: o })),
     briefing: ob.briefing, briefPills, briefQs, paths, pathsSummary: ob.pathsSummary, restoreAll: () => set({ steered: [] }), hasSteered: steered.length > 0,
     events, eventCount: `${events.length} ${events.length === 1 ? 'event' : 'events'} this session`, hasEvents: events.length > 0,
-    ...obX, aiObserve: s.layer === 'ai' && s.tab === 'observe', netObserve: !(s.layer === 'ai' && s.tab === 'observe'), noEvents: events.length === 0, hasObserveFindings: est.findings.some(f => f.tab === 'observe' && (f.layer === s.layer || (f.layer === 'net' && s.layer === 'cloud'))), aiTiles, aiTabs, aiIsPerf: aiTab === 'perf', aiIsSav: aiTab === 'sav', aiIsSec: aiTab === 'sec', aiVB: `0 0 ${ai.sankey.W} ${ai.sankey.H}`, aiNodes: ai.sankey.nodes, aiRibbons: ai.sankey.ribbons.map((r, i) => ({ ...r, key: 'ar' + i })), aiHeads: ai.sankey.heads, aiDirect: ai.latency.direct + 'ms', aiRouted: ai.latency.routed + 'ms', aiDirectW: pct(ai.latency.direct, ai.latency.routed) + '%', aiShare: ai.share.map(x => ({ ...x, w: x.pct + '%', label: `${x.name} · ${x.pct}%` })),
+    ...obX, netObserve: true, noEvents: events.length === 0, hasObserveFindings: est.findings.some(f => f.tab === 'observe' && (f.layer === s.layer || (f.layer === 'net' && s.layer === 'cloud'))),
   };
 }
 
@@ -1203,31 +1291,41 @@ function shellVals(s, set, go, est, c) {
   // Closed by default (Micah, 13:30); opens from the header button or any Ask Andi door.
   const andiOpen = !!s.andiOpen;
   const andiDocked = andiOpen && wide;
-  const inAi = s.screen === 's3' && s.layer === 'ai';
-  const top = s.screen === 's1' ? 'discover' : inAi ? 'ai' : 'net';
-  const layerSubtitle = top === 'discover' || s.screen === 's7' || s.screen === 's8' ? 'All layers' : top === 'ai' ? 'AI Fabric layer' : 'Network services layer';
+  // The AI Fabric layer is out of this build entirely (2026-09-10): the
+  // storefront ships the network layer only, so a collaborator picking it up
+  // never has to reason about a second layer that is not there.
+  const top = s.screen === 's1' ? 'discover' : 'net';
+  const layerSubtitle = top === 'discover' || s.screen === 's7' || s.screen === 's8' ? 'All layers' : 'Network services layer';
   const close = { elevatorOpen: false };
   const goTab = (screen, extra) => () => { go(screen, extra)(); set(close); };
   const topTabs = [
     { key: 'discover', label: 'Discover', current: top === 'discover', go: goTab('s1') },
-    { key: 'net', label: 'Network services', current: top === 'net' && s.screen !== 's7' && s.screen !== 's8', go: goTab('s3', { layer: 'cloud', tab: 'connect' }), divider: true },
-    { key: 'ai', label: 'AI Fabric', current: top === 'ai', go: goTab('s3', { layer: 'ai', tab: 'connect' }) },
+    { key: 'net', label: 'Network services', current: top === 'net' && s.screen !== 's7' && s.screen !== 's8', go: goTab('s3', { layer: 'cloud', tab: 'connect' }) },
   ].map(t => ({ ...t, border: t.current ? 'var(--cta)' : 'transparent', color: t.current ? 'var(--link)' : 'var(--text-heading)', weight: t.current ? 700 : 500 }));
   const railCur = s.screen === 's2' || s.screen === 's0' ? 'Home' : s.screen === 's3' ? ({ connect: 'Connect', govern: 'Govern', observe: 'Observe', cost: 'Cost' }[s.tab] || 'Home') : ['s4', 's5', 's6'].includes(s.screen) ? 'Connect' : null;
-  const dataLayer = top === 'ai' ? 'ai' : 'cloud';
-  const rail = [['Home', 'home', () => (top === 'ai' ? go('s3', { layer: 'ai', tab: 'connect' }) : go('s3', { layer: 'cloud', tab: 'connect' }))()], ['Connect', 'cable', go('s3', { layer: dataLayer, tab: 'connect' })], ['Govern', 'check-shield', go('s3', { layer: dataLayer, tab: 'govern' })], ['Observe', 'high-meter', go('s3', { layer: dataLayer, tab: 'observe' })], ['Cost', 'bill', go('s3', { layer: dataLayer, tab: 'cost' })]].map(([label, ic, fn]) => ({ key: label, label, done: label === 'Home' ? false : label === 'Connect' ? est.stage !== 'empty' : label === 'Govern' ? est.policiesEnforced > 0 : label === 'Observe' ? (est.observedPct || 0) > 0 : label === 'Cost' ? !!(s.steered && s.steered.length) : false, go: () => { fn(); set(close); }, cur: railCur === label, icon: (railCur === label ? iconLink : iconDir) + '/' + ic + '.svg', bg: railCur === label ? 'var(--bg-accent)' : 'transparent', color: railCur === label ? 'var(--link)' : 'var(--text-heading)', weight: railCur === label ? 700 : 500 }));
-  const showRail = true;
+  const dataLayer = 'cloud';
+  const rail = [['Home', 'home', () => go('s3', { layer: 'cloud', tab: 'connect' })()], ['Connect', 'cable', go('s3', { layer: dataLayer, tab: 'connect' })], ['Govern', 'check-shield', go('s3', { layer: dataLayer, tab: 'govern' })], ['Observe', 'high-meter', go('s3', { layer: dataLayer, tab: 'observe' })], ['Cost', 'bill', go('s3', { layer: dataLayer, tab: 'cost' })]].map(([label, ic, fn]) => ({ key: label, label, done: label === 'Home' ? false : label === 'Connect' ? est.stage !== 'empty' : label === 'Govern' ? est.policiesEnforced > 0 : label === 'Observe' ? (est.observedPct || 0) > 0 : label === 'Cost' ? !!(s.steered && s.steered.length) : false, go: () => { fn(); set(close); }, cur: railCur === label, icon: (railCur === label ? iconLink : iconDir) + '/' + ic + '.svg', bg: railCur === label ? 'var(--bg-accent)' : 'transparent', color: railCur === label ? 'var(--link)' : 'var(--text-heading)', weight: railCur === label ? 700 : 500 }));
+  // ---- Chrome switches, for dropping these screens into another shell ----
+  // ?chrome=off   hide both the top header and the left rail
+  // ?chrome=norail   keep the header, drop the rail
+  // ?chrome=noheader keep the rail, drop the header
+  // The page body is untouched either way, so the screens can be lifted into
+  // a host application's own frame without editing this file.
+  const chrome = (() => {
+    try { return (new URLSearchParams(window.location.search).get('chrome') || '').toLowerCase(); } catch (e) { return ''; }
+  })();
+  const showRail = !(chrome === 'off' || chrome === 'norail');
+  const showHeader = !(chrome === 'off' || chrome === 'noheader');
   const storeCur = s.screen === 's7' || s.screen === 's8';
-  const curLayer = top === 'ai' ? 'ai' : top === 'net' ? 'net' : null;
+  const curLayer = top === 'net' ? 'net' : null;
   const elevator = [
-    // Cloud is the only live layer. AI Fabric, Network services and Transport
-    // and access all draw greyed and inert — `vision` is what greys a row.
-    { key: 'ai', name: 'AI Fabric', tag: 'The token layer', icon: iconDir + '/apis.svg', kicker: '', vision: true, go: (e) => e.preventDefault(), href: '#' },
+    // Cloud is the only live layer. Network services and Transport and access
+    // draw greyed and inert — `vision` is what greys a row.
     { key: 'cloud', name: 'Cloud · NetBond Advanced', tag: 'The on-ramp layer, with control', icon: iconDir + '/cloud.svg', kicker: '', href: 'Elevator Boards.dc.html', go: () => {} },
     { key: 'net', name: 'Network services', tag: 'The services layer', icon: iconDir + '/hub.svg', kicker: '', vision: true, go: (e) => e.preventDefault(), href: '#' },
     { key: 'transport', name: 'Transport and access', tag: 'The physical layer', icon: iconDir + '/cable.svg', kicker: 'Vision', vision: true, go: (e) => e.preventDefault(), href: '#' },
   ].map(l => ({ ...l, cur: l.key === curLayer, notCur: l.key !== curLayer, bg: l.key === curLayer ? 'var(--bg-accent)' : 'transparent', hover: l.vision ? 'transparent' : l.key === curLayer ? 'var(--bg-accent)' : 'var(--bg-neutral)', op: l.vision ? 0.4 : 1, cursor: l.vision ? 'default' : 'pointer' }));
-  // ---- AI Fabric UI shell (Figma page 113:51): pills, grouped rail, page title, range.
+  // ---- Shell (Figma page 113:51): pills, grouped rail, page title, range.
   // The export was drawn for a 64px rail beside a docked Andi at 1440. The
   // 240px rail starts expanded only from 1600, where both fit beside the
   // screens as drawn; the toggle overrides at any width.
@@ -1239,8 +1337,7 @@ function shellVals(s, set, go, est, c) {
   const railCollapsed = surfaceOpen ? true : (s.railCollapsed === undefined ? (andiDocked && !wideRail) : !!s.railCollapsed);
   const pillBg = (on) => on ? 'var(--bg-accent)' : 'transparent';
   const pills = [
-    { key: 'ai', label: 'AI Fabric', current: false, off: true, go: () => {} },
-    { key: 'net', label: 'NaaS', current: top !== 'ai', off: false, go: est.stage === 'empty' ? goTab('s0', { layer: 'cloud' }) : goTab('s3', { layer: 'cloud', tab: 'connect' }) },
+    { key: 'net', label: 'NaaS', current: true, off: false, go: est.stage === 'empty' ? goTab('s0', { layer: 'cloud' }) : goTab('s3', { layer: 'cloud', tab: 'connect' }) },
   ].map(p => ({ ...p, bg: pillBg(p.current), op: p.off ? 0.4 : 1, cursor: p.off ? 'default' : 'pointer', hover: p.off ? 'transparent' : 'var(--bg-wash)', dis: p.off ? 'true' : 'false' }));
   const obTabNow = s.obTab || 'flow';
   const logsTab = (typeof OBTABS !== 'undefined' && OBTABS.includes('records')) ? 'records' : 'control';
@@ -1266,13 +1363,11 @@ function shellVals(s, set, go, est, c) {
       ['sec-accounts', 'Accounts', 'lock'],
       ['sec-gap', 'Off fabric', 'router'],
       ['sec-paths', 'Paths', 'apis'],
-      ['sec-buy', 'Buy', 'shopping-bag'],
-      ['sec-prov', 'Provision', 'checklist'],
-      ['sec-attach', 'Products', 'apps'],
     ],
     observe: [
       ['sec-health', 'Health', 'high-meter'],
       ['sec-flow', 'Flow map', 'hub'],
+      ['sec-insights', 'Insights', 'question-circle'],
       ['sec-changed', 'Changes', 'pie-chart'],
       ['sec-logs', 'Logs', 'checklist'],
     ],
@@ -1292,33 +1387,14 @@ function shellVals(s, set, go, est, c) {
     ],
   };
   const activeSec = s.activeSec || '';
-  const subNav = (top === 'ai' || (s.screen !== 's3' && s.screen !== 's1')) ? [] : (SECTIONS[s.screen === 's1' ? 'connect' : s.tab] || []).map(([id, label, ic]) => {
+  const subNav = ((s.screen !== 's3' && s.screen !== 's1')) ? [] : (SECTIONS[s.screen === 's1' ? 'connect' : s.tab] || []).map(([id, label, ic]) => {
     const isNav = id.startsWith('@');
     const on = isNav ? s.screen === 's1' : (activeSec === id && s.screen === 's3');
     return { key: id, id, label, on, icon: iconDir + '/' + (ic || 'apps') + '.svg', go: isNav ? go('s1') : () => set({ scrollToSec: id, scrollNonce: (s.scrollNonce || 0) + 1 }),
       bg: on ? 'var(--sidebar-accent)' : 'transparent', color: on ? 'var(--sidebar-fg)' : 'var(--sidebar-muted)', radius: on ? '8px' : '4px' };
   });
-  const hasSubNav = top === 'ai' && subNav.length > 0;
-  const railGroups = top === 'ai'
-    ? [
-        { key: 'home', hasTitle: false, title: '', items: [item('AI Fabric', 'home', go('s3', { layer: 'ai', tab: 'connect' }), onS3('ai', 'connect'))] },
-        { key: 'observe', hasTitle: true, title: 'Observe', items: [
-          item('Security & Governance', 'check-shield', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sec' }); }, onS3('ai', 'observe') && s.aiTab === 'sec'),
-          item('Cost', 'bill', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sav' }); }, onS3('ai', 'observe') && s.aiTab === 'sav'),
-          item('Performance & Reliability', 'high-meter', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'perf' }); }, onS3('ai', 'observe') && (s.aiTab || 'perf') === 'perf'),
-        ] },
-        { key: 'deep', hasTitle: true, title: 'Deep dive', items: [
-          item('Explore 360', 'search', go('s1'), s.screen === 's1'),
-          item('Logs', 'checklist', () => { go('s3', { layer: 'ai', tab: 'observe' })(); set({ aiTab: 'sec' }); }, false),
-        ] },
-        { key: 'govern', hasTitle: true, title: 'Govern', items: [
-          item('Policies', 'check-shield', go('s3', { layer: 'ai', tab: 'govern' }), onS3('ai', 'govern')),
-          item('Budget & Limits', 'person-group', go('s3', { layer: 'ai', tab: 'cost' }), onS3('ai', 'cost')),
-          item('Providers', 'apis', go('s3', { layer: 'ai', tab: 'connect' }), false),
-          item('Virtual Keys', 'lock', go('s3', { layer: 'ai', tab: 'connect' }), false),
-        ] },
-      ]
-    : (() => {
+  const hasSubNav = false;
+  const railGroups = (() => {
         // Their rail, our destinations. Home on top, then a bold group label
         // per verb over the very rows the sub-nav already carried. Nothing
         // moves, nothing is added, nothing is dropped.
@@ -1335,9 +1411,8 @@ function shellVals(s, set, go, est, c) {
           ...TABS.map(([tab, title]) => ({ key: tab, hasTitle: true, title, items: (SECTIONS[tab] || []).map(([id, label, ic]) => row(tab, id, label, ic)) })),
         ];
       })();
-  const aiTitle = { sec: 'Security & Governance', sav: 'Cost', perf: 'Performance & Reliability' }[s.aiTab || 'perf'];
   const pageTitle = s.screen === 's1' ? 'Explore 360' : s.screen === 's4' ? 'Compose' : s.screen === 's5' ? 'Recommend' : s.screen === 's6' ? 'Review order' : storeCur ? 'Marketplace'
-    : s.screen === 's3' ? (s.layer === 'ai' ? ({ connect: 'AI Fabric', govern: 'Policies', observe: aiTitle, cost: 'Budget & Limits' }[s.tab] || 'AI Fabric') : ({ connect: 'Discover', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Discover'))
+    : s.screen === 's3' ? ({ connect: 'Discover', govern: 'Govern', observe: (obTabNow === logsTab ? 'Observe · Logs' : 'Observe'), cost: 'Cost' }[s.tab] || 'Discover')
     : 'Discover';
   const loadedAt = (typeof window !== 'undefined' && window.__naasLoaded) || Date.now();
   const agoMin = Math.max(0, Math.round((Date.now() - loadedAt) / 60000));
@@ -1358,7 +1433,7 @@ function shellVals(s, set, go, est, c) {
     pills, railGroups, subNav, hasSubNav, pageTitle, credsLabel, credsTitle, manageCreds, showPageTitle, rangeValue, setRange, bellLabel, buildLabel: (typeof window !== 'undefined' && window.__naasVersion) ? `v${window.__naasVersion.build} · ${window.__naasVersion.date}` : '', hasBuildLabel: !!(typeof window !== 'undefined' && window.__naasVersion), railCollapsed, railExpanded: !railCollapsed, railToggleTitle: railCollapsed ? 'Expand navigation' : 'Collapse navigation', iconAndi: 'brand/andi-symbol.svg', iconCalendar: iconDir + '/checklist.svg', goBrowseClose: () => { go('s7')(); set({ demoOpen: false }); },
     topTabs, layerSubtitle, elevatorOpen: !!s.elevatorOpen, toggleElevator: () => set({ elevatorOpen: !s.elevatorOpen }), closeElevator: () => set(close), chevronRot: s.elevatorOpen ? 'rotate(180deg)' : 'rotate(0deg)', elevator,
     goDiscoverClose: goTab('s1'), goHomeClose: goTab('s3', { layer: 'cloud', tab: 'connect' }),
-    showRail, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railPad: railCollapsed ? '16px 12px' : '16px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '4px 0' : '4px 8px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (railCollapsed ? '64px' : '240px') + ' minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), shellPadRight: '0px', andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
+    showRail, showHeader, updatedAgo, rescan, windowLabel, iconFabric: iconDir + '/cable.svg', toggleRail: () => set({ railCollapsed: !railCollapsed }), railW: railCollapsed ? '64px' : '240px', railPad: railCollapsed ? '16px 12px' : '16px', railJustify: railCollapsed ? 'center' : 'flex-start', railBtnPad: railCollapsed ? '4px 0' : '4px 8px', railToggleLabel: railCollapsed ? '›' : '‹', shellCols: (showRail ? (railCollapsed ? '64px ' : '240px ') : '') + 'minmax(0,1fr)' + (andiDocked ? ' 340px' : ''), shellPadRight: '0px', andiOpen, andiClosed: !andiOpen, andiDocked, andiFloating: andiOpen && !andiDocked, andiPos: andiDocked ? 'sticky' : 'fixed', andiRight: andiDocked ? 'auto' : '0', andiShadow: andiDocked ? 'none' : '-8px 0 32px rgba(0,0,0,.14)', andiZ: andiDocked ? '1' : '45', andiW: andiDocked ? 'auto' : '340px', toggleAndi: () => set({ andiOpen: !andiOpen }), shellBg: 'none', railTitle: top === 'ai' ? 'AI Fabric' : 'Network services', rail, storeCur, storeBg: storeCur ? 'var(--bg-accent)' : 'transparent', storeColor: storeCur ? 'var(--link)' : 'var(--text-heading)', storeIcon: (storeCur ? iconLink : iconDir) + '/shopping-bag.svg', iconSearch: iconDir + '/search.svg', iconBell: iconDir + '/bell.svg', iconPerson: iconDir + '/person.svg', iconGear: iconDir + '/gear.svg',
   };
 }
 
@@ -1451,9 +1526,8 @@ function tagTree(inv, tree, chip) {
 function andiVals(s, set, go, est, ob, x) {
   const { findingCard, sortF, findingsFor, isEmpty } = x;
   const scope = s.andiScope || null; // {kind:'region'|'tag'|'finding'|'flow', id, label}
-  const onAi = s.screen === 's3' && s.layer === 'ai';
   const naasFindings = est.findings.filter(f => f.layer !== 'ai');
-  const screenFindings = s.screen === 's3' ? sortF(onAi ? findingsFor('ai', s.tab) : findingsFor(s.layer, s.tab).filter(f => f.layer !== 'ai')) : s.screen === 's2' || s.screen === 's1' || s.screen === 's0' ? sortF(naasFindings) : [];
+  const screenFindings = s.screen === 's3' ? sortF(findingsFor(s.layer, s.tab).filter(f => f.layer !== 'ai')) : s.screen === 's2' || s.screen === 's1' || s.screen === 's0' ? sortF(naasFindings) : [];
   let lead = '', sub = '', focus = null, qs = [], acts = [];
   if (s.screen === 's2' || s.screen === 's0') { const c = x.conns; const deg = c && c.rows.find(r => r.degraded); lead = isEmpty ? 'Nothing connected yet. Connect a cloud and the picture fills in.' : deg ? `${deg.cloud} ${deg.region} is degraded on ${deg.ramp}: ${deg.wl.toLocaleString('en-US')} workloads behind it. ${x.floorVerdict}` : x.floorVerdict; sub = isEmpty ? 'Connect, then Observe, then Govern, then Cost. Each page ends with the next stop.' : 'Connect what is still public. Observe what the fabric carries. Govern it. Cost proves it.'; qs = isEmpty ? ['What do I need to connect?', 'What will I see once attached?', 'What does it cost?'] : ['What is degraded and what does it impact?', 'Which region should I attach first?', 'How much is on the table?']; }
   else if (s.screen === 's1') { lead = x.discoverVerdict; sub = 'Open a cloud to see regions, VPCs, subnets, endpoints and resources. Tags are how you will control them.'; qs = ['Which VPCs are internet-exposed?', 'What does tag PCI touch?', 'Where are my sites attached?']; }

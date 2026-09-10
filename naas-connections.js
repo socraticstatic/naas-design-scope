@@ -1,3 +1,10 @@
+/*
+ * AT&T AI-grade Network — NaaS storefront prototype
+ * Copyright (c) 2026 AT&T Intellectual Property. All rights reserved.
+ *
+ * AT&T proprietary and confidential. Provided for evaluation and
+ * integration by AT&T and its authorised partners. Not for redistribution.
+ */
 // naas-connections.js — the network layer on Observe and what it means for
 // the workloads behind it. Pure data. Added 2026-09-09 after Ramesh's review:
 // "you had five connections of which one is experiencing this problem. Here
