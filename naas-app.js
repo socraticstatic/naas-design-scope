@@ -739,7 +739,14 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const logPath = s.logPath || 'all';
   const logAct = s.logAct || 'all';
   const logAll = X.records(est0, inv, ob, logPattern);
+  // "From the aggregate view we need to take them to the explain-this-to-me
+  // page where we cut this info further, all the way down to individual logs"
+  // (Ramesh). Every aggregate figure carries the cut that produced it, Logs
+  // applies that cut, and says which figure it is explaining.
+  const explain = s.explain || null;
   const logMatch = logAll.filter(r => {
+    if (explain && explain.pattern && r.pattern !== explain.pattern) return false;
+    if (explain && explain.path && r.path !== explain.path) return false;
     if (logPath === 'private' && r.path !== 'private') return false;
     if (logPath === 'public' && r.path !== 'public') return false;
     if (logAct === 'allow' && r.deny) return false;
@@ -807,8 +814,22 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     actCount: `${actMatch.length} of ${actAll.length} changes`,
     actNote: `Who changed the network, from where, and whether it applied. Last 7 days.`,
   };
+  const explainParts = explain && explain.parts ? explain.parts.map((x, i) => ({
+    key: 'ep' + i, label: x.label, value: x.value, share: x.share, w: x.w,
+    go: () => set({ logQ: x.q || '', scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1 }),
+  })) : [];
+  const explainVals = {
+    explainOn: !!explain, explainOff: !explain,
+    explainLabel: explain ? explain.label : '',
+    explainValue: explain ? explain.value : '',
+    explainSub: explain ? explain.sub : '',
+    explainCut: explain ? explain.cut : '',
+    explainParts, hasExplainParts: explainParts.length > 0,
+    explainCount: `${logMatch.length} of ${logAll.length} records carry it`,
+    clearExplain: () => set({ explain: null, logQ: '' }),
+  };
   const logVals = {
-    ...actVals,
+    ...actVals, ...explainVals,
     flowRecords, logChips, logPathChips, logActChips,
     logQ: s.logQ || '', setLogQ: (e) => set({ logQ: e.target.value }),
     logCount: `${logMatch.length.toLocaleString('en-US')} of ${logAll.length.toLocaleString('en-US')} records`,
@@ -952,8 +973,29 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     });
     return Object.values(by).sort((a, b) => b.v - a.v);
   })();
+  // Each class knows which flow records make it up, and which sources feed it
+  // - so a figure can hand Logs both the cut and one level of decomposition.
+  const EXPLAIN_CUT = {
+    'dest:local': { pattern: 'region' }, 'dest:regions': { pattern: 'inbound' },
+    'dest:public internet': { pattern: 'internet' }, 'dest:inter-cloud': { pattern: 'clouds' },
+    'dest:AI endpoints': { pattern: 'internet' }, 'dest:object storage': { pattern: 'regions' },
+  };
+  const partsFor = (destKey) => {
+    const feed = map.ribbons.filter(r => r.to === destKey);
+    const byMid = {};
+    feed.forEach(r => { const src = map.nodes.find(n => n.key === r.from); const nm = src ? src.name : r.from; byMid[nm] = (byMid[nm] || 0) + r.v; });
+    const tot = Object.values(byMid).reduce((a, v) => a + v, 0) || 1;
+    return Object.entries(byMid).sort((a, b) => b[1] - a[1]).slice(0, 5)
+      .map(([nm, v]) => ({ label: nm, value: v.toFixed(1) + ' Gbps', share: Math.round(v / tot * 100) + '%', w: Math.max(3, v / tot * 100).toFixed(2) + '%', q: '' }));
+  };
   const mixRows = mixBuckets.map(b => ({
     key: b.key, label: b.label,
+    explainGo: () => set({
+      explain: { label: b.label, value: b.v.toFixed(1) + ' Gbps', sub: `${Math.round(b.v / mixTotal * 100)}% of everything the estate carried in this window.`,
+        cut: b.local ? 'Flow records that start and end inside one region.' : 'The flow records behind this figure.',
+        parts: partsFor(b.key), ...(EXPLAIN_CUT[b.key] || {}) },
+      scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1,
+    }),
     gbps: b.v.toFixed(1), share: Math.round(b.v / mixTotal * 100) + '%',
     w: Math.max(3, b.v / mixTotal * 100).toFixed(2) + '%',
     fabPct: b.local ? '—' : Math.round(b.fab / (b.v || 1) * 100) + '%',
@@ -1110,7 +1152,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     tone: 'var(--link)', toneBg: (dark ? 'rgba(102,200,240,.12)' : '#eef4fc'),
     cta: { talkers: 'Open the map', newdest: 'Open Logs', shadow: 'Open Govern', growth: 'Open Cost', multi: 'Open Cost', idle: 'Open Cost' }[x.key] || 'Open Cost',
     go: { talkers: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ obPage: 'perf', obTab: 'flow' }); },
-          newdest: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1 }); },
+          newdest: () => { go('s3', { layer: 'cloud', tab: 'observe' })(); set({ explain: { label: 'Destinations not seen before', value: x.head.replace(/[^0-9]/g, '') + ' new', sub: 'Traffic to destinations that were absent from the prior 30 days.', cut: 'Records leaving the cloud.', pattern: 'internet', parts: [] }, scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1 }); },
           shadow: go('s3', { layer: 'cloud', tab: 'govern' }) }[x.key] || go('s3', { layer: 'cloud', tab: 'cost' }),
   }));
   const insightAll = [...anomalyRows, ...insightRows];
@@ -1393,7 +1435,6 @@ function shellVals(s, set, go, est, c) {
       ['sec-health', 'Health', 'high-meter'],
       ['sec-flow', 'Flow map', 'hub'],
       ['sec-insights', 'Insights', 'question-circle'],
-      ['sec-changed', 'Changes', 'pie-chart'],
       ['sec-logs', 'Logs', 'checklist'],
     ],
     govern: [
