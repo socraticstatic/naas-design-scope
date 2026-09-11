@@ -36,16 +36,41 @@ export function leftRoots(est, flows) {
   const tags = Object.values(tg).map(g => ({ ...g, group: 'tags', hasChildren: true, state: [...g.regions].map(r => stateOfRegion(est, r.split(' ')[1] || r)).find(x => x !== 'ok') || 'ok' })).sort((a, b) => b.v - a.v);
   const rg = {}; flows.filter(f => f.kind !== 'App').forEach(f => { const g = rg[f.from] = rg[f.from] || { kind: 'c2c', key: 'c2c:' + f.from, name: f.from, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; });
   const c2c = Object.values(rg).map(g => ({ ...g, group: 'c2c', hasChildren: false, state: stateOfRegion(est, g.name.split(' ')[1] || g.name) })).sort((a, b) => b.v - a.v);
-  // Ramesh (2026-09-11): network sites on the left, clouds on the right.
-  // Cloud egress still has to enter the map from the left or the mid band
-  // would emit more than it receives, so it enters where it really does -
-  // at the AT&T cloud on-ramps, which are network equipment, not clouds.
-  // One row; opening it shows the workload groups and pairs behind it.
-  const egV = tags.reduce((a, x) => a + x.v, 0) + c2c.reduce((a, x) => a + x.v, 0);
-  const egFab = tags.reduce((a, x) => a + x.fabV, 0) + c2c.reduce((a, x) => a + x.fabV, 0);
-  const onramp = egV > 0.001 ? [{ kind: 'onramp', key: 'onramp:all', name: 'Cloud on-ramps · egress', group: 'onramp',
-    v: egV, fabV: egFab, tagV: tags.reduce((a, x) => a + x.v, 0), hasChildren: true, state: 'ok' }] : [];
-  return [...sites, ...onramp];
+  // Dev (2026-09-11), after Ramesh and Avshalom said the same thing in
+  // three different ways: the left column is network sites, full stop. The
+  // on-ramp row was a compromise to keep the bands balanced, and it was
+  // still a cloud thing standing on the network side. The map now tells the
+  // site-to-cloud story alone; cloud egress lives in the readout, the
+  // patterns and the records, which are computed from the flows directly.
+  void tags; void c2c;
+  return sites;
+}
+
+/**
+ * The whole-estate traffic mix, computed from the flows themselves rather
+ * than from the ribbons the map happens to draw. Dev's note takes cloud
+ * sources off the map entirely, so the picture is sites-to-clouds - but the
+ * readout still has to answer for every byte the estate carries, including
+ * the cloud egress that no longer appears as a ribbon.
+ */
+export function mixOf(est, flows) {
+  const LOCAL = 0.6;
+  const tagsV = flows.filter(f => f.kind === 'App').reduce((a, f) => a + f.gbps, 0);
+  const dm = {};
+  flows.forEach(f => { const d = dm[f.to] = dm[f.to] || { key: 'dest:' + f.to, name: f.to, v: 0, fab: 0, from: {} }; d.v += f.gbps; if (f.controlled) d.fab += f.gbps; d.from[f.from] = (d.from[f.from] || 0) + f.gbps; });
+  const left = leftRoots(est, flows);
+  const sitesV = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.v, 0);
+  const sitesFab = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.fabV, 0);
+  const buckets = [
+    { key: 'dest:local', name: 'local', v: tagsV * LOCAL, fab: 0, local: true, from: {} },
+    { key: 'dest:regions', name: 'regions', v: sitesV, fab: sitesFab, from: {} },
+    ...Object.values(dm),
+  ].filter(b => b.v > 0.001);
+  const total = buckets.reduce((a, b) => a + b.v, 0) || 1;
+  const localV = tagsV * LOCAL;
+  const fabAll = buckets.filter(b => !b.local).reduce((a, b) => a + b.fab, 0);
+  const crossed = total - localV;
+  return { buckets, total, localV, fabAll, pubAll: crossed - fabAll, crossed };
 }
 
 /** The cloud-origin sources folded under the on-ramp row: tags, then pairs. */
@@ -62,13 +87,17 @@ export function rightRoots(est, flows) {
   const dm = {}; flows.forEach(f => { const d = dm[f.to] = dm[f.to] || { kind: 'dest', key: 'dest:' + f.to, name: f.to, v: 0, fabV: 0 }; d.v += f.gbps; if (f.controlled) d.fabV += f.gbps; });
   const left = leftRoots(est, flows); const sitesV = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.v, 0), sitesFab = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.fabV, 0);
   // Site traffic lands on the cloud it actually reaches, split by where the
-  // workloads are; each cloud is its own destination and opens into its regions.
+  // workloads are; each cloud opens into its regions. The share that rides
+  // outside the fabric lands where it really goes - the public internet.
+  void dm;
   const byCloud = {};
   est.regionsList.forEach(r => { const c = byCloud[r.cloud] = byCloud[r.cloud] || { cloud: r.cloud, wl: 0 }; c.wl += r.wl || 0; });
   const wlTot = Object.values(byCloud).reduce((a, c) => a + c.wl, 0) || 1;
   const clouds = Object.values(byCloud).map(c => ({ kind: 'cloud', key: 'cloud:' + c.cloud, name: c.cloud, cloud: c.cloud,
-    v: sitesV * c.wl / wlTot, fabV: sitesFab * c.wl / wlTot, hasChildren: true, state: 'ok' })).filter(c => c.v > 0.001).sort((a, b) => b.v - a.v);
-  return [...clouds, ...Object.values(dm).map(d => ({ ...d, hasChildren: true, state: 'ok' })).sort((a, b) => b.v - a.v)];
+    v: sitesFab * c.wl / wlTot, fabV: sitesFab * c.wl / wlTot, hasChildren: true, state: 'ok' })).filter(c => c.v > 0.001).sort((a, b) => b.v - a.v);
+  const pubV = Math.max(0, sitesV - sitesFab);
+  const inet = pubV > 0.001 ? [{ kind: 'dest', key: 'dest:public internet', name: 'Public internet', v: pubV, fabV: 0, hasChildren: false, state: 'slo' }] : [];
+  return [...clouds, ...inet];
 }
 
 /** Children of a node, one level down. Every level is honest about what the data can name. */
@@ -200,29 +229,23 @@ export function buildMap(est, inv, flows0, opts = {}) {
     const sitesVs = L0.filter(x => x.kind === 'site').reduce((a, x) => a + x.v, 0);
     const sitesFabs = L0.filter(x => x.kind === 'site').reduce((a, x) => a + x.fabV, 0);
     R0 = R0.filter(x => x.kind !== 'cloud' || matchWl[x.cloud])
-      .map(x => x.kind === 'cloud' ? { ...x, v: sitesVs * matchWl[x.cloud] / totMatch, fabV: sitesFabs * matchWl[x.cloud] / totMatch } : x);
+      .map(x => x.kind === 'cloud'
+        ? { ...x, v: sitesFabs * matchWl[x.cloud] / totMatch, fabV: sitesFabs * matchWl[x.cloud] / totMatch }
+        : x.key === 'dest:public internet' ? { ...x, v: Math.max(0, sitesVs - sitesFabs), fabV: 0 } : x);
   }
   const L = expand(L0, open, est, inv, flows), R = expand(R0, open, est, inv, flows);
   const scale = (nd) => opts.t == null ? nd : { ...nd, v: nd.v * shapeAt(nd.key, opts.t), fabV: nd.fabV * shapeAt(nd.key, opts.t) };
   // Ramesh's first pattern (19:09): what stays within the region. Workload groups carry east-west traffic that never leaves the region; it gets its own band.
   const LOCAL = 0.6;
-  const Ls = L.map(scale).map(x => {
-    // East-west traffic belongs to the workload groups alone. The closed
-    // on-ramp row carries their sum (tagV); an open one applies it per tag
-    // child and never to a cloud pair - otherwise the east-west band grew
-    // 12.6 Gbps just by opening the row, and a number that changes when you
-    // look closer is a lie.
-    if ((x.group || rootGroup(x)) !== 'onramp') return { ...x, locV: 0 };
-    const base = x.tagV != null ? x.tagV : (x.kind === 'c2c' ? 0 : x.v);
-    return { ...x, locV: base * LOCAL };
-  });
+  const Ls = L.map(scale).map(x => ({ ...x, locV: 0 }));
+  void LOCAL;
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   // The east-west node used to carry its volume twice - v AND locV - so the
   // sizer (which reads v + locV) drew it double height and the label printed
   // 147.7 against a real 73.9. One volume, one field.
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: 0, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
-  const groups = [['sites', 'From sites'], ['onramp', 'From cloud on-ramps']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
+  const groups = [['sites', '']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
   // 55 percent of the row budget and everything else compresses into the rest; ribbons taper, so they still attach.
@@ -249,15 +272,16 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const heads = []; const SS = []; let y = top + 20;
   // One column head for the left band, then a quieter head per group inside
   // it. Emitting three equal heads made the left band read as three columns.
-  heads.push({ x: 0, y: top - 4, anchor: 'start', kind: 'col', text: 'First mile' });
-  groups.forEach(g => { heads.push({ x: 0, y: y - 4, anchor: 'start', kind: 'group', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
+  heads.push({ x: 0, y: top - 4, anchor: 'start', kind: 'col', text: 'First mile · network sites' });
+  groups.forEach(g => { if (g.head) heads.push({ x: 0, y: y - 4, anchor: 'start', kind: 'group', text: g.head }); const mine = leftRows.filter(r => g.nodes.some(n0 => n0.key === r.key)); const placed = layout(mine, 0, y + headH - 6); SS.push(...placed); if (placed.length) y = placed[placed.length - 1].y + placed[placed.length - 1].h + gap; });
   const leftH = SS.length ? y - gap + 8 : top;
   heads.push({ x: W, y: top - 4, anchor: 'end', kind: 'col', text: 'Destinations' });
   heads.push({ x: W / 2, y: top - 4, anchor: 'middle', kind: 'col', text: 'Mid mile' });
   const DD = layout(heightsFor(Rs, rowsBudget(Rs.length, 1)), W - colW, top + headH - 6);
   const rightH = DD.length ? DD[DD.length - 1].y + DD[DD.length - 1].h + 8 : top;
   const H = Math.max(leftH, rightH, H0);
-  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', v: T - fabV - localV, fabV: 0, priv: false, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
+  const midPct = (v) => T - localV > 0.001 ? ` · ${Math.round(v / (T - localV) * 100)}%` : '';
+  const mids = [{ kind: 'mid', key: 'mid:fabric', name: 'AT&T fabric', sub: midPct(fabV).replace(' · ', '') + ' of what sites send', v: fabV, fabV, priv: true, state: 'ok', hasChildren: false }, { kind: 'mid', key: 'mid:public', name: 'Outside the fabric', sub: midPct(T - fabV - localV).replace(' · ', '') + ' of what sites send', fabV: 0, v: T - fabV - localV, priv: false, state: 'ok', hasChildren: false }].filter(m => m.v > 0.001);
   // The band carries only what crosses a mid mile, so it is scaled against
   // that, not against the estate total. Scaling against T left the two nodes
   // short and hanging in the middle of the column once region-local traffic

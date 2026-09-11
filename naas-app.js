@@ -997,26 +997,21 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   // where does the traffic go, and how much of it rides AT&T. Both come out
   // of the ribbons already drawn - the destination leg carries the volume and
   // the fabric flag, so nothing here is a second set of numbers.
-  const mixTotal = map.ribbons.filter(r => /^(dest|cloud):/.test(r.to)).reduce((a, r) => a + r.v, 0) || 1;
+  // The readout answers for the whole estate from the flows themselves.
+  // The map now draws only the site-to-cloud story (Dev, 2026-09-11), so
+  // deriving the mix from ribbons would silently drop every cloud-egress
+  // class the moment it left the picture.
+  const MIX = F.mixOf(est0, ob.flows);
+  const mixTotal = MIX.total;
   const destName = (k) => (map.nodes.find(n => n.key === k) || {}).name || k;
   // Named in the words the question was asked in.
   const MIX_LABEL = { 'dest:local': 'Cloud to cloud, inside one region', 'dest:regions': 'Ingress to cloud, from sites', 'cloud': 'Ingress to cloud, from sites',
     'dest:public internet': 'Cloud egress to the internet', 'dest:inter-cloud': 'Cloud to cloud, across clouds',
     'dest:AI endpoints': 'Cloud egress to AI endpoints', 'dest:object storage': 'Cloud egress to object storage' };
-  const mixBuckets = (() => {
-    const by = {};
-    map.ribbons.filter(r => /^(dest|cloud):/.test(r.to)).forEach(r => {
-      // Every cloud is its own node on the map now; the readout still answers
-      // in Avshalom's classes, so the four clouds fold into one ingress row.
-      const k = /^cloud:/.test(r.to) ? 'dest:regions' : r.to;
-      const b = by[k] || (by[k] = { key: k, keys: new Set(), label: MIX_LABEL[k] || destName(r.to), v: 0, fab: 0 });
-      b.keys.add(r.to);
-      b.v += r.v;
-      // a bypass ribbon never touches a mid mile, so it is neither on nor off the fabric
-      if (r.pattern === 'region') b.local = true; else if (r.priv) b.fab += r.v;
-    });
-    return Object.values(by).map(b => ({ ...b, keys: [...b.keys] })).sort((a, b) => b.v - a.v);
-  })();
+  const mixBuckets = MIX.buckets.map(b => ({
+    key: b.key, keys: [b.key], label: MIX_LABEL[b.key] || destName(b.key.replace(/^dest:/, '')),
+    v: b.v, fab: b.fab, local: !!b.local, from: b.from || {},
+  })).sort((a, b) => b.v - a.v);
   // Each class knows which flow records make it up, and which sources feed it
   // - so a figure can hand Logs both the cut and one level of decomposition.
   const EXPLAIN_CUT = {
@@ -1024,13 +1019,17 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     'dest:public internet': { pattern: 'internet' }, 'dest:inter-cloud': { pattern: 'clouds' },
     'dest:AI endpoints': { pattern: 'internet' }, 'dest:object storage': { pattern: 'regions' },
   };
-  const partsFor = (destKeys) => {
-    const keys = Array.isArray(destKeys) ? destKeys : [destKeys];
-    const feed = map.ribbons.filter(r => keys.includes(r.to));
-    const byMid = {};
-    feed.forEach(r => { const src = map.nodes.find(n => n.key === r.from); const nm = src ? src.name : r.from; byMid[nm] = (byMid[nm] || 0) + r.v; });
-    const tot = Object.values(byMid).reduce((a, v) => a + v, 0) || 1;
-    return Object.entries(byMid).sort((a, b) => b[1] - a[1]).slice(0, 5)
+  const partsFor = (bucket) => {
+    // One level of decomposition: the sources that feed the class, straight
+    // from the flow records - workload groups for egress, first miles for
+    // ingress - so the parts survive whatever the map chooses to draw.
+    const src = bucket && bucket.from && Object.keys(bucket.from).length
+      ? Object.entries(bucket.from)
+      : bucket && bucket.key === 'dest:regions'
+        ? map.nodes.filter(n => n.side === 'l' && n.kind === 'site').map(n => [n.name, n.tot || n.v])
+        : [];
+    const tot = src.reduce((a, [, v]) => a + v, 0) || 1;
+    return src.sort((a, b) => b[1] - a[1]).slice(0, 5)
       .map(([nm, v]) => ({ label: nm, value: v.toFixed(1) + ' Gbps', share: Math.round(v / tot * 100) + '%', w: Math.max(3, v / tot * 100).toFixed(2) + '%', q: '' }));
   };
   const mixRows = mixBuckets.map(b => ({
@@ -1038,7 +1037,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     explainGo: () => set({
       explain: { label: b.label, value: b.v.toFixed(1) + ' Gbps', sub: `${Math.round(b.v / mixTotal * 100)}% of everything the estate carried in this window.`,
         cut: b.local ? 'Flow records that start and end inside one region.' : 'The flow records behind this figure.',
-        parts: partsFor(b.keys || b.key), ...(EXPLAIN_CUT[b.key] || {}) },
+        parts: partsFor(b), ...(EXPLAIN_CUT[b.key] || {}) },
       scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1,
     }),
     gbps: b.v.toFixed(1), share: Math.round(b.v / mixTotal * 100) + '%',
@@ -1048,10 +1047,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     fabNote: b.local ? 'Never crosses a mid mile, so it is neither on nor off the fabric' : b.fab / (b.v || 1) >= 0.9 ? 'almost all on the fabric' : b.fab / (b.v || 1) <= 0.1 ? 'almost none on the fabric' : 'split',
     tone: b.local ? '#4db6ac' : b.fab / (b.v || 1) >= 0.5 ? '#3374cc' : (dark ? '#5d6f80' : '#8a949c'),
   }));
-  const fabAll = map.ribbons.filter(r => r.to === 'mid:fabric').reduce((a, r) => a + r.v, 0);
-  const pubAll = map.ribbons.filter(r => r.to === 'mid:public').reduce((a, r) => a + r.v, 0);
-  const locAll = map.ribbons.filter(r => r.pattern === 'region' && /^dest:/.test(r.to)).reduce((a, r) => a + r.v, 0);
-  const crossed = fabAll + pubAll;
+  const fabAll = MIX.fabAll, pubAll = MIX.pubAll, locAll = MIX.localV, crossed = MIX.crossed;
   const firstMileRows = map.nodes.filter(n => n.side === 'l' && (n.group || '') === 'sites').map(n => ({
     key: 'fm-' + n.key, label: n.name, gbps: (n.tot || n.v).toFixed(1),
     explainGo: explainNav(c, { label: n.name, value: (n.tot || n.v).toFixed(1) + ' Gbps',
@@ -1108,11 +1104,6 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     const needle = (q || '').trim().toLowerCase(); if (!needle) return;
     const hit = map.nodes.find(x => x.name.toLowerCase().includes(needle)) || map.nodes.find(x => (x.sub || '').toLowerCase().includes(needle));
     if (hit) { set({ mapSel: hit.key, mapJumpOpen: false, mapJumpQ: '' }); return; }
-    // A workload tag or cloud pair lives one level under the closed on-ramp
-    // row now, so Jump looks there too and opens the path to what it found.
-    // When tags were roots this fallback was not needed.
-    const hidden = F.onrampChildren(est0, ob.flows).find(x => x.name.toLowerCase().includes(needle));
-    if (hidden) { set({ mapOpen: [...new Set([...mapOpen, 'onramp:all'])], mapSel: hidden.key, mapJumpOpen: false, mapJumpQ: '' }); return; }
     const reg = est0.regionsList.find(r => r.region.toLowerCase().includes(needle));
     if (reg) set({ mapRegion: reg.region, mapJumpOpen: false, mapJumpQ: '' });
   };
@@ -1133,7 +1124,11 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     hasChildren2: !!(panel0.children && panel0.children.rows.length),
     talks: (() => { const ts = panel0.talks || []; const max = Math.max(0.0001, ...ts.map(t => t.gbps || 0)); return ts.map(t => ({ ...t, key: t.key, gbpsF: t.gbps >= 1 ? t.gbps.toFixed(1) + ' Gbps' : Math.round(t.gbps * 1000) + ' Mbps', barW: Math.max(3, Math.round((t.gbps || 0) / max * 100)) + '%' })); })(), hasTalks: !!(panel0.talks && panel0.talks.length), backToList: () => set({ mapSel: null }), hasList: !!(s.drawerOpen && s.vol), isPaths: panelTab === 'paths', tabs: (panel0.kind === 'vpc' || panel0.kind === 'subnet' ? [['overview', 'Overview'], ['actions', 'Actions']] : panel0.kind === 'site' || panel0.kind === 'workload' ? [['overview', 'Overview'], ['paths', 'Paths'], ['records', 'Records'], ['actions', 'Actions']] : [['overview', 'Overview'], ['impact', 'Impact'], ['records', 'Records'], ['actions', 'Actions']]).map(([k, l]) => ({ key: k, label: l, on: panelTab === k, go: () => set({ panelTab: k }), bg: panelTab === k ? 'var(--cta)' : 'transparent', color: panelTab === k ? '#fff' : 'var(--text-heading)', border: panelTab === k ? 'var(--cta)' : 'var(--border-secondary)' })), isOverview: panelTab === 'overview', isImpact: panelTab === 'impact', isRecords: panelTab === 'records', isActions: panelTab === 'actions', close: () => set({ mapSel: null }), primary: (() => { const a = panel0.actions.find(x => x.key !== 'logs'); return a ? { label: a.label.replace(/ for these workloads| here$/, ''), go: a.key === 'attach' && a.site ? () => { c.setState({ screen: 's4', compose: { ...prefillCompose(est), bulk: a.site }, parsedNote: `Attach ${a.site}: one circuit onto the fabric.` }); syncHash('s4', s.layer, s.tab); } : a.key === 'path' ? () => { c.setState({ screen: 's4', compose: { ...prefillCompose(est), bulk: a.site }, parsedNote: `Add a second path for ${a.site}: a second metro for geodiversity.` }); syncHash('s4', s.layer, s.tab); } : a.key === 'failover' ? () => set({ events: [...(s.events || []), { key: 'e' + Date.now(), t: new Date().toLocaleTimeString('en-US', { hour12: false }), text: `Failover test on ${panel0.title} · secondary path healthy` }], panelTab: 'overview' }) : a.key === 'port' || a.key === 'attach' ? composeFor(go, est0.regionsList.find(x => x.region === a.region) || {}) : a.key === 'policy' ? () => { go('s3', { layer: 'cloud', tab: 'govern' })(); set({ authoring: true }); } : () => set({ panelTab: 'actions' }) } : null; })(), hasPrimary: panel0.actions.some(x => x.key !== 'logs') } : null;
   const PATTERN_ALL = ['all', 'All', 'Every flow the estate carries, whichever way it goes.'];
-  const patterns = [PATTERN_ALL, ...F.PATTERNS].map(([k, l, why]) => ({ key: k, label: l, why, on: mapPattern === k, go: () => set({ mapPattern: k }), bg: mapPattern === k ? 'var(--cta)' : 'var(--bg-base)', color: mapPattern === k ? '#fff' : 'var(--text-heading)', border: mapPattern === k ? 'var(--cta)' : 'var(--border-secondary)' }));
+  // The map draws the site story, so its chips are the patterns that have
+  // ribbons - ingress and the internet path. All five patterns keep their
+  // chips on Logs, where every one of them has records behind it.
+  const MAP_PATTERNS = new Set(['inbound', 'internet']);
+  const patterns = [PATTERN_ALL, ...F.PATTERNS.filter(([k]) => MAP_PATTERNS.has(k))].map(([k, l, why]) => ({ key: k, label: l, why, on: mapPattern === k, go: () => set({ mapPattern: k }), bg: mapPattern === k ? 'var(--cta)' : 'var(--bg-base)', color: mapPattern === k ? '#fff' : 'var(--text-heading)', border: mapPattern === k ? 'var(--cta)' : 'var(--border-secondary)' }));
   const patternWhy = (patterns.find(p => p.on) || patterns[0]).why;
 
   // ---- Observe's scope cut (Ramesh 3: site360, cloud360, trends) ----
