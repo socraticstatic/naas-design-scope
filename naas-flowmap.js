@@ -175,7 +175,7 @@ function expand(list, open, est, inv, flows, depth = 0) {
     fold = ranked.slice(CAP);
   }
   const out = keep.flatMap(nd => { const node = { ...nd, depth, group: nd.group || rootGroup(nd) }; if (open.has(node.key) && node.hasChildren) { const kids = childrenOf(node, est, inv, flows).map(k => ({ ...k, group: node.group })); return kids.length ? expand(kids, open, est, inv, flows, depth + 1) : [node]; } return [node]; });
-  if (fold.length) { const first = openHere[0] || keep[0] || fold[0]; const kindWord = { metro: 'metros', sitename: 'sites', site: 'first miles', tag: 'workload tags', c2c: 'cloud pairs', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', workload: 'workloads', endpoint: 'endpoints', dest: 'destinations' }[fold[0].kind] || ''; out.push({ kind: 'rollup', key: `${(fold[0].parentKey || (first && first.key ? first.key.split('/')[0] : 'lvl' + depth))}/rollup`, name: kindWord ? `+${fold.length} other ${kindWord}` : `+${fold.length} others`, sub: 'click to fold back', v: fold.reduce((a, x) => a + x.v, 0), fabV: fold.reduce((a, x) => a + x.fabV, 0), hasChildren: false, state: 'ok', depth, group: fold[0].group || rootGroup(fold[0]), parentKey: fold[0].parentKey, foldsKey: first && first.key ? first.key : null, tailOnly: !openHere.length }); }
+  if (fold.length) { const first = openHere[0] || keep[0] || fold[0]; const kindWord = { metro: 'metros', sitename: 'sites', site: 'first miles', tag: 'workload tags', c2c: 'cloud pairs', tagregion: 'regions', vpc: 'VPCs', subnet: 'subnets', workload: 'workloads', endpoint: 'endpoints', dest: 'destinations' }[fold[0].kind] || ''; out.push({ kind: 'rollup', key: `${(fold[0].parentKey || (first && first.key ? first.key.split('/')[0] : 'lvl' + depth))}/rollup`, name: kindWord ? `+${fold.length} other ${kindWord}` : `+${fold.length} others`, sub: 'click to fold back', v: fold.reduce((a, x) => a + x.v, 0), fabV: fold.reduce((a, x) => a + x.fabV, 0), hasChildren: false, state: 'ok', depth, group: fold[0].group || rootGroup(fold[0]), parentKey: fold[0].parentKey, foldsKey: first && first.key ? first.key : null, tailOnly: !openHere.length , tagV: fold.reduce((a, x) => a + (x.kind === 'c2c' ? 0 : (x.tagV != null ? x.tagV : x.v)), 0)}); }
   return out;
 }
 
@@ -188,7 +188,16 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const scale = (nd) => opts.t == null ? nd : { ...nd, v: nd.v * shapeAt(nd.key, opts.t), fabV: nd.fabV * shapeAt(nd.key, opts.t) };
   // Ramesh's first pattern (19:09): what stays within the region. Workload groups carry east-west traffic that never leaves the region; it gets its own band.
   const LOCAL = 0.6;
-  const Ls = L.map(scale).map(x => (x.group || rootGroup(x)) === 'onramp' ? { ...x, locV: (x.tagV != null ? x.tagV : x.v) * LOCAL } : { ...x, locV: 0 });
+  const Ls = L.map(scale).map(x => {
+    // East-west traffic belongs to the workload groups alone. The closed
+    // on-ramp row carries their sum (tagV); an open one applies it per tag
+    // child and never to a cloud pair - otherwise the east-west band grew
+    // 12.6 Gbps just by opening the row, and a number that changes when you
+    // look closer is a lie.
+    if ((x.group || rootGroup(x)) !== 'onramp') return { ...x, locV: 0 };
+    const base = x.tagV != null ? x.tagV : (x.kind === 'c2c' ? 0 : x.v);
+    return { ...x, locV: base * LOCAL };
+  });
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;

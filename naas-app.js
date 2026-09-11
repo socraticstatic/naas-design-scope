@@ -1104,7 +1104,18 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   const climb = () => { if (!mapSel || mapSel.startsWith('cx-')) { set({ mapSel: null }); return; } const parent = mapSel.includes('/') ? mapSel.slice(0, mapSel.lastIndexOf('/')) : null; set({ mapOpen: closeBranch(mapOpen, parent || mapSel), mapSel: parent }); };
   const siblings = (key) => map.nodes.filter(x => x.side === (map.nodes.find(y => y.key === key) || {}).side && (x.parentKey || '') === ((map.nodes.find(y => y.key === key) || {}).parentKey || ''));
   const mapKey = (e) => { const k = e.key; if (k === 'Escape' || k === 'Backspace') { e.preventDefault(); climb(); } else if (k === 'Enter' && mapSel) { const nd = map.nodes.find(x => x.key === mapSel); if (nd && nd.hasChildren) toggleOpen(mapSel); } else if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); const sib = mapSel ? siblings(mapSel) : map.nodes.filter(x => x.side === 'l' && !x.parentKey); const i = Math.max(0, sib.findIndex(x => x.key === mapSel)); const nx = sib[(i + (k === 'ArrowDown' ? 1 : sib.length - 1)) % Math.max(1, sib.length)]; if (nx) set({ mapSel: nx.key }); } else if (k === '/') { e.preventDefault(); set({ mapJumpOpen: true }); } };
-  const jumpTo = (q) => { const needle = (q || '').trim().toLowerCase(); if (!needle) return; const hit = map.nodes.find(x => x.name.toLowerCase().includes(needle)) || map.nodes.find(x => (x.sub || '').toLowerCase().includes(needle)); if (hit) { set({ mapSel: hit.key, mapJumpOpen: false, mapJumpQ: '' }); return; } const reg = est0.regionsList.find(r => r.region.toLowerCase().includes(needle)); if (reg) set({ mapRegion: reg.region, mapJumpOpen: false, mapJumpQ: '' }); };
+  const jumpTo = (q) => {
+    const needle = (q || '').trim().toLowerCase(); if (!needle) return;
+    const hit = map.nodes.find(x => x.name.toLowerCase().includes(needle)) || map.nodes.find(x => (x.sub || '').toLowerCase().includes(needle));
+    if (hit) { set({ mapSel: hit.key, mapJumpOpen: false, mapJumpQ: '' }); return; }
+    // A workload tag or cloud pair lives one level under the closed on-ramp
+    // row now, so Jump looks there too and opens the path to what it found.
+    // When tags were roots this fallback was not needed.
+    const hidden = F.onrampChildren(est0, ob.flows).find(x => x.name.toLowerCase().includes(needle));
+    if (hidden) { set({ mapOpen: [...new Set([...mapOpen, 'onramp:all'])], mapSel: hidden.key, mapJumpOpen: false, mapJumpQ: '' }); return; }
+    const reg = est0.regionsList.find(r => r.region.toLowerCase().includes(needle));
+    if (reg) set({ mapRegion: reg.region, mapJumpOpen: false, mapJumpQ: '' });
+  };
   const playMap = () => { if (typeof window === 'undefined') return; if (window.__mapTimer) { clearInterval(window.__mapTimer); window.__mapTimer = null; set({ mapPlay: false }); return; } let t = mapT == null || mapT >= 1 ? 0 : mapT; set({ mapPlay: true, mapT: t }); window.__mapTimer = setInterval(() => { t = +(t + 0.02).toFixed(2); if (t >= 1) { clearInterval(window.__mapTimer); window.__mapTimer = null; c.setState({ mapT: 1, mapPlay: false }); } else c.setState({ mapT: t }); }, 110); };
   const gaugeRows = OD.gauges(conns).map(g => ({ ...g, key: g.id, on: mapRegion === g.region, selected: mapSel === g.id, border: mapSel === g.id ? 'var(--cta)' : mapRegion === g.region ? 'var(--border-primary)' : 'var(--border-secondary)',
     // Same bar grammar as every other figure on the page: a 150px track, an
