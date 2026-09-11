@@ -296,9 +296,11 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const link = (a, b, v, priv, kindOverride) => { if (v <= 0.0005) return; const sa = a.h / (a.tot || a.v || 1), sb = b.h / (b.tot || b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, local: !!kindOverride, v, from: a.key, to: b.key, state: kindOverride ? 'ok' : priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key), pattern: kindOverride || patternOf(a, b) }); };
   const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv);
   const localDest = DD.find(d => d.key === 'dest:local');
-  // Traffic that starts and ends inside one region crosses no mid mile, so it
-  // is drawn straight across, under the band, instead of being given a middle
-  // node that misrepresents it as a path you could buy.
+  // Region-local traffic crosses no mid mile and, since the map became the
+  // site-to-cloud story (Dev, 2026-09-11), is not drawn here at all — the
+  // readout's "Cloud to cloud, inside one region" row carries that class.
+  // locV is zeroed above, so the localDest link below never fires; it stays
+  // as the seam if a future map wants the under-band line back.
   SS.forEach(s => { if (fab) link(s, fab, s.fabV, true); if (pub) link(s, pub, s.v - s.fabV, false); if (localDest && s.locV) link(s, localDest, s.locV, false, 'region'); });
   DD.forEach(d => { if (d.key === 'dest:local') return; if (fab) link(fab, d, d.fabV, true); if (pub) link(pub, d, d.v - d.fabV, false); });
   const nodes = [...SS.map(x => ({ ...x, side: 'l' })), ...MM.map(x => ({ ...x, side: 'm' })), ...DD.map(x => ({ ...x, side: 'r' }))].map(x => ({ ...x, delta: deltaOf(x.key), open: open.has(x.key) }));

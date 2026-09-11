@@ -61,16 +61,23 @@ tradeoff for each, and the ways to connect.
 
 ![Observe](docs/screenshots/02-observe.png)
 
-The live flow map is the centre of the screen, in three columns: **first
-mile → mid mile → destinations**. Traffic that starts and ends inside one
-region crosses no mid mile, so it is drawn straight across under the band
-rather than given a middle node that would misrepresent it as a path you
-could buy.
+The live flow map is the centre of the screen, in three columns: **network
+sites → AT&T fabric / outside the fabric → clouds and the public internet**.
+The left column is the sites and nothing else; cloud-born traffic never
+appears as a source.
 
-Above it, a readout answers the two questions the picture alone does not:
-where the traffic goes (share and Gbps per destination class, with the
-fabric share of each) and how much of everything that crosses a mid mile
-rides AT&T. The first-mile distribution from sites sits beside it.
+Under it, a readout answers what the picture alone does not: where the whole
+estate's traffic goes (share and Gbps per destination class, with the fabric
+share of each) and how much of everything that crosses a mid mile rides
+AT&T. Traffic that starts and ends inside one region crosses no mid mile, so
+it appears in the readout as its own class instead of being drawn as a
+ribbon. The first-mile distribution from sites sits beside it.
+
+A persona line under the map header hands whoever is looking — executive,
+architect, network engineering, security, FinOps — one sentence with the
+number that matters to them and the door that opens its records. The same
+persona switch (behind the avatar) reorders the Insights cards, so each
+audience's cards lead.
 
 ![Flow readout](docs/screenshots/08-flow-readout.png)
 

@@ -1214,7 +1214,8 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   // that happened and has a time on it; an insight is something that is true
   // and has a number on it. Both carry the evidence and one thing to do.
   const anomalyRows = R.anomalies(est0, ob).map((a, i) => ({
-    key: a.key, kind: 'Event', when: a.when, head: a.head, why: a.cause, did: a.did, hasDid: !!a.did, act: a.can,
+    key: a.key, persona: a.key === 'an-dest' ? 'Security & Compliance' : a.key === 'an-egress' ? 'FinOps & SRE' : 'Network Engineering',
+    kind: 'Event', when: a.when, head: a.head, why: a.cause, did: a.did, hasDid: !!a.did, act: a.can,
     tone: a.sev === 'amber' ? 'var(--warning)' : 'var(--link)',
     toneBg: 'var(--bg-base)',
     cta: a.region ? 'Open it on the map' : 'Open Cost',
@@ -1223,7 +1224,8 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
       : go('s3', { layer: 'cloud', tab: 'cost' }),
   }));
   const insightRows = R.insights(est0, ob).map(x => ({
-    key: x.key, kind: x.kicker, when: '', head: x.head, why: x.body, did: '', hasDid: false,
+    key: x.key, persona: { talkers: 'Executive', newdest: 'Security & Compliance', shadow: 'Security & Compliance', growth: 'FinOps & SRE', multi: 'Cloud & Platform Architect', idle: 'FinOps & SRE' }[x.key] || 'FinOps & SRE',
+    kind: x.kicker, when: '', head: x.head, why: x.body, did: '', hasDid: false,
     act: { talkers: 'Open the busiest source on the map and see what it reaches.',
            newdest: 'Review the new destinations in Logs before they become normal.',
            shadow: 'Author a policy that requires inspection for SaaS from cloud workloads.',
@@ -1244,13 +1246,33 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     border: (s.insightTab || 'all') === k ? 'var(--cta)' : 'var(--border-secondary)',
   }));
   const insightTab = s.insightTab || 'all';
-  const insightRowsShown = insightTab === 'events' ? anomalyRows : insightTab === 'standing' ? insightRows : insightAll;
+  // The persona switch reaches here too: the cards for whoever is looking
+  // come first. Sort is stable, so within a persona the original order holds.
+  const personaSort = (rows) => rows.slice().sort((a, b) => ((b.persona === (PERSONA_NAME[s.persona] || 'Cloud & Platform Architect')) ? 1 : 0) - ((a.persona === (PERSONA_NAME[s.persona] || 'Cloud & Platform Architect')) ? 1 : 0));
+  const insightRowsShown = personaSort(insightTab === 'events' ? anomalyRows : insightTab === 'standing' ? insightRows : insightAll)
+    .map(r => ({ ...r, pFor: 'For ' + ({ 'Cloud & Platform Architect': 'Architect', 'Network Engineering': 'Network Eng', 'Security & Compliance': 'Security', 'FinOps & SRE': 'FinOps & SRE', 'Executive': 'Executive' }[r.persona] || r.persona), pInk: r.persona === (PERSONA_NAME[s.persona] || 'Cloud & Platform Architect') ? 'var(--link)' : 'var(--text-disabled)' }));
   const insightVals = {
     insightRows: insightRowsShown, hasInsights: insightRowsShown.length > 0, insightFilters,
     insightCount: `${insightAll.length} open`,
     insightSub: `${anomalyRows.length} ${anomalyRows.length === 1 ? 'event' : 'events'} in the window · ${insightRows.length} standing findings. Each one names the evidence and the next move.`,
   };
-  const dash = { ...mixVals, ...insightVals, dashTiles, queueRows, hasQueue: queueRows.length > 0, queueCount: `${queueRows.length} open`, queueOpen: queueRows.length > 0 && !!s.queueOpen, queueClosed: !(queueRows.length > 0 && !!s.queueOpen), openQueue: () => set({ queueOpen: true }), closeQueue: () => set({ queueOpen: false }), mapNodes, mapRibbons, mapHeads, mapVB: `0 0 ${map.W} ${map.H}`, patternWhy, patterns,
+  // Dev (2026-09-11): "drill down from it for different personas". The header
+  // already knows who is looking; this hands each persona their entry point
+  // into the same map, instead of a persona-flavoured redesign of it.
+  const personaNow = PERSONA_NAME[s.persona] || 'Cloud & Platform Architect';
+  const plTopCloud = map.nodes.filter(n => n.side === 'r' && n.kind === 'cloud' && !n.parentKey).sort((a, b) => (b.tot || b.v) - (a.tot || a.v))[0];
+  const plInetV = MIX.buckets.filter(b => (EXPLAIN_CUT[b.key] || {}).pattern === 'internet').reduce((a, b) => a + b.v, 0);
+  const plFabPct = Math.round(fabAll / (crossed || 1) * 100);
+  const PERSONA_LENS = {
+    'Executive': { line: `${plFabPct}% of everything that crosses a mid mile rides the AT&T fabric — ${fabAll.toFixed(1)} of ${crossed.toFixed(1)} Gbps.`, cta: 'See the records', go: mixVals.explainFabric },
+    'Cloud & Platform Architect': plTopCloud ? { line: `${plTopCloud.name} takes the most of what your sites send — ${(plTopCloud.tot || plTopCloud.v).toFixed(1)} Gbps. Open it to the region level.`, cta: `Open ${plTopCloud.name}`, go: () => set({ mapOpen: (s.mapOpen || []).includes(plTopCloud.key) ? (s.mapOpen || []) : [...(s.mapOpen || []), plTopCloud.key], mapSel: plTopCloud.key, panelTab: 'overview' }) } : null,
+    'Network Engineering': { line: `${pubAll.toFixed(1)} Gbps crosses a mid mile outside the fabric — no latency floor, no SLO, no second path.`, cta: 'See the records', go: mixVals.explainOutside },
+    'Security & Compliance': { line: `${plInetV.toFixed(1)} Gbps of cloud egress reaches the internet with no inspection point in the path.`, cta: 'See the records', go: explainNav(c, { label: 'Cloud egress to the internet', value: plInetV.toFixed(1) + ' Gbps', sub: 'AI endpoints and public internet destinations, straight over the hyperscaler exit.', cut: 'Records leaving the cloud for the internet.', pattern: 'internet', parts: [] }) },
+    'FinOps & SRE': { line: totalSave > 0 ? `${fmt(totalSave)}/mo is on the table — the same bytes at fabric rates instead of public ones.` : `The fabric is saving ${fmt(ob.savingsMo || 0)}/mo against public rates; egress runs ${fmt(ob.egressMo || 0)}/mo.`, cta: 'Open Cost', go: () => { go('s3', { layer: 'cloud', tab: 'cost' })(); } },
+  };
+  const plNow = PERSONA_LENS[personaNow] || PERSONA_LENS['Executive'];
+  const dash = { ...mixVals, ...insightVals, dashTiles, queueRows, hasQueue: queueRows.length > 0, queueCount: `${queueRows.length} open`, queueOpen: queueRows.length > 0 && !!s.queueOpen, queueClosed: !(queueRows.length > 0 && !!s.queueOpen), openQueue: () => set({ queueOpen: true }), closeQueue: () => set({ queueOpen: false }), plKicker: 'For ' + personaNow, plLine: plNow.line, plCta: plNow.cta, plGo: plNow.go,
+    mapNodes, mapRibbons, mapHeads, mapVB: `0 0 ${map.W} ${map.H}`, patternWhy, patterns,
     scopeDims, scopeMembers, hasScopeMembers: scopeMembers.length > 0, scopeLabel,
     clearScope: () => set({ obScope: 'all', obDim: 'all' }), scopeIsAll: !obScope || obScope === 'all',
     mapFiltersOpen, mapFiltersShut: !mapFiltersOpen,
