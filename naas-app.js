@@ -997,22 +997,25 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
   // where does the traffic go, and how much of it rides AT&T. Both come out
   // of the ribbons already drawn - the destination leg carries the volume and
   // the fabric flag, so nothing here is a second set of numbers.
-  const mixTotal = map.ribbons.filter(r => /^dest:/.test(r.to)).reduce((a, r) => a + r.v, 0) || 1;
+  const mixTotal = map.ribbons.filter(r => /^(dest|cloud):/.test(r.to)).reduce((a, r) => a + r.v, 0) || 1;
   const destName = (k) => (map.nodes.find(n => n.key === k) || {}).name || k;
   // Named in the words the question was asked in.
-  const MIX_LABEL = { 'dest:local': 'Cloud to cloud, inside one region', 'dest:regions': 'Ingress to cloud, from sites',
+  const MIX_LABEL = { 'dest:local': 'Cloud to cloud, inside one region', 'dest:regions': 'Ingress to cloud, from sites', 'cloud': 'Ingress to cloud, from sites',
     'dest:public internet': 'Cloud egress to the internet', 'dest:inter-cloud': 'Cloud to cloud, across clouds',
     'dest:AI endpoints': 'Cloud egress to AI endpoints', 'dest:object storage': 'Cloud egress to object storage' };
   const mixBuckets = (() => {
     const by = {};
-    map.ribbons.filter(r => /^dest:/.test(r.to)).forEach(r => {
-      const k = r.to;
-      const b = by[k] || (by[k] = { key: k, label: MIX_LABEL[k] || destName(k), v: 0, fab: 0 });
+    map.ribbons.filter(r => /^(dest|cloud):/.test(r.to)).forEach(r => {
+      // Every cloud is its own node on the map now; the readout still answers
+      // in Avshalom's classes, so the four clouds fold into one ingress row.
+      const k = /^cloud:/.test(r.to) ? 'dest:regions' : r.to;
+      const b = by[k] || (by[k] = { key: k, keys: new Set(), label: MIX_LABEL[k] || destName(r.to), v: 0, fab: 0 });
+      b.keys.add(r.to);
       b.v += r.v;
       // a bypass ribbon never touches a mid mile, so it is neither on nor off the fabric
       if (r.pattern === 'region') b.local = true; else if (r.priv) b.fab += r.v;
     });
-    return Object.values(by).sort((a, b) => b.v - a.v);
+    return Object.values(by).map(b => ({ ...b, keys: [...b.keys] })).sort((a, b) => b.v - a.v);
   })();
   // Each class knows which flow records make it up, and which sources feed it
   // - so a figure can hand Logs both the cut and one level of decomposition.
@@ -1021,8 +1024,9 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     'dest:public internet': { pattern: 'internet' }, 'dest:inter-cloud': { pattern: 'clouds' },
     'dest:AI endpoints': { pattern: 'internet' }, 'dest:object storage': { pattern: 'regions' },
   };
-  const partsFor = (destKey) => {
-    const feed = map.ribbons.filter(r => r.to === destKey);
+  const partsFor = (destKeys) => {
+    const keys = Array.isArray(destKeys) ? destKeys : [destKeys];
+    const feed = map.ribbons.filter(r => keys.includes(r.to));
     const byMid = {};
     feed.forEach(r => { const src = map.nodes.find(n => n.key === r.from); const nm = src ? src.name : r.from; byMid[nm] = (byMid[nm] || 0) + r.v; });
     const tot = Object.values(byMid).reduce((a, v) => a + v, 0) || 1;
@@ -1034,7 +1038,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     explainGo: () => set({
       explain: { label: b.label, value: b.v.toFixed(1) + ' Gbps', sub: `${Math.round(b.v / mixTotal * 100)}% of everything the estate carried in this window.`,
         cut: b.local ? 'Flow records that start and end inside one region.' : 'The flow records behind this figure.',
-        parts: partsFor(b.key), ...(EXPLAIN_CUT[b.key] || {}) },
+        parts: partsFor(b.keys || b.key), ...(EXPLAIN_CUT[b.key] || {}) },
       scrollToSec: 'sec-logs', scrollNonce: (s.scrollNonce || 0) + 1,
     }),
     gbps: b.v.toFixed(1), share: Math.round(b.v / mixTotal * 100) + '%',
@@ -1198,7 +1202,7 @@ function addendumVals(c, s, set, est, ob, inv, go, findingCard, totalSave, est0)
     loss: { door: 'Find the worst path' },
     util: { door: 'Open the hottest connection' },
   };
-  const dashTiles = [...wlTiles, ...R.trends(ob, s.obWindow || '30d').filter(k => ['thr', 'p95', 'fab'].includes(k.key))].map(k => ({ ...k, key: k.key, hasUnit: !!k.u, badge: `${k.arrow} ${k.delta}`, on: (k.key === 'loss' && mapMode === 'slo') || (k.key === 'fab' && mapMode === 'state'), border: (k.key === 'loss' && mapMode === 'slo') ? 'var(--cta)' : 'var(--border-secondary)', go: ({ loss: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, p95: () => { const w = ob.worst; const tagKey = w ? 'tag:' + w.from : null; set({ mapRegion: null, mapMode: 'slo', mapOpen: tagKey ? [...new Set([...mapOpen, tagKey])] : mapOpen, mapSel: tagKey ? `${tagKey}/${w.region}` : mapSel, panelTab: 'overview' }); }, fab: () => set({ mapMode: 'state', mapRegion: null, mapPattern: 'all', mapSel: 'mid:public', panelTab: 'overview' }), util: () => set({ mapSel: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).id || null, mapRegion: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).region || null, panelTab: 'overview' }), thr: () => { const top = map.nodes.filter(x => x.side === 'l' && x.hasChildren).sort((a, b) => b.v - a.v)[0]; set({ mapRegion: null, mapMode: 'delta', mapOpen: top ? [...new Set([...mapOpen, top.key])] : mapOpen, mapSel: top ? top.key : mapSel, panelTab: 'overview' }); } })[k.key] })).map(k => ({ ...k, door: (TILE_DOORS[k.key] || {}).door || 'Open on the map', hasE: !!k.e, hasDelta: !!(k.delta && String(k.delta).trim()), go: (TILE_DOORS[k.key] || {}).act || k.go }));
+  const dashTiles = [...wlTiles, ...R.trends(ob, s.obWindow || '30d').filter(k => ['thr', 'p95', 'fab'].includes(k.key))].map(k => ({ ...k, key: k.key, hasUnit: !!k.u, badge: `${k.arrow} ${k.delta}`, on: (k.key === 'loss' && mapMode === 'slo') || (k.key === 'fab' && mapMode === 'state'), border: (k.key === 'loss' && mapMode === 'slo') ? 'var(--cta)' : 'var(--border-secondary)', go: ({ loss: () => set({ mapRegion: null, mapMode: 'slo', panelTab: 'overview' }), p95: () => set({ mapRegion: null, mapMode: 'slo', panelTab: 'overview' }), fab: () => set({ mapMode: 'state', mapRegion: null, mapPattern: 'all', mapSel: 'mid:public', panelTab: 'overview' }), util: () => set({ mapSel: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).id || null, mapRegion: (conns.rows.find(r => r.hot || r.degraded) || conns.rows[0] || {}).region || null, panelTab: 'overview' }), thr: () => { const top = map.nodes.filter(x => x.side === 'l' && x.hasChildren).sort((a, b) => b.v - a.v)[0]; set({ mapRegion: null, mapMode: 'delta', mapOpen: top ? [...new Set([...mapOpen, top.key])] : mapOpen, mapSel: top ? top.key : mapSel, panelTab: 'overview' }); } })[k.key] })).map(k => ({ ...k, door: (TILE_DOORS[k.key] || {}).door || 'Open on the map', hasE: !!k.e, hasDelta: !!(k.delta && String(k.delta).trim()), go: (TILE_DOORS[k.key] || {}).act || k.go }));
   // Insights: the screen was showing what the network carries without ever
   // saying what that means. Two sources, one grammar - an anomaly is something
   // that happened and has a time on it; an insight is something that is true

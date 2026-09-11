@@ -36,14 +36,39 @@ export function leftRoots(est, flows) {
   const tags = Object.values(tg).map(g => ({ ...g, group: 'tags', hasChildren: true, state: [...g.regions].map(r => stateOfRegion(est, r.split(' ')[1] || r)).find(x => x !== 'ok') || 'ok' })).sort((a, b) => b.v - a.v);
   const rg = {}; flows.filter(f => f.kind !== 'App').forEach(f => { const g = rg[f.from] = rg[f.from] || { kind: 'c2c', key: 'c2c:' + f.from, name: f.from, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; });
   const c2c = Object.values(rg).map(g => ({ ...g, group: 'c2c', hasChildren: false, state: stateOfRegion(est, g.name.split(' ')[1] || g.name) })).sort((a, b) => b.v - a.v);
-  return [...sites, ...tags, ...c2c];
+  // Ramesh (2026-09-11): network sites on the left, clouds on the right.
+  // Cloud egress still has to enter the map from the left or the mid band
+  // would emit more than it receives, so it enters where it really does -
+  // at the AT&T cloud on-ramps, which are network equipment, not clouds.
+  // One row; opening it shows the workload groups and pairs behind it.
+  const egV = tags.reduce((a, x) => a + x.v, 0) + c2c.reduce((a, x) => a + x.v, 0);
+  const egFab = tags.reduce((a, x) => a + x.fabV, 0) + c2c.reduce((a, x) => a + x.fabV, 0);
+  const onramp = egV > 0.001 ? [{ kind: 'onramp', key: 'onramp:all', name: 'Cloud on-ramps · egress', group: 'onramp',
+    v: egV, fabV: egFab, tagV: tags.reduce((a, x) => a + x.v, 0), hasChildren: true, state: 'ok' }] : [];
+  return [...sites, ...onramp];
 }
 
-/** Root nodes on the right: the destination classes, plus the regions that sites reach. */
+/** The cloud-origin sources folded under the on-ramp row: tags, then pairs. */
+export function onrampChildren(est, flows) {
+  const tg = {}; flows.filter(f => f.kind === 'App').forEach(f => { const g = tg[f.from] = tg[f.from] || { kind: 'tag', key: 'onramp:all/' + f.from, name: f.from, v: 0, fabV: 0, regions: new Set() }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; g.regions.add(f.region); });
+  const tags = Object.values(tg).map(g => ({ ...g, hasChildren: true, parentKey: 'onramp:all', state: [...g.regions].map(r => stateOfRegion(est, r.split(' ')[1] || r)).find(x => x !== 'ok') || 'ok' })).sort((a, b) => b.v - a.v);
+  const rg = {}; flows.filter(f => f.kind !== 'App').forEach(f => { const g = rg[f.from] = rg[f.from] || { kind: 'c2c', key: 'onramp:all/' + f.from, name: f.from, v: 0, fabV: 0 }; g.v += f.gbps; if (f.controlled) g.fabV += f.gbps; });
+  const c2c = Object.values(rg).map(g => ({ ...g, hasChildren: false, parentKey: 'onramp:all', state: stateOfRegion(est, g.name.split(' ')[1] || g.name) })).sort((a, b) => b.v - a.v);
+  return [...tags, ...c2c];
+}
+
+/** Root nodes on the right: every cloud, then the egress classes (Ramesh: all clouds on the right). */
 export function rightRoots(est, flows) {
   const dm = {}; flows.forEach(f => { const d = dm[f.to] = dm[f.to] || { kind: 'dest', key: 'dest:' + f.to, name: f.to, v: 0, fabV: 0 }; d.v += f.gbps; if (f.controlled) d.fabV += f.gbps; });
   const left = leftRoots(est, flows); const sitesV = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.v, 0), sitesFab = left.filter(x => x.kind === 'site').reduce((a, x) => a + x.fabV, 0);
-  return [...(sitesV ? [{ kind: 'dest', key: 'dest:regions', name: 'Cloud regions (from sites)', v: sitesV, fabV: sitesFab, hasChildren: true, state: 'ok' }] : []), ...Object.values(dm).map(d => ({ ...d, hasChildren: true, state: 'ok' })).sort((a, b) => b.v - a.v)];
+  // Site traffic lands on the cloud it actually reaches, split by where the
+  // workloads are; each cloud is its own destination and opens into its regions.
+  const byCloud = {};
+  est.regionsList.forEach(r => { const c = byCloud[r.cloud] = byCloud[r.cloud] || { cloud: r.cloud, wl: 0 }; c.wl += r.wl || 0; });
+  const wlTot = Object.values(byCloud).reduce((a, c) => a + c.wl, 0) || 1;
+  const clouds = Object.values(byCloud).map(c => ({ kind: 'cloud', key: 'cloud:' + c.cloud, name: c.cloud, cloud: c.cloud,
+    v: sitesV * c.wl / wlTot, fabV: sitesFab * c.wl / wlTot, hasChildren: true, state: 'ok' })).filter(c => c.v > 0.001).sort((a, b) => b.v - a.v);
+  return [...clouds, ...Object.values(dm).map(d => ({ ...d, hasChildren: true, state: 'ok' })).sort((a, b) => b.v - a.v)];
 }
 
 /** Children of a node, one level down. Every level is honest about what the data can name. */
@@ -115,6 +140,15 @@ export function childrenOf(node, est, inv, flows) {
     if (all.length > rows.length) rows.push({ kind: 'wlmore', key: `${node.key}/wlmore`, regionName: node.regionName, vpcId: node.vpcId, subnetId: node.subnetId, name: `See all ${all.length} workloads`, sub: 'every app in this subnet', v: each * (all.length - rows.length), fabV: each * (all.length - rows.length) * fabShare, hasChildren: false, state: 'ok', parentKey: node.key });
     return rows;
   }
+  if (node.kind === 'onramp') return onrampChildren(est, flows);
+  if (node.kind === 'cloud') {
+    const rs = est.regionsList.filter(r => r.cloud === node.cloud);
+    const tot = rs.reduce((a, r) => a + (r.wl || 0), 0) || 1;
+    return rs.map(r => ({ kind: 'endpoint', key: `${node.key}/${r.region}`, name: `${r.cloud} ${r.region}`,
+      sub: `${n(r.wl)} workloads · ${r.priv ? 'on the fabric' : 'public path'}`,
+      v: node.v * (r.wl || 0) / tot, fabV: node.fabV * (r.wl || 0) / tot,
+      hasChildren: false, state: stateOfRegion(est, r.region), parentKey: node.key })).sort((a, b) => b.v - a.v);
+  }
   if (node.kind === 'dest') {
     const per = (k) => node.v / k, fper = (k) => node.fabV / k;
     if (node.name === 'AI endpoints') return AI_HOSTS.map((h, i) => ({ kind: 'endpoint', key: `${node.key}/${i}`, name: PUBLIC_IPS[i], sub: `unresolved · public · likely ${h}`, v: per(4) * (1 - i * 0.15), fabV: fper(4) * (1 - i * 0.15), hasChildren: false, state: 'ok', parentKey: node.key, unresolved: true }));
@@ -135,7 +169,7 @@ function expand(list, open, est, inv, flows, depth = 0) {
   let keep = openHere.length ? list.filter(nd => open.has(nd.key)) : list;
   // Nothing open at this level: keep the largest few and fold the tail, so a
   // level with thirty rows is readable before you have touched anything.
-  if (!openHere.length && keep.length > CAP) {
+  if (depth > 0 && !openHere.length && keep.length > CAP) {
     const ranked = keep.slice().sort((a, b) => b.v - a.v);
     keep = ranked.slice(0, CAP);
     fold = ranked.slice(CAP);
@@ -154,11 +188,11 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const scale = (nd) => opts.t == null ? nd : { ...nd, v: nd.v * shapeAt(nd.key, opts.t), fabV: nd.fabV * shapeAt(nd.key, opts.t) };
   // Ramesh's first pattern (19:09): what stays within the region. Workload groups carry east-west traffic that never leaves the region; it gets its own band.
   const LOCAL = 0.6;
-  const Ls = L.map(scale).map(x => x.group === 'tags' || (!x.group && rootGroup(x) === 'tags') ? { ...x, locV: x.v * LOCAL } : { ...x, locV: 0 });
+  const Ls = L.map(scale).map(x => (x.group || rootGroup(x)) === 'onramp' ? { ...x, locV: (x.tagV != null ? x.tagV : x.v) * LOCAL } : { ...x, locV: 0 });
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
   const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
-  const groups = [['sites', 'From sites'], ['tags', 'From cloud workloads'], ['c2c', 'Cloud to cloud']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
+  const groups = [['sites', 'From sites'], ['onramp', 'From cloud on-ramps']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);
   // Fixed frame (Micah, 16:35: "zoom on click"): the map keeps its height. With a zoom, the focused subtree takes
   // 55 percent of the row budget and everything else compresses into the rest; ribbons taper, so they still attach.
@@ -204,7 +238,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const midH = MMh.reduce((a, m) => a + m.h, 0) + pad * (MMh.length - 1);
   const MM = layout(MMh, W / 2 - colW / 2, Math.max(top, (H - midH) / 2));
   const ribbons = [];
-  const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (b.key === 'dest:local') return 'region'; if (g === 'sites' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
+  const patternOf = (a, b) => { const g = a.group || rootGroup(a); if (b.key === 'dest:local') return 'region'; if (g === 'sites' || b.kind === 'cloud' || b.key === 'dest:regions') return 'inbound'; if (g === 'c2c' || /inter-cloud/.test(b.name || '')) return 'clouds'; if (/object storage/.test(b.name || '')) return 'regions'; if (/AI endpoints|public internet/.test(b.name || '')) return 'internet'; return a.side === 'l' || a.kind !== 'mid' ? 'mixed' : 'mixed'; };
   const link = (a, b, v, priv, kindOverride) => { if (v <= 0.0005) return; const sa = a.h / (a.tot || a.v || 1), sb = b.h / (b.tot || b.v || 1); const ay = a.y + a.used * sa, by = b.y + b.used * sb, ah = v * sa, bh = v * sb; a.used += v; b.used += v; const mx = (a.x2 + b.x) / 2; ribbons.push({ d: `M${a.x2},${ay} C${mx},${ay} ${mx},${by} ${b.x},${by} L${b.x},${by + bh} C${mx},${by + bh} ${mx},${ay + ah} ${a.x2},${ay + ah} Z`, priv, local: !!kindOverride, v, from: a.key, to: b.key, state: kindOverride ? 'ok' : priv ? 'ok' : (a.state !== 'ok' ? a.state : b.state), delta: deltaOf(a.key + '>' + b.key), pattern: kindOverride || patternOf(a, b) }); };
   const fab = MM.find(m => m.priv), pub = MM.find(m => !m.priv);
   const localDest = DD.find(d => d.key === 'dest:local');
@@ -216,7 +250,7 @@ export function buildMap(est, inv, flows0, opts = {}) {
   const nodes = [...SS.map(x => ({ ...x, side: 'l' })), ...MM.map(x => ({ ...x, side: 'm' })), ...DD.map(x => ({ ...x, side: 'r' }))].map(x => ({ ...x, delta: deltaOf(x.key), open: open.has(x.key) }));
   return { W, H, heads, nodes, ribbons, total: T, fabV, localV, open: [...open], zoom, zf };
 }
-function rootGroup(x) { return x.kind === 'site' || x.kind === 'metro' || x.kind === 'sitename' || x.kind === 'circuit' ? 'sites' : x.kind === 'c2c' ? 'c2c' : 'tags'; }
+function rootGroup(x) { return x.kind === 'site' || x.kind === 'metro' || x.kind === 'sitename' || x.kind === 'circuit' ? 'sites' : x.kind === 'cloud' || x.kind === 'dest' ? 'dest' : 'onramp'; }
 
 /** The trail for a key: every ancestor's name, root first. */
 export function trail(key, est, inv, flows) {
