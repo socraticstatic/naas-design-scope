@@ -151,6 +151,9 @@ The design is set in **AT&T Aleck Sans**. The typeface is licensed and is
 to `"Helvetica Neue", Helvetica, Arial, sans-serif`, so the app renders and
 lays out correctly without it — the letterforms are simply not AT&T's.
 
+Until the files are in place, the browser console shows six 404s for them on
+first load. That is expected, not a defect - the page has already fallen back.
+
 To restore the intended type, drop the font files into `fonts/` beside the
 HTML. The `@font-face` rules at the top of each page already point there:
 

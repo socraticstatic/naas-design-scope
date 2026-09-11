@@ -198,7 +198,7 @@ main button[style*="border-radius:9999px"],main button[style*="border-radius: 99
 <div style="display:grid;grid-template-columns:{{ shellCols }};background:{{ shellBg }};padding-right:{{ shellPadRight }};transition:padding-right .28s cubic-bezier(.22,1,.36,1)">
 <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
 <aside aria-label="{{ railTitle }} sections" data-collapsed="{{ railCollapsed }}" style="position:sticky;top:var(--hdr,65px);align-self:start;height:calc(100vh - var(--hdr,65px));display:flex;flex-direction:column;padding:{{ railPad }};border-right:1px solid var(--sidebar-border);background:var(--bg-base);width:{{ railW }};box-sizing:border-box;font-size:14px;transition:width .15s;overflow:hidden">
-  <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin">
+  <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border-secondary) transparent">
   <sc-for list="{{ railGroups }}" as="g" hint-placeholder-count="4">
     <sc-if value="{{ g.hasTitle }}" hint-placeholder-val="{{ true }}">
       <sc-if value="{{ railExpanded }}" hint-placeholder-val="{{ true }}"><button onClick="{{ g.titleGo }}" aria-current="{{ g.titleCur }}" style="display:block;width:100%;margin-top:16px;margin-bottom:12px;height:28px;box-sizing:border-box;padding:4px 8px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:14px;line-height:20px;font-weight:700;letter-spacing:-.4px;color:var(--sidebar-fg);white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:var(--bg-wash)">{{ g.title }}</button></sc-if>

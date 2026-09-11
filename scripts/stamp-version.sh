@@ -13,10 +13,20 @@ set -euo pipefail
 out="${1:-_site}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 
-build="$(git -C "$root" rev-list --count HEAD)"
-sha="$(git -C "$root" rev-parse --short HEAD)"
-iso="$(git -C "$root" log -1 --format=%cI)"
-date="$(TZ=America/Chicago git -C "$root" log -1 --format=%cd --date=format-local:%Y-%m-%d)"
+# Outside a git checkout (the handoff package, say) there is no history to
+# stamp, so fall back to the current time - the cache-busting still works,
+# which is the part that matters on a static host.
+if git -C "$root" rev-parse --short HEAD >/dev/null 2>&1; then
+  build="$(git -C "$root" rev-list --count HEAD)"
+  sha="$(git -C "$root" rev-parse --short HEAD)"
+  iso="$(git -C "$root" log -1 --format=%cI)"
+  date="$(TZ=America/Chicago git -C "$root" log -1 --format=%cd --date=format-local:%Y-%m-%d)"
+else
+  build=0
+  sha="$(date -u +%Y%m%d%H%M%S)"
+  iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  date="$(TZ=America/Chicago date +%Y-%m-%d)"
+fi
 
 rm -rf "$out"
 mkdir -p "$out"
