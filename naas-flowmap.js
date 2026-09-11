@@ -183,7 +183,25 @@ function expand(list, open, est, inv, flows, depth = 0) {
 export function buildMap(est, inv, flows0, opts = {}) {
   const open = new Set(opts.open || []);
   const flows = opts.filterRegion ? flows0.filter(f => (f.region || '').includes(opts.filterRegion) || f.name.includes(opts.filterRegion)) : flows0;
-  const L0 = leftRoots(est, flows), R0 = rightRoots(est, flows);
+  let L0 = leftRoots(est, flows), R0 = rightRoots(est, flows);
+  // The region filter shrank the egress classes (their volumes ride the flow
+  // list) and left the site rows and cloud nodes at full size, because those
+  // are sized from the estate. Filtering to eu-central-1 now scales the sites
+  // to the share of traffic that touches the matched regions, keeps only the
+  // clouds that own one, and re-splits the site traffic across them.
+  if (opts.filterRegion) {
+    const q = String(opts.filterRegion);
+    const match = est.regionsList.filter(r => r.region.includes(q) || `${r.cloud} ${r.region}`.includes(q));
+    const wlTot = est.regionsList.reduce((a, r) => a + (r.wl || 0), 0) || 1;
+    const share = match.reduce((a, r) => a + (r.wl || 0), 0) / wlTot;
+    const matchWl = {}; match.forEach(r => { matchWl[r.cloud] = (matchWl[r.cloud] || 0) + (r.wl || 0); });
+    const totMatch = Object.values(matchWl).reduce((a, v) => a + v, 0) || 1;
+    L0 = L0.map(x => x.kind === 'site' ? { ...x, v: x.v * share, fabV: x.fabV * share } : x);
+    const sitesVs = L0.filter(x => x.kind === 'site').reduce((a, x) => a + x.v, 0);
+    const sitesFabs = L0.filter(x => x.kind === 'site').reduce((a, x) => a + x.fabV, 0);
+    R0 = R0.filter(x => x.kind !== 'cloud' || matchWl[x.cloud])
+      .map(x => x.kind === 'cloud' ? { ...x, v: sitesVs * matchWl[x.cloud] / totMatch, fabV: sitesFabs * matchWl[x.cloud] / totMatch } : x);
+  }
   const L = expand(L0, open, est, inv, flows), R = expand(R0, open, est, inv, flows);
   const scale = (nd) => opts.t == null ? nd : { ...nd, v: nd.v * shapeAt(nd.key, opts.t), fabV: nd.fabV * shapeAt(nd.key, opts.t) };
   // Ramesh's first pattern (19:09): what stays within the region. Workload groups carry east-west traffic that never leaves the region; it gets its own band.
@@ -199,7 +217,10 @@ export function buildMap(est, inv, flows0, opts = {}) {
     return { ...x, locV: base * LOCAL };
   });
   const localV = Ls.reduce((a, x) => a + (x.locV || 0), 0);
-  const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: localV, hasChildren: false, state: 'ok' }] : [])];
+  // The east-west node used to carry its volume twice - v AND locV - so the
+  // sizer (which reads v + locV) drew it double height and the label printed
+  // 147.7 against a real 73.9. One volume, one field.
+  const Rs = [...R.map(scale), ...(localV > 0.001 ? [{ kind: 'dest', key: 'dest:local', name: 'Same region (east-west)', v: localV, fabV: 0, locV: 0, hasChildren: false, state: 'ok' }] : [])];
   const W = 900, colW = 12, minH = 14, pad = 5, headH = 16, gap = 14, top = 20, H0 = 500;
   const groups = [['sites', 'From sites'], ['onramp', 'From cloud on-ramps']].map(([g, head]) => ({ g, head, nodes: Ls.filter(x => (x.group || rootGroup(x)) === g) })).filter(x => x.nodes.length);
   const T = Ls.reduce((a, x) => a + x.v + (x.locV || 0), 0) || 1, fabV = Ls.reduce((a, x) => a + x.fabV, 0);

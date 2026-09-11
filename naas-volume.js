@@ -80,6 +80,10 @@ export function workloadList(est, inv, scope, opts = {}) {
   // level at a time; the trail in the header climbs back out.
   if (!sn && !scope.flat) {
     const totalWl = vpc.subnets.reduce((t, x) => t + (x.workloads || []).length, 0);
+    // The chips above the list read these; zeros here made the drawer say
+    // "Exposed · 0" over subnets whose own rows said "4 exposed".
+    const totalExp = vpc.subnets.reduce((t, x) => t + (x.workloads || []).filter(y => y.exposed).length, 0);
+    const totalApps = new Set(vpc.subnets.flatMap(x => (x.workloads || []).flatMap(w => (w.endpoints || []).map(e => e.app)))).size;
     const rows = vpc.subnets.map(x => {
       const ws = x.workloads || [];
       const exp = ws.filter(y => y.exposed).length;
@@ -96,7 +100,7 @@ export function workloadList(est, inv, scope, opts = {}) {
       title: `${vpc.name} · ${n(vpc.subnets.length)} ${vpc.subnets.length === 1 ? 'subnet' : 'subnets'}`,
       sub: `${top.cloud} ${top.region} · ${n(totalWl)} workloads`,
       trail: [top.cloud, top.region, vpc.name],
-      counts: { total: totalWl, exposed: 0, apps: 0 },
+      counts: { total: totalWl, exposed: totalExp, apps: totalApps },
       matching: rows.length, shownCount: rows.length, hasMore: false, rows,
       flatDoor: { label: `All ${n(totalWl)} workloads in this VPC`, sub: 'skip the subnets' },
       selectedCount: 0, matchingIds: [], bulk: { attach: 0, label: '' },
